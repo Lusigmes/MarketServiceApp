@@ -1,5 +1,7 @@
 package portifolio.market_service.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -8,11 +10,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name="prestador")
 public class Prestador {
@@ -21,7 +25,8 @@ public class Prestador {
     @Column
     private long id;
 
-    @OneToOne
+    @OneToOne //(fetch=FetchType.LAZY)
+    @JsonManagedReference // Será serializado
     @JoinColumn(name="usuario_id", nullable=false, unique=true)
     private Usuario usuario;
 }

@@ -19,7 +19,7 @@ import io.jsonwebtoken.security.Keys;
 
 @Service
 // @Component
-public class JwtService {
+public class JwtAuthService {
     @Value("${security.jwt.secret-key}")
     private String secretKey;
     

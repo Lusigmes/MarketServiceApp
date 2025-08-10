@@ -4,10 +4,10 @@ import java.util.Collection;
 import java.util.List;
 
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -44,7 +44,6 @@ public class Usuario implements UserDetails{
     private String nome;
 
     @NotNull(message = "O CPF é obrigatório")
-    @Digits(integer = 11, fraction = 0, message = "O CPF deve ter 11 dígitos\nSomente números")
     @Column(unique=true, nullable = false)
     private long CPF;
     
@@ -53,12 +52,9 @@ public class Usuario implements UserDetails{
     private String email;
     
     @NotNull(message = "A Senha é obrigatório")
-    @Size(min = 4, max = 10, message = "Entre 4 e 10 caracteres")
     @Column(unique=true, nullable = false)
     private String senha;
 
-    @Digits(integer = 8, fraction = 0, message = "O CEP deve ter 11 dígitos\\n" + //
-        "Somente números")
     @Column
     private int CEP;
 
@@ -69,7 +65,7 @@ public class Usuario implements UserDetails{
     
     @Enumerated(EnumType.STRING)
     @Column(name = "role_usuario")
-    private RoleUsuario roleUsuario = RoleUsuario.USER;
+    private RoleUsuario roleUsuario; //= RoleUsuario.USER;
 
     @OneToOne(mappedBy = "usuario", cascade = CascadeType.REMOVE, orphanRemoval = true)
     // @JsonIgnore // Ignora a referência ao Cliente para evitar loop
@@ -85,7 +81,7 @@ public class Usuario implements UserDetails{
     // AUTHS
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(); 
+        return List.of(new SimpleGrantedAuthority("ROLE_" + this.roleUsuario.name())); 
    }
 
     @Override

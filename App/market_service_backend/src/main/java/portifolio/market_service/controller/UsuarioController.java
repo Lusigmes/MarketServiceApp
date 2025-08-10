@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import portifolio.market_service.model.entity.Usuario;
 import portifolio.market_service.repository.UsuarioRepository;
+import portifolio.market_service.service.UsuarioAuthService;
 
 
 
@@ -24,7 +27,8 @@ import portifolio.market_service.repository.UsuarioRepository;
 public class UsuarioController {
     @Autowired
     UsuarioRepository usuarioRepository;
-    
+        
+    // @PreAuthorize("hasRole('ADMIN')")
     @CrossOrigin
     @GetMapping
     public ResponseEntity<List<Usuario>> findAll() {
@@ -45,6 +49,8 @@ public class UsuarioController {
         Usuario savedUsuarios = usuarioRepository.save(usuario);
         return new ResponseEntity<>(savedUsuarios, HttpStatus.CREATED);
     }
+
+
 
     // @CrossOrigin
     // @PutMapping("/{id}")

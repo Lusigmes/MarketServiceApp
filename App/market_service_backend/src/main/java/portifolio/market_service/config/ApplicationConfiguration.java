@@ -1,0 +1,46 @@
+package portifolio.market_service.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import lombok.AllArgsConstructor;
+import portifolio.market_service.repository.UsuarioRepository;
+
+@Configuration
+@AllArgsConstructor
+public class ApplicationConfiguration {
+    
+    private final UsuarioRepository usuarioRepository;
+
+    @Bean
+    UserDetailsService usuarioService(){
+        return email -> usuarioRepository.findByEmail(email)
+        .orElseThrow(()-> new UsernameNotFoundException("USUARIO NÃO ENCONTRADO"));
+    }
+    
+    @Bean
+    BCryptPasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder();
+    }
+    
+    @Bean
+    AuthenticationManager authManager(AuthenticationConfiguration config) throws Exception{
+        return config.getAuthenticationManager();
+    }
+    
+    @Bean
+    AuthenticationProvider authProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(usuarioService());
+
+        authProvider.setPasswordEncoder(passwordEncoder());
+
+        return authProvider;
+    }
+}

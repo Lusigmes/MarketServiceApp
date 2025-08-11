@@ -16,9 +16,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import portifolio.market_service.dto.UsuarioResponseDTO;
 import portifolio.market_service.model.entity.Usuario;
 import portifolio.market_service.repository.UsuarioRepository;
 import portifolio.market_service.service.UsuarioAuthService;
+import portifolio.market_service.service.UsuarioService;
 
 
 
@@ -26,14 +28,22 @@ import portifolio.market_service.service.UsuarioAuthService;
 @RequestMapping("/usuarios")
 public class UsuarioController {
     @Autowired
-    UsuarioRepository usuarioRepository;
+    private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private UsuarioService usuarioService;
         
     // @PreAuthorize("hasRole('ADMIN')")
     @CrossOrigin
     @GetMapping
-    public ResponseEntity<List<Usuario>> findAll() {
+    public ResponseEntity<List<UsuarioResponseDTO>> findAll() {
         List<Usuario> usuarios = usuarioRepository.findAll();
-        return ResponseEntity.ok(usuarios);
+
+        List<UsuarioResponseDTO> usuariosDTO = usuarios.stream()
+            .map(usuarioService::toDTO)
+            .toList();
+
+        return ResponseEntity.ok(usuariosDTO);
     }
 
     @CrossOrigin
@@ -43,12 +53,6 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @CrossOrigin
-    @PostMapping
-    public ResponseEntity<Usuario> save(@RequestBody Usuario usuario) {
-        Usuario savedUsuarios = usuarioRepository.save(usuario);
-        return new ResponseEntity<>(savedUsuarios, HttpStatus.CREATED);
-    }
 
 
 

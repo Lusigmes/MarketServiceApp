@@ -20,7 +20,7 @@ public class ApplicationConfiguration {
     private final UsuarioRepository usuarioRepository;
 
     @Bean
-    UserDetailsService usuarioService(){
+    UserDetailsService userDetailsService(){
         return email -> usuarioRepository.findByEmail(email)
         .orElseThrow(()-> new UsernameNotFoundException("USUARIO NÃO ENCONTRADO"));
     }
@@ -37,7 +37,7 @@ public class ApplicationConfiguration {
     
     @Bean
     AuthenticationProvider authProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(usuarioService());
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService());
 
         authProvider.setPasswordEncoder(passwordEncoder());
 

@@ -14,8 +14,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import portifolio.market_service.dto.ClienteResponseDTO;
 import portifolio.market_service.model.entity.Cliente;
 import portifolio.market_service.repository.ClienteRepository;
+import portifolio.market_service.service.TipoUsuarioService;
 
 
 @RestController
@@ -23,13 +25,18 @@ import portifolio.market_service.repository.ClienteRepository;
 public class ClienteController {
 
     @Autowired
-    ClienteRepository clienteRepository;
+    private ClienteRepository clienteRepository;
+    
+    @Autowired
+    private TipoUsuarioService clienteService;
+    
 
     @CrossOrigin
     @GetMapping
-    public ResponseEntity<List<Cliente>> findAll() {
-        List<Cliente> clientes = clienteRepository.findAll();
-        return ResponseEntity.ok(clientes);
+    public ResponseEntity<List<ClienteResponseDTO>> findAll() {
+        // List<Cliente> clientes = clienteRepository.findAll();
+        List<ClienteResponseDTO>  clientesDTO = clienteService.findAllClientes();
+        return ResponseEntity.ok(clientesDTO);
     }
 
     @CrossOrigin

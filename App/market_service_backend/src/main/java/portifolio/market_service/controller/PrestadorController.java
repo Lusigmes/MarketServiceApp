@@ -14,21 +14,25 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import portifolio.market_service.dto.PrestadorResponseDTO;
 import portifolio.market_service.model.entity.Prestador;
 import portifolio.market_service.repository.PrestadorRepository;
+import portifolio.market_service.service.TipoUsuarioService;
 
 @RestController
 @RequestMapping("/prestadores")
 public class PrestadorController {
 
     @Autowired
-    PrestadorRepository prestadorRepository;
-
+    private PrestadorRepository prestadorRepository;
+    @Autowired
+    private TipoUsuarioService prestadorService;
+    
     @CrossOrigin
     @GetMapping
-    public ResponseEntity<List<Prestador>> findAll() {
-        List<Prestador> Prestadors = prestadorRepository.findAll();
-        return ResponseEntity.ok(Prestadors);
+    public ResponseEntity<List<PrestadorResponseDTO>> findAll() {
+        List<PrestadorResponseDTO> prestadoresDTO = prestadorService.findAllPrestadores();
+        return ResponseEntity.ok(prestadoresDTO);
     }
 
     @CrossOrigin

@@ -13,28 +13,31 @@ import lombok.AllArgsConstructor;
 import portifolio.market_service.dto.LoginTokenResponseDTO;
 import portifolio.market_service.dto.LoginUsuarioDTO;
 import portifolio.market_service.dto.RegistroUsuarioDTO;
+import portifolio.market_service.dto.UsuarioResponseDTO;
 import portifolio.market_service.model.entity.Usuario;
 import portifolio.market_service.service.JwtAuthService;
 import portifolio.market_service.service.UsuarioAuthService;
+import portifolio.market_service.service.UsuarioService;
 
 @RestController
 @RequestMapping("/auth")
 @AllArgsConstructor
 public class AuthController {
     private final UsuarioAuthService usuarioAuthService;
+    private final UsuarioService usuarioService;
     private final JwtAuthService jwtService;
 
 
     @GetMapping("/me")
-    public ResponseEntity<Usuario> usuarioAutenticado(){
+    public ResponseEntity<UsuarioResponseDTO> usuarioAutenticado(){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Usuario usuarioAtual = (Usuario) auth.getPrincipal();
-        return ResponseEntity.ok(usuarioAtual);
+        return ResponseEntity.ok(usuarioService.toDTO(usuarioAtual));
     }
 
     @PostMapping("/registro")
     public ResponseEntity<Usuario> registrar(@RequestBody RegistroUsuarioDTO dto){
-        Usuario usuarioRegistro = usuarioAuthService.registrarUsuario(dto);
+        Usuario usuarioRegistro = usuarioService.registrarUsuario(dto);
         return ResponseEntity.ok(usuarioRegistro);
     }
     

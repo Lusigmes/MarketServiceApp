@@ -55,7 +55,7 @@ public class Usuario implements UserDetails{
     
     @NotNull(message = "O CEP é obrigatório")
     @Column(nullable=false)
-    private int CEP;
+    private String CEP;
 
     @Column(name = "tipo_usuario", nullable = false)
     @NotNull(message = "O Tipo de Usuário é obrigatório")

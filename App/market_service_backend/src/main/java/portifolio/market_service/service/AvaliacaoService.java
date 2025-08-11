@@ -17,10 +17,15 @@ public class AvaliacaoService {
     
     @Autowired
     private AvaliacaoRepository avaliacaoRepository;
+    
     @Autowired
     private ClienteRepository clienteRepository;
+   
     @Autowired
     private PrestadorRepository prestadorRepository;
+
+    @Autowired
+    private UsuarioService usuarioService;
 
     public Avaliacao salvar(AvaliacaoDTO dto){
         Cliente cliente = clienteRepository.findById(dto.clienteId())

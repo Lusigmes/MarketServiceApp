@@ -31,7 +31,7 @@ public class AvaliacaoController {
     @CrossOrigin
     @GetMapping
     public ResponseEntity<List<Avaliacao>> findAll() {
-        List<Avaliacao> avaliacoes = avaliacaoRepository.findAll();
+        List<Avaliacao> avaliacoes = avaliacaoRepository.findAllAvalicaoWithRelations();
         return ResponseEntity.ok(avaliacoes);
     }
 

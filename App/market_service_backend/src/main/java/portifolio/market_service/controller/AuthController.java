@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.AllArgsConstructor;
-import portifolio.market_service.dto.LoginDTO;
 import portifolio.market_service.dto.LoginTokenResponseDTO;
-import portifolio.market_service.dto.RegistroDTO;
+import portifolio.market_service.dto.LoginUsuarioDTO;
+import portifolio.market_service.dto.RegistroUsuarioDTO;
 import portifolio.market_service.model.entity.Usuario;
 import portifolio.market_service.service.JwtAuthService;
 import portifolio.market_service.service.UsuarioAuthService;
@@ -33,13 +33,13 @@ public class AuthController {
     }
 
     @PostMapping("/registro")
-    public ResponseEntity<Usuario> registrar(@RequestBody RegistroDTO dto){
+    public ResponseEntity<Usuario> registrar(@RequestBody RegistroUsuarioDTO dto){
         Usuario usuarioRegistro = usuarioAuthService.registrarUsuario(dto);
         return ResponseEntity.ok(usuarioRegistro);
     }
     
     @PostMapping("/login")
-    public ResponseEntity<LoginTokenResponseDTO> logar(@RequestBody LoginDTO dto){
+    public ResponseEntity<LoginTokenResponseDTO> logar(@RequestBody LoginUsuarioDTO dto){
         Usuario usuarioAuth = usuarioAuthService.logarUsuario(dto);
 
         String jwtToken = jwtService.generateToken(usuarioAuth);

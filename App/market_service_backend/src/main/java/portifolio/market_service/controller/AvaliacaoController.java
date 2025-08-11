@@ -14,15 +14,20 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import portifolio.market_service.dto.AvaliacaoDTO;
 import portifolio.market_service.model.entity.Avaliacao;
 import portifolio.market_service.repository.AvaliacaoRepository;
+import portifolio.market_service.service.AvaliacaoService;
 
 @RestController
 @RequestMapping("/avaliacoes")
 public class AvaliacaoController {
     @Autowired
-    AvaliacaoRepository avaliacaoRepository;
-
+    private AvaliacaoRepository avaliacaoRepository;
+    
+    @Autowired
+    private AvaliacaoService avaliacaoService;
+    
     @CrossOrigin
     @GetMapping
     public ResponseEntity<List<Avaliacao>> findAll() {
@@ -39,8 +44,8 @@ public class AvaliacaoController {
 
     @CrossOrigin
     @PostMapping
-    public ResponseEntity<Avaliacao> save(@RequestBody Avaliacao avaliacao) {
-        Avaliacao savedAvaliacoes = avaliacaoRepository.save(avaliacao);
+    public ResponseEntity<Avaliacao> save(@RequestBody AvaliacaoDTO avaliacao) {
+        Avaliacao savedAvaliacoes = avaliacaoService.salvar(avaliacao);
         return new ResponseEntity<>(savedAvaliacoes, HttpStatus.CREATED);
     }
 }

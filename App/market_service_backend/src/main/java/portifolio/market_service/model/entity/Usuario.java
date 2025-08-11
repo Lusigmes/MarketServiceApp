@@ -19,9 +19,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -35,32 +33,33 @@ import portifolio.market_service.model.enums.TipoUsuario;
 @Table(name="usuario")
 public class Usuario implements UserDetails{
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @NotNull(message = "O nome é obrigatório")
     @Column(nullable = false)
+    @NotNull(message = "O nome é obrigatório")
     private String nome;
 
-    @NotNull(message = "O CPF é obrigatório")
     @Column(unique=true, nullable = false)
+    @NotNull(message = "O CPF é obrigatório")
     private long CPF;
     
-    @NotNull(message = "O E-mail é obrigatório")
     @Column(unique=true, nullable = false)
+    @NotNull(message = "O E-mail é obrigatório")
     private String email;
     
-    @NotNull(message = "A Senha é obrigatório")
     @Column(unique=true, nullable = false)
+    @NotNull(message = "A Senha é obrigatório")
     private String senha;
-
-    @Column
+    
+    @NotNull(message = "O CEP é obrigatório")
+    @Column(nullable=false)
     private int CEP;
 
+    @Column(name = "tipo_usuario", nullable = false)
     @NotNull(message = "O Tipo de Usuário é obrigatório")
     @Enumerated(EnumType.STRING)
-    @Column(name = "tipo_usuario", nullable = false)
     private TipoUsuario tipoUsuario;
     
     @Enumerated(EnumType.STRING)
@@ -68,13 +67,11 @@ public class Usuario implements UserDetails{
     private RoleUsuario roleUsuario; //= RoleUsuario.USER;
 
     @OneToOne(mappedBy = "usuario", cascade = CascadeType.REMOVE, orphanRemoval = true)
-    // @JsonIgnore // Ignora a referência ao Cliente para evitar loop
-    @JsonBackReference // Não será serializado
+    @JsonBackReference(value = "cliente-usuario")
     private Cliente cliente;
        
     @OneToOne(mappedBy = "usuario", cascade = CascadeType.REMOVE, orphanRemoval = true)
-    // @JsonIgnore // Ignora a referência ao Cliente para evitar loop
-    @JsonBackReference // Não será serializado
+    @JsonBackReference(value = "prestador-usuario")
     private Prestador prestador;
 
 

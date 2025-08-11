@@ -37,13 +37,10 @@ public class Avaliacao {
 
     @NotNull(message = "A Nota é obrigatória")
     @Column(nullable=false)
-    @Min(value = 1, message = "A nota mínima é 1")
-    @Max(value = 5, message = "A nota máxima é 5")
     private Integer nota;
 
     @NotNull(message = "O Comentário é obrigatório")
     @Column(nullable=false,  columnDefinition = "TEXT")
-    @Size(max = 500, message = "O Comentário não pode exceder 500 caracteres")
     private String comentario;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -54,9 +51,9 @@ public class Avaliacao {
     @JoinColumn(name = "prestador_id", nullable = false)
     private Prestador prestador;
 
-    @Column(name = "data_avaliacao", updatable = false)
     @CreationTimestamp
     @JsonFormat(pattern="dd/MM/yyyy HH:mm:ss")
+    @Column(name = "data_avaliacao", updatable = false)
     private LocalDateTime dataAvaliacao;
 
 }

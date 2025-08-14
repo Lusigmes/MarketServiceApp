@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import portifolio.market_service.dto.PrestadorResponseDTO;
 import portifolio.market_service.model.entity.Prestador;
 import portifolio.market_service.repository.PrestadorRepository;
-import portifolio.market_service.service.TipoUsuarioService;
+import portifolio.market_service.service.PrestadorService;
 
 @RestController
 @RequestMapping("/prestadores")
@@ -26,7 +26,7 @@ public class PrestadorController {
     @Autowired
     private PrestadorRepository prestadorRepository;
     @Autowired
-    private TipoUsuarioService prestadorService;
+    private PrestadorService prestadorService;
     
     @CrossOrigin
     @GetMapping

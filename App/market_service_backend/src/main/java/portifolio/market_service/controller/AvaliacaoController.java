@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import portifolio.market_service.dto.AvaliacaoDTO;
+import portifolio.market_service.dto.AvaliacaoResponseDTO;
 import portifolio.market_service.model.entity.Avaliacao;
 import portifolio.market_service.repository.AvaliacaoRepository;
 import portifolio.market_service.service.AvaliacaoService;
@@ -30,10 +31,13 @@ public class AvaliacaoController {
     
     @CrossOrigin
     @GetMapping
-    public ResponseEntity<List<Avaliacao>> findAll() {
+    public ResponseEntity< List<AvaliacaoResponseDTO>> findAll() {
         List<Avaliacao> avaliacoes = avaliacaoRepository.findAllAvalicaoWithRelations();
-        return ResponseEntity.ok(avaliacoes);
+        List<AvaliacaoResponseDTO> dtos = avaliacaoService.listToDTO(avaliacoes);
+       
+        return ResponseEntity.ok(dtos);
     }
+
 
     @CrossOrigin
     @DeleteMapping(value = "/{id}")
@@ -44,8 +48,13 @@ public class AvaliacaoController {
 
     @CrossOrigin
     @PostMapping
-    public ResponseEntity<Avaliacao> save(@RequestBody AvaliacaoDTO avaliacao) {
+    public ResponseEntity<AvaliacaoResponseDTO> save(@RequestBody AvaliacaoDTO avaliacao) {
         Avaliacao savedAvaliacoes = avaliacaoService.salvar(avaliacao);
-        return new ResponseEntity<>(savedAvaliacoes, HttpStatus.CREATED);
+        AvaliacaoResponseDTO dto = avaliacaoService.toDTO(savedAvaliacoes);
+        return new ResponseEntity<>(dto, HttpStatus.CREATED);
     }
+
+
+    // criar atualização de avaliacao
+
 }

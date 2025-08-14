@@ -2,7 +2,6 @@ package portifolio.market_service.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -26,7 +25,7 @@ public class Cliente {
     @Column
     private long id;
 
-    @OneToOne(cascade = CascadeType.PERSIST) //(fetch=FetchType.LAZY)
+    @OneToOne
     @JoinColumn(name="usuario_id", nullable=false, unique=true)
     @JsonManagedReference(value = "cliente-usuario")
     private Usuario usuario;

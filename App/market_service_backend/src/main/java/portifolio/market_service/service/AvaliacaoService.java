@@ -1,10 +1,13 @@
 package portifolio.market_service.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import jakarta.persistence.EntityNotFoundException;
 import portifolio.market_service.dto.AvaliacaoDTO;
+import portifolio.market_service.dto.AvaliacaoResponseDTO;
 import portifolio.market_service.model.entity.Avaliacao;
 import portifolio.market_service.model.entity.Cliente;
 import portifolio.market_service.model.entity.Prestador;
@@ -23,9 +26,13 @@ public class AvaliacaoService {
    
     @Autowired
     private PrestadorRepository prestadorRepository;
-
+   
     @Autowired
     private UsuarioService usuarioService;
+    @Autowired
+    private ClienteService clienteService;
+    @Autowired
+    private PrestadorService prestadorService;
 
     public Avaliacao salvar(AvaliacaoDTO dto){
         Cliente cliente = clienteRepository.findById(dto.clienteId())
@@ -44,5 +51,30 @@ public class AvaliacaoService {
         return  avaliacaoRepository.save(avaliacao);
     
     }
+
+    public AvaliacaoResponseDTO toDTO(Avaliacao avaliacao){
+        return new AvaliacaoResponseDTO(
+            avaliacao.getId(),
+            avaliacao.getNota(),
+            avaliacao.getComentario(),
+            clienteService.findAllClientes().stream()
+                .filter(c -> c.id() == avaliacao.getClienteId())
+                .findFirst()
+                .orElse(null),
+                
+            prestadorService.findAllPrestadores().stream()
+                .filter(c -> c.id() == avaliacao.getPrestadorId())
+                .findFirst()
+                .orElse(null),
+
+            avaliacao.getDataAvaliacao()
+        );  
+    }
+
+    public List<AvaliacaoResponseDTO> listToDTO( List<Avaliacao> avaliacoes){
+        return avaliacoes.stream().map(this::toDTO).toList();
+    }
+
+        // criar atualização de avaliacao
 
 }

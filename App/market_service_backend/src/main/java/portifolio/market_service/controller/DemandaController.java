@@ -14,21 +14,26 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+import portifolio.market_service.dto.DemandaDTO;
+import portifolio.market_service.dto.DemandaResponseDTO;
 import portifolio.market_service.model.entity.Demanda;
 import portifolio.market_service.repository.DemandaRepository;
+import portifolio.market_service.service.DemandaService;
 
 @RestController
 @RequestMapping("/demandas")
 public class DemandaController {
     
     @Autowired
-    DemandaRepository demandaRepository;
+    private DemandaRepository demandaRepository;
+    @Autowired
+    private DemandaService demandaService;
 
     @CrossOrigin
     @GetMapping
-    public ResponseEntity<List<Demanda>> findAll() {
-        List<Demanda> demandas = demandaRepository.findAll();
-        return ResponseEntity.ok(demandas);
+    public ResponseEntity<List<DemandaResponseDTO>> findAll() {
+        return ResponseEntity.ok(demandaService.listar());
     }
 
     @CrossOrigin
@@ -40,8 +45,11 @@ public class DemandaController {
 
     @CrossOrigin
     @PostMapping
-    public ResponseEntity<Demanda> save(@RequestBody Demanda demanda) {
-        Demanda savedDemandas = demandaRepository.save(demanda);
-        return new ResponseEntity<>(savedDemandas, HttpStatus.CREATED);
+    public ResponseEntity<DemandaResponseDTO> save(@Valid @RequestBody DemandaDTO demanda) {
+        Demanda savedDemanda = demandaService.salvar(demanda);
+        DemandaResponseDTO dto = demandaService.responseToDTO(savedDemanda);
+        return new ResponseEntity<>(dto, HttpStatus.CREATED);
     }
+
+    // criar atualização de demanda
 }

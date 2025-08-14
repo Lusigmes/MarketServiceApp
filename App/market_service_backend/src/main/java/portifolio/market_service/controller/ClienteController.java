@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import portifolio.market_service.dto.ClienteResponseDTO;
 import portifolio.market_service.model.entity.Cliente;
 import portifolio.market_service.repository.ClienteRepository;
-import portifolio.market_service.service.TipoUsuarioService;
+import portifolio.market_service.service.ClienteService;
 
 
 @RestController
@@ -28,7 +28,7 @@ public class ClienteController {
     private ClienteRepository clienteRepository;
     
     @Autowired
-    private TipoUsuarioService clienteService;
+    private ClienteService clienteService;
     
 
     @CrossOrigin

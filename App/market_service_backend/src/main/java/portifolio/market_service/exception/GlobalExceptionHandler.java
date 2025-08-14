@@ -14,13 +14,13 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.UnexpectedTypeException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleAllExceptions(Exception ex) {
-        // Log da exceção (pode substituir por logger)
         ex.printStackTrace();
 
         ProblemDetail problem;
@@ -45,6 +45,9 @@ public class GlobalExceptionHandler {
 
         } else if (ex instanceof DataIntegrityViolationException) {
             problem = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), "CPF já cadastrado");
+
+        } else if (ex instanceof UnexpectedTypeException) {
+            problem = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), "Erro ao adicionar: " + ex.getMessage());
 
         } else {
             problem = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), "Erro interno desconhecido");

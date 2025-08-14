@@ -57,6 +57,7 @@ public class UsuarioService {
         return usuario;
     }
 
+    // para cadastro
     public UsuarioResponseDTO toDTO(Usuario usuario){
         return new UsuarioResponseDTO(
             usuario.getId(),

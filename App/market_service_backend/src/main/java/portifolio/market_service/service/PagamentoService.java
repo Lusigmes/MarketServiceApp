@@ -8,10 +8,8 @@ import org.springframework.stereotype.Service;
 import jakarta.persistence.EntityNotFoundException;
 import portifolio.market_service.dto.PagamentoDTO;
 import portifolio.market_service.dto.PagamentoResponseDTO;
-import portifolio.market_service.model.entity.Demanda;
 import portifolio.market_service.model.entity.Pagamento;
 import portifolio.market_service.model.entity.Proposta;
-import portifolio.market_service.repository.DemandaRepository;
 import portifolio.market_service.repository.PagamentoRepository;
 import portifolio.market_service.repository.PropostaRepository;
 
@@ -19,16 +17,12 @@ import portifolio.market_service.repository.PropostaRepository;
 public class PagamentoService {
     @Autowired
     private PagamentoRepository pagamentoRepository;
-    @Autowired
-    private DemandaRepository demandaRepository;
+
     @Autowired
     private PropostaRepository propostaRepository;
 
 
     public Pagamento salvar (PagamentoDTO dto){
-        Demanda demanda = demandaRepository.findById(dto.demandaId())
-            .orElseThrow(() -> new EntityNotFoundException("Demanda não encontrada"));
-
         Proposta proposta =  propostaRepository.findById(dto.propostaId())
             .orElseThrow(() -> new EntityNotFoundException("Proposta não encontrada"));        
         
@@ -37,7 +31,6 @@ public class PagamentoService {
         pagamento.setComissao(dto.comissao());
         pagamento.setStatusPagamento(dto.statusPagamento());
         pagamento.setFormaPagamento(dto.formaPagamento());
-        pagamento.setDemanda(demanda);
         pagamento.setProposta(proposta);
 
         return pagamentoRepository.save(pagamento);
@@ -45,7 +38,7 @@ public class PagamentoService {
     }
 
     public List<PagamentoResponseDTO> listar(){
-        return pagamentoRepository.findAll()
+        return pagamentoRepository.findAllPropostaAndDemanda()
             .stream().map(this::responseToDTO)
             .toList();
     }

@@ -2,6 +2,7 @@ package portifolio.market_service.exception;
 
 import java.time.Instant;
 
+import org.hibernate.LazyInitializationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
@@ -44,10 +45,13 @@ public class GlobalExceptionHandler {
             problem = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(400), "Dados inválidos: " + ex.getMessage());
 
         } else if (ex instanceof DataIntegrityViolationException) {
-            problem = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), "CPF já cadastrado");
+            problem = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), "CPF já cadastrado\n" + ex.getMessage());
 
         } else if (ex instanceof UnexpectedTypeException) {
             problem = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), "Erro ao adicionar: " + ex.getMessage());
+
+        } else if (ex instanceof LazyInitializationException) {
+            problem = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), "Erro: " + ex.getMessage());
 
         } else {
             problem = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), "Erro interno desconhecido");

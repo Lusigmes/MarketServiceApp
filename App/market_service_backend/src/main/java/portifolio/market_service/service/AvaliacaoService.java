@@ -29,8 +29,6 @@ public class AvaliacaoService {
     private PrestadorRepository prestadorRepository;
    
     @Autowired
-    private UsuarioService usuarioService;
-    @Autowired
     private ClienteService clienteService;
     @Autowired
     private PrestadorService prestadorService;

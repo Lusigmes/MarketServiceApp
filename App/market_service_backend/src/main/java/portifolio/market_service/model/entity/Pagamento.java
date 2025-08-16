@@ -37,7 +37,6 @@ public class Pagamento {
     @Column
     private long id;
     
-   
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal valor;
 
@@ -52,9 +51,9 @@ public class Pagamento {
     @Enumerated(EnumType.STRING)
     private FormaPagamento formaPagamento = FormaPagamento.PIX;  
     
-    @OneToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name = "demanda_id", nullable = false)
-    private Demanda demanda;
+    // @OneToOne(fetch=FetchType.LAZY)
+    // @JoinColumn(name = "demanda_id", nullable = false)
+    // private Demanda demanda;
 
     @OneToOne(fetch=FetchType.LAZY)
     @JoinColumn(name = "proposta_id", nullable = false)
@@ -75,7 +74,7 @@ public class Pagamento {
     private LocalDateTime ultimaAtualizacao;
 
     public Long getDemandaId(){
-        return this.getDemanda().getId();
+        return this.getProposta().getDemandaId();
     }
 
     public Long getPropostaId(){

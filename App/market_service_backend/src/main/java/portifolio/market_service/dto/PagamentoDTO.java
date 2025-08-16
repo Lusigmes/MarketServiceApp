@@ -21,10 +21,6 @@ public  record PagamentoDTO(
 
     @NotNull(message = "A Forma de Pagamento é obrigatória")
     FormaPagamento formaPagamento, 
-
-    @NotNull(message = "A Deamnda é obrigatória")
-    long demandaId, 
-
     @NotNull(message = "A Proposta é obrigatória")
     long propostaId
 

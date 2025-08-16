@@ -14,20 +14,26 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import portifolio.market_service.dto.PropostaDTO;
+import portifolio.market_service.dto.PropostaResponseDTO;
 import portifolio.market_service.model.entity.Proposta;
 import portifolio.market_service.repository.PropostaRepository;
+import portifolio.market_service.service.PropostaService;
 
 @RestController
 @RequestMapping("/propostas")
 public class PropostaController {
        
     @Autowired
-    PropostaRepository propostaRepository;
+    private PropostaRepository propostaRepository;
+
+    @Autowired
+    private PropostaService propostaService;
 
     @CrossOrigin
     @GetMapping
-    public ResponseEntity<List<Proposta>> findAll() {
-        List<Proposta> propostas = propostaRepository.findAll();
+    public ResponseEntity<List<PropostaResponseDTO>> findAll() {
+        List<PropostaResponseDTO> propostas = propostaService.listar();
         return ResponseEntity.ok(propostas);
     }
 
@@ -40,8 +46,9 @@ public class PropostaController {
 
     @CrossOrigin
     @PostMapping
-    public ResponseEntity<Proposta> save(@RequestBody Proposta proposta) {
-        Proposta savedPropostas = propostaRepository.save(proposta);
-        return new ResponseEntity<>(savedPropostas, HttpStatus.CREATED);
+    public ResponseEntity<PropostaResponseDTO> save(@RequestBody PropostaDTO proposta) {
+        Proposta savedPropostas = propostaService.salvar(proposta);
+        PropostaResponseDTO dto = propostaService.responseToDTO(savedPropostas);
+        return new ResponseEntity<>(dto, HttpStatus.CREATED);
     }
 }

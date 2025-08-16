@@ -24,13 +24,13 @@ public class ClienteService {
     }
     
     public List<ClienteResponseDTO> findAllClientes(){
-    List<Cliente> clientes = clienteRepository.findAll();
+        List<Cliente> clientes = clienteRepository.findAll();
 
-    return clientes.stream()
-        .map(cliente -> new ClienteResponseDTO(
-            cliente.getId(),
-            usuarioService.toDTO(cliente.getUsuario())
-        )).toList();
+        return clientes.stream()
+            .map(cliente -> new ClienteResponseDTO(
+                cliente.getId(),
+                usuarioService.toDTO(cliente.getUsuario())
+            )).toList();
     }
 
 }

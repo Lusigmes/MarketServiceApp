@@ -25,6 +25,7 @@ public class DemandaService {
     public Demanda salvar(DemandaDTO dto){
         Cliente cliente = clienteRepository.findById(dto.clienteId())
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+        
         Demanda demanda = new Demanda();
         demanda.setTitulo(dto.titulo());
         demanda.setDescricao(dto.descricao());

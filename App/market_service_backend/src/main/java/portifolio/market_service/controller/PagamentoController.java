@@ -13,20 +13,26 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+import portifolio.market_service.dto.PagamentoDTO;
+import portifolio.market_service.dto.PagamentoResponseDTO;
 import portifolio.market_service.model.entity.Pagamento;
 import portifolio.market_service.repository.PagamentoRepository;
+import portifolio.market_service.service.PagamentoService;
 
 @RestController
 @RequestMapping("/pagamentos")
 public class PagamentoController {
     @Autowired
-    PagamentoRepository pagamentoRepository;
-
+    private PagamentoRepository pagamentoRepository;
+    @Autowired
+    private PagamentoService pagamentoService;
+    
     @CrossOrigin
     @GetMapping
-    public ResponseEntity<List<Pagamento>> findAll() {
-        List<Pagamento> pagamentos = pagamentoRepository.findAll();
-        return ResponseEntity.ok(pagamentos);
+    public ResponseEntity<List<PagamentoResponseDTO>> findAll() {
+        List<PagamentoResponseDTO> pagamentoDTO = pagamentoService.listar();
+        return ResponseEntity.ok(pagamentoDTO);
     }
 
     @CrossOrigin
@@ -38,8 +44,9 @@ public class PagamentoController {
 
     @CrossOrigin
     @PostMapping
-    public ResponseEntity<Pagamento> save(@RequestBody Pagamento Pagamento) {
-        Pagamento savedPagamentos = pagamentoRepository.save(Pagamento);
-        return new ResponseEntity<>(savedPagamentos, HttpStatus.CREATED);
+    public ResponseEntity<PagamentoResponseDTO> save(@Valid @RequestBody PagamentoDTO pagamento) {
+        Pagamento savedPagamentos = pagamentoService.salvar(pagamento);
+        PagamentoResponseDTO dto = pagamentoService.responseToDTO(savedPagamentos);
+        return new ResponseEntity<>(dto, HttpStatus.CREATED);
     }
 }

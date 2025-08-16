@@ -95,7 +95,6 @@ public class Demanda implements Serializable{
     public void prePersist(){
         this.dataCriacaoDemanda = LocalDateTime.now();
         this.ultimaAtualizacao = LocalDateTime.now();
-        this.statusDemanda = StatusDemanda.ABERTA;
     }
 
     @PreUpdate

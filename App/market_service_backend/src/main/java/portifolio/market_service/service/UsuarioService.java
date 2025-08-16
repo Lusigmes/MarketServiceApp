@@ -1,9 +1,8 @@
 package portifolio.market_service.service;
 
-import java.util.List;
-
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.AllArgsConstructor;
 import portifolio.market_service.dto.RegistroUsuarioDTO;
@@ -29,7 +28,7 @@ public class UsuarioService {
     
     private final BCryptPasswordEncoder passwordEncoder;
 
-
+    @Transactional
     public Usuario registrarUsuario(RegistroUsuarioDTO dto) {
         Usuario usuario = new Usuario();
         usuario.setNome(dto.nome());

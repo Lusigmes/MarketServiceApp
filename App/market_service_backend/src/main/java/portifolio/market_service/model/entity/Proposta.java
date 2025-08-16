@@ -1,8 +1,13 @@
 package portifolio.market_service.model.entity;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,9 +19,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -33,17 +38,16 @@ public class Proposta {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column
     private long id;
+   
+    @Column(nullable = false, length = 100)
+    private String titulo;
 
-    @NotNull(message = "O Preço é obrigatório")
     @Column(nullable=false)
     private BigDecimal preco;
     
-    @NotNull(message = "O Comentário é obrigatório")
     @Column(nullable=false,  columnDefinition = "TEXT")
-    @Size(min = 10, max = 255, message = "O comentário deve ter entre 10 e 255 caracteres")
     private String comentario;
 
-    @NotNull(message = "O Status da Proposta é obrigatório")
     @Column(name = "status_proposta", nullable = false)
     @Enumerated(EnumType.STRING)
     private StatusProposta statusProposta = StatusProposta.PENDENTE;
@@ -56,4 +60,34 @@ public class Proposta {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "prestador_id", nullable = false)
     private Prestador prestador;
+
+    @CreationTimestamp
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+    @Column(name = "data_criacao_proposta", nullable = false, updatable = false)
+    private LocalDateTime dataCriacaoProposta;
+    
+    @UpdateTimestamp
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+    @Column(name = "ultima_atualizacao", nullable = false)
+    private LocalDateTime ultimaAtualizacao;
+
+
+    @PrePersist
+    public void prePersist(){
+        this.dataCriacaoProposta = LocalDateTime.now();
+        this.ultimaAtualizacao = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void preUpdate(){
+        this.ultimaAtualizacao = LocalDateTime.now();
+    }
+
+    public Long getPrestadorId(){
+        return this.getPrestador().getId();
+    }
+    public Long getDemandaId(){
+        return this.getDemanda().getId();
+    }
 }
+

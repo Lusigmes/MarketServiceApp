@@ -1,0 +1,4 @@
+1. posteriormente otimizar consultas para deletar entidades do banco
+2. implementar metódos e consutas para atualizar entidades
+    2.1. implementar a medida que o front for sendo implementado
+3.

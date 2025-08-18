@@ -23,13 +23,10 @@ public class PrestadorService {
     }
 
     public List<PrestadorResponseDTO> findAllPrestadores(){
-        List<Prestador> prestadores = prestadorRepository.findAll();
 
-        return prestadores.stream()
-            .map(prestador -> new PrestadorResponseDTO(
-                prestador.getId(),
-                usuarioService.toDTO(prestador.getUsuario())
-            )).toList();
+
+        return prestadorRepository.findAllWithUsuarioAndRelationPrestadors()
+            .stream().map(this::toDTO).toList();
     }
 
 }

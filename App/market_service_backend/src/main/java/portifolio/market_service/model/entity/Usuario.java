@@ -14,6 +14,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -66,14 +67,13 @@ public class Usuario implements UserDetails{
     @Column(name = "role_usuario")
     private RoleUsuario roleUsuario; //= RoleUsuario.USER;
 
-    @OneToOne(mappedBy = "usuario", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToOne(mappedBy = "usuario", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch=FetchType.LAZY)
     @JsonBackReference(value = "cliente-usuario")
     private Cliente cliente;
        
-    @OneToOne(mappedBy = "usuario", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToOne(mappedBy = "usuario", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch=FetchType.LAZY)
     @JsonBackReference(value = "prestador-usuario")
     private Prestador prestador;
-
 
     // AUTHS
     @Override
@@ -111,7 +111,4 @@ public class Usuario implements UserDetails{
         return true;
     }
 
-    // @ManyToOne(cascade = CascadeType.PERSIST)
-    // @JoinColumn(name = "album_id", nullable = false)
-    // @RestResource(exported = false)
 }

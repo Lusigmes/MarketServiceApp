@@ -11,8 +11,7 @@ import portifolio.market_service.model.entity.Pagamento;
 @RepositoryRestResource(collectionResourceRel="pagamentos", path="pagamentos")
 public interface PagamentoRepository extends JpaRepository<Pagamento, Long>{
  
-    @Query("SELECT p FROM Pagamento p JOIN FETCH p.proposta pr JOIN FETCH pr.demanda d")
-    
+    @Query("SELECT p FROM Pagamento p JOIN FETCH p.proposta pr JOIN FETCH pr.demanda d")                          
     List<Pagamento> findAllPropostaAndDemanda();
 
 

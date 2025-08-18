@@ -8,8 +8,8 @@ public record AvaliacaoResponseDTO(
     long id,
     int nota,
     String comentario,
-    ClienteResponseDTO cliente,
-    PrestadorResponseDTO prestador,
+    long clienteId,
+    long prestadorId,
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     LocalDateTime dataAvaliacao
 ) {}

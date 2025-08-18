@@ -24,7 +24,7 @@ public class UsuarioAuthService {
                 dto.email(), 
                 dto.senha())
         );
-        return usuarioRepository.findByEmail(dto.email())
+        return usuarioRepository.findByEmailWithRelations(dto.email())
             .orElseThrow();
     }
     

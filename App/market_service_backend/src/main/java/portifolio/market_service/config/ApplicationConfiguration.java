@@ -21,8 +21,13 @@ public class ApplicationConfiguration {
 
     @Bean
     UserDetailsService userDetailsService(){
-        return email -> usuarioRepository.findByEmail(email)
-        .orElseThrow(()-> new UsernameNotFoundException("USUARIO NÃO ENCONTRADO"));
+        return email -> {
+            System.out.println("[Spring Security] Carregando usuário pelo email: " + email);
+            return usuarioRepository.findByEmailWithRelations(email)
+                .orElseThrow(() -> new UsernameNotFoundException("USUARIO NÃO ENCONTRADO"));
+        };
+        // return email -> usuarioRepository.findByEmail(email)
+        // .orElseThrow(()-> new UsernameNotFoundException("USUARIO NÃO ENCONTRADO"));
     }
     
     @Bean

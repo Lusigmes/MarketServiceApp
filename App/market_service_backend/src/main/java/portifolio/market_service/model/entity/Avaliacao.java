@@ -20,7 +20,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-// Campos: ID, nota (1-5), comentário, cliente (FK), prestador (FK).
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -59,6 +58,14 @@ public class Avaliacao {
 
     public long getPrestadorId(){
         return this.getPrestador().getId();
+    }
+
+    public Usuario getUsuarioCliente(){
+        return this.getCliente().getUsuario();
+    }
+    
+    public Usuario getUsuarioPrestador(){
+        return this.getPrestador().getUsuario();
     }
 
 

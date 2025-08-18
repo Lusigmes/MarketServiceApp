@@ -27,12 +27,8 @@ public class AvaliacaoService {
    
     @Autowired
     private PrestadorRepository prestadorRepository;
-   
-    @Autowired
-    private ClienteService clienteService;
-    @Autowired
-    private PrestadorService prestadorService;
 
+    @Transactional
     public Avaliacao salvar(AvaliacaoDTO dto){
         Cliente cliente = clienteRepository.findById(dto.clienteId())
             .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado"));
@@ -57,18 +53,10 @@ public class AvaliacaoService {
             avaliacao.getId(),
             avaliacao.getNota(),
             avaliacao.getComentario(),
-            clienteService.findAllClientes().stream()
-                .filter(c -> c.id() == avaliacao.getClienteId())
-                .findFirst()
-                .orElse(null),
-                
-            prestadorService.findAllPrestadores().stream()
-                .filter(c -> c.id() == avaliacao.getPrestadorId())
-                .findFirst()
-                .orElse(null),
-
+            avaliacao.getClienteId(),
+            avaliacao.getPrestadorId(),
             avaliacao.getDataAvaliacao()
-        );  
+            );  
     }
 
     public List<AvaliacaoResponseDTO> listToDTO( List<Avaliacao> avaliacoes){

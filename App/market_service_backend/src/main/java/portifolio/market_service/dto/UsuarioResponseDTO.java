@@ -1,7 +1,7 @@
 package portifolio.market_service.dto;
 
 public record UsuarioResponseDTO(
-    Long id,
+    long id,
     String nome,
     String email,
     String cep,

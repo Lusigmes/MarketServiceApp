@@ -32,7 +32,7 @@ public class UsuarioController {
     @CrossOrigin
     @GetMapping
     public ResponseEntity<List<UsuarioResponseDTO>> findAll() {
-        List<Usuario> usuarios = usuarioRepository.findAll();
+        List<Usuario> usuarios = usuarioRepository.findAllWithRelations();
 
         List<UsuarioResponseDTO> usuariosDTO = usuarios.stream()
             .map(usuarioService::toDTO)

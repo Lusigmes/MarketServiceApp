@@ -1,17 +1,12 @@
-import LoginForm from '@/components/LoginForm.vue';
-import RegistroForm from '@/components/RegistroForm.vue'
-import { useAuth } from '@/composables/useAuth';
-import Dashboard from '@/views/Dashboard.vue';
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuth } from '@/composables/useAuth'
 
 const routes = [
-  {path: "/login", component: LoginForm},
-  {path: "/registro", component: RegistroForm},
-  {path: "/dashboard",
-    component: Dashboard,
-    meta: {requiresAuth:true}
-  },
-];
+  { path: "/", name: "Home", component: () => import('@/components/Home.vue') },
+  { path: "/login", name: "Login", component: () => import('@/components/LoginForm.vue') },
+  { path: "/registro", name: "Registro", component: () => import('@/components/RegistroForm.vue') },
+  { path: "/dashboard", name: "Dashboard", component: () => import('@/views/Dashboard.vue'), meta: { requiresAuth: true } }
+]
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,15 +15,16 @@ const router = createRouter({
 
 router.beforeEach(async (to) => {
   const { token, fetchUsuario, usuario } = useAuth();
-  
+
   if (token.value && !usuario.value) {
-      await fetchUsuario();
-    }
+    await fetchUsuario();
+  }
 
   if (to.meta.requiresAuth && !token.value) {
     return "/login";
   }
-});
 
+  return true; 
+})
 
 export default router

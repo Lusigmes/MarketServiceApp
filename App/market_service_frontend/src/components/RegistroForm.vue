@@ -1,25 +1,48 @@
-
 <template>
-  <form @submit.prevent="registrarUsuario" class="form">
-    <input v-model="usuario.nome" placeholder="Nome" />
-    <input v-model="usuario.cpf" placeholder="CPF" />
-    <input v-model="usuario.email" type="email" placeholder="E-mail" />
-    <input v-model="usuario.senha" type="password" placeholder="Senha" />
-    <input v-model="usuario.cep" placeholder="CEP" />
-    <select v-model="usuario.tipoUsuario">
-      <option value="CLIENTE">Cliente</option>
-      <option value="PRESTADOR">Prestador</option>
-    </select>
-    <button type="submit">Registrar</button>
-  </form>
+  <v-card elevation="0">
+    <v-breadcrumbs class="ml-4 mt-0" :items="itemBreadCrumb">
+      <template v-slot:prepend>
+        <v-icon icon="mdi-home"></v-icon>
+      </template>
+      <template v-slot:divider>
+        <v-icon icon="mdi-chevron-right"></v-icon>
+      </template>
+    </v-breadcrumbs>
+  </v-card>
+
+  <v-container class="fill-height d-flex justify-center align-center" fluid>
+    <v-card class="pa-6" width="400" elevation="6">
+      <h2 class="text-center mb-4" style="color:#1a1a1a;">Registrar Usuário</h2>
+      <v-form @submit.prevent="registrarUsuario">
+        <v-row class="mb-4" dense>
+          <v-col cols="6">
+            <v-text-field v-model="usuario.nome" label="Nome" outlined dense />
+          </v-col>
+          <v-col cols="6">
+            <v-select
+              v-model="usuario.tipoUsuario"
+              :items="['CLIENTE', 'PRESTADOR']"
+              label="Tipo"
+              outlined
+              dense
+            />
+          </v-col>
+        </v-row>
+
+        <v-text-field v-model="usuario.cpf" label="CPF" outlined dense class="mb-3" />
+        <v-text-field v-model="usuario.email" label="E-mail" type="email" outlined dense class="mb-3" />
+        <v-text-field v-model="usuario.senha" label="Senha" type="password" outlined dense class="mb-3" />
+        <v-text-field v-model="usuario.cep" label="CEP" outlined dense class="mb-3" />
+
+        <v-btn type="submit" color="primary" class="mt-4" block>Registrar</v-btn>
+      </v-form>
+    </v-card>
+  </v-container>
 </template>
 
 <style scoped>
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  width: 300px;
+.v-card {
+  border-radius: 12px;
 }
 </style>
 
@@ -28,7 +51,9 @@
     import { useRouter } from 'vue-router';
     import { useAuth } from '@/composables/useAuth';
     import type { RegistroUsuarioInterface } from '@/types/usuario';
-
+    import { itemListaRegistro } from '@/api/itemService';
+  
+    const itemBreadCrumb = reactive(itemListaRegistro());
     const {registro, error} = useAuth();
     const router = useRouter();
     

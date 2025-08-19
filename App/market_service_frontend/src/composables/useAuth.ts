@@ -1,5 +1,5 @@
 import { ref } from "vue";
-import { logarUsuario, registrarUsuario, getUsuarioAutenticado } from "@/api/usuarioService";
+import { logarUsuario, registrarUsuario, getUsuarioAutenticado } from "@/api/usuarioAuthService";
 import type {UsuarioResponseInterface, RegistroUsuarioInterface, LoginUsuarioInterface, LoginTokenResponseInterface } from "@/types/usuario";
 
 

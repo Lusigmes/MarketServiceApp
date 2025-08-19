@@ -1,10 +1,11 @@
 <script setup lang="ts">
+import { itemListaLogin } from '@/api/itemService';
 import { useAuth } from '@/composables/useAuth';
 import type { LoginUsuarioInterface } from '@/types/usuario';
 import { reactive } from 'vue';
 import { useRouter } from 'vue-router';
 
-    
+    const itemBreadCrumb = reactive(itemListaLogin());
     const router = useRouter();
     const {login} = useAuth();
 
@@ -24,19 +25,32 @@ import { useRouter } from 'vue-router';
 </script>
 
 <template>
-  <form @submit.prevent="fazerLogin" class="form">
-    <input v-model="dadosLogin.email" type="email" placeholder="E-mail" />
-    <input v-model="dadosLogin.senha" type="password" placeholder="Senha" />
-    <button type="submit">Entrar</button>
-  </form>
+  <v-card elevation="0">
+    <v-breadcrumbs class="ml-4 mt-0" :items="itemBreadCrumb">
+      <template v-slot:prepend>
+        <v-icon icon="mdi-home"></v-icon>
+      </template>
+      <template v-slot:divider>
+        <v-icon icon="mdi-chevron-right"></v-icon>
+      </template>
+    </v-breadcrumbs>
+  </v-card>
+
+  <v-container class="fill-height d-flex justify-center align-center" fluid>
+    <v-card class="pa-6" width="360" elevation="6">
+      <h2 class="text-center mb-4" style="color:#1a1a1a;">Login</h2>
+      <v-form @submit.prevent="fazerLogin">
+        <v-text-field v-model="dadosLogin.email" label="E-mail" type="email" outlined dense class="mb-3" />
+        <v-text-field v-model="dadosLogin.senha" label="Senha" type="password" outlined dense class="mb-3" />
+
+        <v-btn type="submit" color="primary" class="mt-4" block>Entrar</v-btn>
+      </v-form>
+    </v-card>
+  </v-container>
 </template>
 
-
 <style scoped>
-    .form {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        width: 300px;
-    }
+.v-card {
+  border-radius: 12px;
+}
 </style>

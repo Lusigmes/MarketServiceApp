@@ -34,10 +34,11 @@ public class SecurityConfiguration {
         http
             .authenticationManager(authManager)
             .csrf(csrf -> csrf.disable())
+            .cors(cors -> cors.configurationSource(corsConfigurationSource())) // <-- aqui
             .authorizeHttpRequests(auth -> auth
             // .requestMatchers(HttpMethod.POST , "/usuarios").permitAll()
             .requestMatchers("/auth/registro", "/auth/login").permitAll()
-            .requestMatchers("/usuarios/**").permitAll()
+            .requestMatchers("/usuarios/**").hasAnyRole("ADMIN")
             .requestMatchers("/clientes/**").hasAnyRole("USER", "ADMIN")
             .requestMatchers("/prestadores/**").hasAnyRole("USER", "ADMIN")
             .requestMatchers("/avaliacoes/**").hasAnyRole("USER", "ADMIN")
@@ -54,21 +55,19 @@ public class SecurityConfiguration {
             // });
             
 
-        return http.build();
+        return http.build();    
     }
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of("http://localhost:8080"));
-        configuration.setAllowedMethods(List.of("GET","POST"));
+        configuration.setAllowedOrigins(List.of("http://localhost:5173")); //      http://localhost:8080 //   "http://localhost:5173", // Vue Vite         "http://localhost:3000"  // alternativa
+        configuration.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS")); 
         configuration.setAllowedHeaders(List.of("Authorization","Content-Type"));
-
+    // configuration.setAllowCredentials(true); // se quiser cookies no futuro
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-
         source.registerCorsConfiguration("/**",configuration);
-
         return source;
     }
 

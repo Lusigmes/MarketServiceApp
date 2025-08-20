@@ -1,7 +1,19 @@
-<script setup lang="ts"></script>
-
 <template>
-  <router-view />
+  <v-app>
+    <!-- HEADER -->
+    <Toolbar />
+
+    <v-main>
+      <router-view />
+    </v-main>
+
+    <Footer />
+  </v-app>
 </template>
 
-<style scoped></style>
+<script setup lang="ts">
+import Footer from '@/layouts/Footer.vue';
+import Toolbar from '@/layouts/Toolbar.vue';
+
+
+</script>

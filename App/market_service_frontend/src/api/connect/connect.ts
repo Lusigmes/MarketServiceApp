@@ -15,4 +15,15 @@ httpConnect.interceptors.request.use((config) => {
     return config;
 });
 
+httpConnect.interceptors.response.use(
+    (response) => response,
+    (error)=> {
+        if(error.response?.status === 401){
+            localStorage.removeItem('jwt');
+            window.location.href = '/login';
+        }
+        return Promise.reject(error);
+    }
+)
+
 export default httpConnect;

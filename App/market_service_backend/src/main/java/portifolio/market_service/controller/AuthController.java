@@ -1,6 +1,8 @@
 package portifolio.market_service.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +17,7 @@ import portifolio.market_service.dto.LoginUsuarioDTO;
 import portifolio.market_service.dto.RegistroUsuarioDTO;
 import portifolio.market_service.dto.UsuarioResponseDTO;
 import portifolio.market_service.model.entity.Usuario;
+import portifolio.market_service.repository.UsuarioRepository;
 import portifolio.market_service.service.JwtAuthService;
 import portifolio.market_service.service.UsuarioAuthService;
 import portifolio.market_service.service.UsuarioService;
@@ -25,6 +28,7 @@ import portifolio.market_service.service.UsuarioService;
 public class AuthController {
     private final UsuarioAuthService usuarioAuthService;
     private final UsuarioService usuarioService;
+    private final UsuarioRepository usuarioRepository;
     private final JwtAuthService jwtService;
 
 
@@ -32,6 +36,10 @@ public class AuthController {
     public ResponseEntity<UsuarioResponseDTO> usuarioAutenticado(){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Usuario usuarioAtual = (Usuario) auth.getPrincipal();
+        if (usuarioAtual.getCliente() == null && usuarioAtual.getPrestador() == null) {
+            usuarioAtual = usuarioRepository.findByEmailWithRelations(usuarioAtual.getEmail())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+        }
         return ResponseEntity.ok(usuarioService.toDTO(usuarioAtual));
     }
 
@@ -41,16 +49,25 @@ public class AuthController {
         return ResponseEntity.ok(usuarioRegistro);
     }
     
+
     @PostMapping("/login")
     public ResponseEntity<LoginTokenResponseDTO> logar(@RequestBody LoginUsuarioDTO dto){
-        Usuario usuarioAuth = usuarioAuthService.logarUsuario(dto);
+        try{
 
-        String jwtToken = jwtService.generateToken(usuarioAuth);
-        
-        LoginTokenResponseDTO loginResponse = new LoginTokenResponseDTO()
+            Usuario usuarioAuth = usuarioAuthService.logarUsuario(dto);
+            
+            String jwtToken = jwtService.generateToken(usuarioAuth);
+            
+            LoginTokenResponseDTO loginResponse = new LoginTokenResponseDTO()
             .setToken(jwtToken)
             .setExpiresIn(jwtService.getExpirationTime());
-       
-        return ResponseEntity.ok(loginResponse);
+            
+            return ResponseEntity.ok(loginResponse);
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
     }
 }

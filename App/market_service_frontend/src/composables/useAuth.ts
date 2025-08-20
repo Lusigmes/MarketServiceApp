@@ -1,7 +1,7 @@
 import { ref } from "vue";
 import { logarUsuario, registrarUsuario, getUsuarioAutenticado } from "@/api/usuarioAuthService";
 import type {UsuarioResponseInterface, RegistroUsuarioInterface, LoginUsuarioInterface, LoginTokenResponseInterface } from "@/types/usuario";
-
+import axios from "axios";
 
 const token = ref<string | null>(localStorage.getItem("jwt"));
 const usuario = ref<UsuarioResponseInterface | null>(null);
@@ -14,6 +14,9 @@ export function useAuth(){
             const response = await logarUsuario(dadosUsuario);
             token.value = response.token;
             localStorage.setItem("jwt", response.token);
+
+            axios.defaults.headers.common['Authorization'] = `Bearer ${response.token}`;
+            
             await fetchUsuario();
             return true;
         } catch (err: any) {
@@ -21,19 +24,29 @@ export function useAuth(){
             return false;
         }
     }
+
     const logout = () => {
         token.value = null;
         usuario.value = null;
         localStorage.removeItem("jwt");
+        delete axios.defaults.headers.common['Authorization'];
     }
-
+  
     const fetchUsuario = async () => {
-            try {
+        try {
+            if (token.value) {
                 usuario.value = await getUsuarioAutenticado();
-        } catch {
+            }
+        } catch (err) {
+            console.error("Erro ao buscar usuário:", err);
             usuario.value = null;
+            logout(); 
         }
     };
+
+    if (token.value) {
+            fetchUsuario();
+    }
 
     const registro = async (dadosUsuario: RegistroUsuarioInterface) => {
         try {

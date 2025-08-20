@@ -1,7 +1,10 @@
 package portifolio.market_service.config;
 
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -19,7 +22,14 @@ public class ApplicationConfiguration {
     
     private final UsuarioRepository usuarioRepository;
 
+
     @Bean
+    CacheManager cacheManager() {
+        return new ConcurrentMapCacheManager("usuarios");
+    }
+    
+    @Bean
+    @Lazy
     UserDetailsService userDetailsService(){
         return email -> {
             System.out.println("[Spring Security] Carregando usuário pelo email: " + email);

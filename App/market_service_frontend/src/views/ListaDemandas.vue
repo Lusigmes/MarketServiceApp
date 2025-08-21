@@ -53,12 +53,11 @@ import Demanda from './detalhes/Demanda.vue';
 
 <template>
   <v-container>
-    <!-- Loading -->
+    
     <v-row justify="center" v-if="loading">
       <v-progress-circular indeterminate color="primary" class="my-4" />
     </v-row>
 
-    <!-- Grade -->
     <v-row v-else dense>
       <v-col
         v-for="demanda in demandas"
@@ -120,7 +119,7 @@ import Demanda from './detalhes/Demanda.vue';
   align-items: center;
 }
 .demanda-card {
-  min-height: 150px; /* ajuste conforme necessário */
+  min-height: 150px; 
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -133,11 +132,11 @@ import Demanda from './detalhes/Demanda.vue';
 }
 
 .demanda-card p {
-  font-size: 0.950rem; /* texto menor */
+  font-size: 0.950rem; 
   margin-bottom: 0.5rem;
 }
 
 .demanda-card .v-chip {
-  font-size: 0.70rem; /* chips menores */
+  font-size: 0.70rem; 
 }
 </style>

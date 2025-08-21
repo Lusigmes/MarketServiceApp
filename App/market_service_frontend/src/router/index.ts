@@ -55,11 +55,14 @@ router.beforeEach(async (to) => {
   if (token.value && !usuario.value) {
     await fetchUsuario();
   }
-  if(token.value && to.path === '/') {
-    return '/dashboard';
-  }
   if (to.meta.requiresAuth && !token.value) {
     return "/login";
+  }
+  if(token.value && to.path === '/') {
+    return "/dashboard";
+  }
+  if(token.value && (to.path === '/login' || to.path === '/registro')){
+    return "/dashboard";
   }
 
   return true; 

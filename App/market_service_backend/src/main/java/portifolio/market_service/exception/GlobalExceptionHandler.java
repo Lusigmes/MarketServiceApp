@@ -9,6 +9,7 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -51,6 +52,9 @@ public class GlobalExceptionHandler {
             problem = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), "Erro ao adicionar: " + ex.getMessage());
 
         } else if (ex instanceof LazyInitializationException) {
+            problem = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), "Erro: " + ex.getMessage());
+        
+        } else if (ex instanceof MethodArgumentNotValidException) {
             problem = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), "Erro: " + ex.getMessage());
 
         } else {

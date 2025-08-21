@@ -1,6 +1,6 @@
 import { ref } from "vue";
 import { logarUsuario, registrarUsuario, getUsuarioAutenticado } from "@/api/usuarioAuthService";
-import type {UsuarioResponseInterface, RegistroUsuarioInterface, LoginUsuarioInterface, LoginTokenResponseInterface } from "@/types/usuario";
+import type {UsuarioResponseInterface, RegistroUsuarioInterface, LoginUsuarioInterface, LoginTokenResponseInterface } from "@/types";
 import axios from "axios";
 
 const token = ref<string | null>(localStorage.getItem("jwt"));
@@ -45,7 +45,7 @@ export function useAuth(){
     };
 
     if (token.value) {
-            fetchUsuario();
+        fetchUsuario();
     }
 
     const registro = async (dadosUsuario: RegistroUsuarioInterface) => {

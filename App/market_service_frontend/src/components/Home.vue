@@ -20,7 +20,7 @@ import { useRouter } from 'vue-router';
   <v-card elevation="0">
     <v-breadcrumbs class="ml-4 mt-0" :items="itemBreadCrumb">
       <template v-slot:prepend>
-        <v-icon icon="mdi-home"></v-icon>
+        <v-icon disabled icon="mdi-home"></v-icon>
       </template>
       <template v-slot:divider>
         <v-icon icon="mdi-chevron-right"></v-icon>

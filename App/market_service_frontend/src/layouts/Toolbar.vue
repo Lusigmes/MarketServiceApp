@@ -1,11 +1,42 @@
 <script setup lang="ts">
 import { useAuth } from '@/composables/useAuth';
 import { useRouter } from 'vue-router';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 const { usuario, logout } = useAuth();
 const router = useRouter();
 const menu = ref(false);
+
+const tabs = [
+  {
+    id: "telaInicial",
+    title: "Dashboard",
+    icon: 'mdi-view-dashboard',
+    route: '/dashboard'
+  },
+  {
+    id: "demandas", 
+    title: "Demandas",
+    icon: 'mdi-clipboard-list',
+    route: '/dashboard/demandas'
+  },
+  {
+    id: "prestadores",
+    title: "Prestadores", 
+    icon: 'mdi-account-group',
+    route: '/dashboard/prestadores'
+  }
+];
+
+const tabAtual = computed(() => {
+  const currentRoute = router.currentRoute.value.path;
+  if (currentRoute === '/dashboard') return 'telaInicial';
+  if (currentRoute === '/dashboard/demandas') return 'demandas';
+  if (currentRoute === '/dashboard/prestadores') return 'prestadores';
+  return '';
+});
+
+const estaLogado = computed(() => usuario.value);
 
 function sair() {
   logout();
@@ -14,6 +45,10 @@ function sair() {
 
 function irLogin() {
   router.push("/login");
+}
+
+function navegarPara(route: string) {
+  router.push(route);
 }
 </script>
 
@@ -26,7 +61,26 @@ function irLogin() {
         </h2>
       </v-col>
 
-      <v-col cols="auto">
+      <v-col cols="auto" class="d-flex align-center">
+        <v-btn-toggle
+          v-if="estaLogado"
+          v-model="tabAtual"
+          mandatory
+          color="primary"
+          class="mr-4"
+        >
+          <v-btn
+            v-for="tab in tabs"
+            :key="tab.id"
+            :value="tab.id"
+            @click="navegarPara(tab.route)"
+            variant="text"
+            class="mx-3"
+          >
+            {{ tab.title }}
+          </v-btn>
+        </v-btn-toggle>
+
         <v-menu v-model="menu" location="bottom end" content-class="menu-custom">
           <template #activator="{ props }">
             <v-btn
@@ -56,11 +110,11 @@ function irLogin() {
             </template>
 
             <template v-else>
-                <v-list-item @click="irLogin">
-                    <v-btn block color="primary" variant="elevated" class="rounded-lg text-white">
-                        Entrar
-                    </v-btn>
-                </v-list-item>
+              <v-list-item @click="irLogin">
+                <v-btn block color="primary" variant="elevated" class="rounded-lg text-white">
+                  Entrar
+                </v-btn>
+              </v-list-item>
             </template>
           </v-list>
         </v-menu>
@@ -75,4 +129,8 @@ function irLogin() {
   padding: 12px; 
 }
 
+.v-btn--active {
+  color: var(--v-theme-primary) !important;
+  background-color: transparent !important; 
+}
 </style>

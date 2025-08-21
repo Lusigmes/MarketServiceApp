@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { itemListaLogin } from '@/api/itemService';
 import { useAuth } from '@/composables/useAuth';
-import type { LoginUsuarioInterface } from '@/types/usuario';
+import type { LoginUsuarioInterface } from '@/types';
 import { reactive } from 'vue';
 import { useRouter } from 'vue-router';
 

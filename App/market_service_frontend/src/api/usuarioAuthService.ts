@@ -1,5 +1,5 @@
 import httpConnect from "@/api/connect/connect";
-import type {UsuarioResponseInterface, RegistroUsuarioInterface, LoginUsuarioInterface, LoginTokenResponseInterface } from "@/types/usuario";
+import type {UsuarioResponseInterface, RegistroUsuarioInterface, LoginUsuarioInterface, LoginTokenResponseInterface } from "@/types";
 
 
 

@@ -50,7 +50,7 @@
     import { reactive } from 'vue';
     import { useRouter } from 'vue-router';
     import { useAuth } from '@/composables/useAuth';
-    import type { RegistroUsuarioInterface } from '@/types/usuario';
+    import type { RegistroUsuarioInterface } from '@/types';
     import { itemListaRegistro } from '@/api/itemService';
   
     const itemBreadCrumb = reactive(itemListaRegistro());

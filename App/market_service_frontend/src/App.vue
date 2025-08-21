@@ -1,6 +1,5 @@
 <template>
   <v-app>
-    <!-- HEADER -->
     <Toolbar />
 
     <v-main>
@@ -14,6 +13,4 @@
 <script setup lang="ts">
 import Footer from '@/layouts/Footer.vue';
 import Toolbar from '@/layouts/Toolbar.vue';
-
-
 </script>

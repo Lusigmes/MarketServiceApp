@@ -12,6 +12,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.SignatureException;
@@ -55,6 +56,9 @@ public class GlobalExceptionHandler {
             problem = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), "Erro: " + ex.getMessage());
         
         } else if (ex instanceof MethodArgumentNotValidException) {
+            problem = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), "Erro: " + ex.getMessage());
+            
+        } else if (ex instanceof NoHandlerFoundException) {
             problem = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), "Erro: " + ex.getMessage());
 
         } else {

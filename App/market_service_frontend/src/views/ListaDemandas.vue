@@ -1,11 +1,17 @@
 <script setup lang="ts">
 import { carregarDemandas } from '@/api/DemandaService';
-import { useAuth } from '@/composables/useAuth';
 import type { DemandaResponseInterface } from '@/types';
 import { onMounted, ref } from 'vue';
 import Demanda from './detalhes/Demanda.vue';
 
-  const { usuario } = useAuth();
+interface Props {
+  usuario: any;
+  usuarioId: number;
+  tipoUsuario: 'CLIENTE' | 'PRESTADOR';
+}
+
+  const props = defineProps<Props>();
+
   const demandas = ref<DemandaResponseInterface[]>([]);
   const loading = ref(true);
 
@@ -95,10 +101,10 @@ import Demanda from './detalhes/Demanda.vue';
     <v-dialog v-model="dialog" max-width="600">
       <template #default>
         <Demanda
-          v-if="demandaSelecionada && usuario"
+          v-if="demandaSelecionada && props.usuario"
           :demanda="demandaSelecionada"
-          :tipoUsuario="(usuario?.tipoUsuario ?? 'CLIENTE') as 'CLIENTE' | 'PRESTADOR'"
-          :usuarioId="usuario?.id ?? 0"
+          :tipo-usuario="props.tipoUsuario"
+          :usuario-id="props.usuarioId" 
           @fechar="fecharModal"
           @editar="(d: any) => console.log('Editar demanda', d)"
           @proposta="(d: any) => console.log('Enviar proposta', d)"

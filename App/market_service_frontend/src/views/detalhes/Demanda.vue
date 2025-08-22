@@ -1,19 +1,34 @@
 <script setup lang="ts">
+import { findClienteIdByUsuarioId } from '@/api/ClienteService';
+import type { DemandaResponseInterface } from '@/types';
+import { computed, ref } from 'vue';
 import { onMounted } from 'vue';
 
+  interface Props {
+    demanda: DemandaResponseInterface;
+    tipoUsuario: 'CLIENTE' | 'PRESTADOR';
+    usuarioId: number;
+  }
+    
+  const props = defineProps<Props>();
+  const clienteId = ref<number | null>(null);
+    
 
-    interface Props {
-        demanda: any;
-        tipoUsuario: 'CLIENTE' | 'PRESTADOR';
-        usuarioId: number | undefined;
+  const podeEditar = computed(() => 
+    props.tipoUsuario === 'CLIENTE' && clienteId.value === props.demanda.clienteId
+  );
+
+  const podeEnviarProposta = computed(() => 
+    props.tipoUsuario === 'PRESTADOR'
+  );
+
+  onMounted(async () => {
+    try {
+        clienteId.value = await findClienteIdByUsuarioId(props.usuarioId);
+    }catch (error) {
+        console.error('Erro ao buscar clienteId:', error);
     }
-
-    const props = defineProps<Props>();
-  onMounted(() => {
-  console.log(props.demanda);
-  console.log(props.demanda.clienteId);
-  console.log(props.usuarioId);
-});
+  });
 
 </script>
 
@@ -38,21 +53,20 @@ import { onMounted } from 'vue';
 
     <v-card-actions>
       <v-btn
-        v-if="props.tipoUsuario === 'CLIENTE' && Number(props.usuarioId) === Number(props.demanda.clienteId)"
-        color="primary"
-        @click="$emit('editar', props.demanda)"
-      >
-        Editar Demanda
-      </v-btn>
+            v-if="podeEditar"
+            color="primary"
+            @click="$emit('editar', props.demanda)"
+          >
+            Editar Demanda
+          </v-btn>
 
-      <v-btn
-        v-else-if="props.tipoUsuario === 'PRESTADOR'"
-        color="success"
-        @click="$emit('proposta', props.demanda)"
-      >
-        Enviar Proposta
-      </v-btn>
-
+          <v-btn
+            v-else-if="podeEnviarProposta"
+            color="success"
+            @click="$emit('proposta', props.demanda)"
+          >
+            Enviar Proposta
+        </v-btn>
       <v-spacer></v-spacer>
 
       <v-btn text color="red" @click="$emit('fechar')">

@@ -13,6 +13,10 @@ export interface LoginUsuarioInterface{
     email: string;
     senha: string;
 }
+export interface ClienteResponseInterface{
+    id:number;
+    usuario: UsuarioResponseInterface;
+}
 
 export interface UsuarioResponseInterface{
     id:number;

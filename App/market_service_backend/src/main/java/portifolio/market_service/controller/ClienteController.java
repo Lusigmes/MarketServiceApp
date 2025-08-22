@@ -39,6 +39,14 @@ public class ClienteController {
         List<ClienteResponseDTO>  clientesDTO = clienteService.findAllClientes();
         return ResponseEntity.ok(clientesDTO);
     }
+    
+    @CrossOrigin
+    @GetMapping("/usuario/{usuarioId}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<Long> findClienteIdByUsuarioId(@PathVariable("usuarioId") long usuarioId){
+        return ResponseEntity.ok(clienteService.findClienteIdByUsuarioId(usuarioId));
+    }
+
 
     @CrossOrigin
     @DeleteMapping(value = "/{id}")

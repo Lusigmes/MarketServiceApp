@@ -2,9 +2,11 @@
   import { computed } from 'vue';
   import { itemListaDashboard, itemListaDashboardDemandas, itemListaDashboardPrestadores } from '@/api/itemService';
   import { useRoute } from 'vue-router';
+  import { useAuth } from '@/composables/useAuth';
 
+  const { usuario } = useAuth();
   const route = useRoute();
-  
+
   const breadcrumbMap: Record<string, () => any[]> = {
     '/dashboard': itemListaDashboard,
     '/dashboard/demandas': itemListaDashboardDemandas,
@@ -37,7 +39,10 @@
     <v-row class="mt-4" dense>
       <v-col cols="12">
         <v-card class="pa-6" outlined elevation="3" style="min-height: 400px;">
-          <router-view />
+          <router-view
+           :usuario="usuario"
+           :usuario-id="usuario?.id" 
+           :tipo-usuario="(usuario?.tipoUsuario ?? 'CLIENTE') as 'CLIENTE' | 'PRESTADOR'" />
         </v-card>
       </v-col>
     </v-row>

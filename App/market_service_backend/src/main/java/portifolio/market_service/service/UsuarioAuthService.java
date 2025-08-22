@@ -9,13 +9,11 @@ import org.springframework.stereotype.Service;
 import lombok.AllArgsConstructor;
 import portifolio.market_service.dto.LoginUsuarioDTO;
 import portifolio.market_service.model.entity.Usuario;
-import portifolio.market_service.repository.UsuarioRepository;
 
 @Service
 @AllArgsConstructor
 public class UsuarioAuthService {
 
-    private final UsuarioRepository usuarioRepository;
     private final AuthenticationManager authManager;
 
     public Usuario logarUsuario(LoginUsuarioDTO dto){

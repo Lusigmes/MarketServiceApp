@@ -5,3 +5,4 @@
     3.1.  verificar antes e após integração;
     3.2. analisar e entender onde os disparos de consulta 
         acontecem no login;
+4. ajustar controle de status da demanda (e das demais classes com status)

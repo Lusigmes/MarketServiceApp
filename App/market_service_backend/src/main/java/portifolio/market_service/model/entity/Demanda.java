@@ -59,15 +59,15 @@ public class Demanda implements Serializable{
     @Column(nullable=false)
     private String localizacao;
 
-    @Column(nullable=false)
+    @Column
     private LocalDate prazo;
     
     @Column(name = "status_demanda", nullable = false)
     @Enumerated(EnumType.STRING)
-    private StatusDemanda statusDemanda = StatusDemanda.ABERTA;
+    private StatusDemanda statusDemanda;
     
     @Enumerated(EnumType.STRING)
-    @Column(name = "prioridade_demanda", nullable = false)
+    @Column(name = "prioridade_demanda")
     private PrioridadeDemanda prioridade;
     
     @CreationTimestamp
@@ -104,6 +104,9 @@ public class Demanda implements Serializable{
 
     public Long getClienteId(){
         return this.getCliente().getId();
+    }
+    public Long getClienteUsuarioId(){
+        return this.getCliente().getUsuario().getId();
     }
     
 

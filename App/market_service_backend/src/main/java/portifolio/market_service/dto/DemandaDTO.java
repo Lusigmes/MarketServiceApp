@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import portifolio.market_service.model.enums.PrioridadeDemanda;
+import portifolio.market_service.model.enums.StatusDemanda;
 
 public record DemandaDTO(
   
@@ -26,12 +27,10 @@ public record DemandaDTO(
     @NotNull(message="Prazo obrigatório")
     LocalDate prazo,
     
-    @NotBlank(message="ID do cliente obrigatório")
-    String statusDemanda,
+    StatusDemanda statusDemanda,
     
     BigDecimal orcamentoEstimado,
     
-    @NotNull(message="Prioridade obrigatória")
     PrioridadeDemanda prioridade,
     
     @NotNull(message="ID do cliente obrigatório")

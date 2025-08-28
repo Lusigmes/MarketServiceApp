@@ -1,9 +1,15 @@
 import type { DemandaResponseInterface } from "@/types";
 import httpConnect from "./connect/connect";
 
-export const carregarDemandas = async () => {
+export const carregarDemandas = async (page = 0, size = 8, sort = 'dataCriacaoDemanda,DESC') => {
     try {
-        const { data } = await httpConnect.get("/demandas");
+        const { data } = await httpConnect.get("/demandas",{
+            params:{
+                page,
+                size:9,
+                sort
+            }
+        });
         return data;
     } catch (error) {
         console.error("Erro: ", error)

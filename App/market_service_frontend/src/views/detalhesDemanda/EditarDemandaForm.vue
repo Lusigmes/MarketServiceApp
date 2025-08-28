@@ -2,6 +2,7 @@
 import { atualizarDemanda } from '@/api/DemandaService';
 import type { DemandaResponseInterface } from '@/types';
 import { PrioridadeDemanda, StatusDemanda } from '@/types/enums';
+import { labelPrioridade } from '@/utils/demandaLabels';
 import { onMounted, reactive, ref } from 'vue';
 import * as yup from 'yup';
 
@@ -41,9 +42,7 @@ import * as yup from 'yup';
       .required(),
     orcamentoEstimado: yup.number().min(0, 'Orçamento deve ser positivo').required(),
   });
-//  prioridade: yup.mixed<PrioridadeDemanda>().oneOf(Object.values(PrioridadeDemanda)).required(),
-//  statusDemanda: yup.mixed<StatusDemanda>().oneOf(Object.values(StatusDemanda)).required(),
-  
+
   const validarForm = async () => {
     try {
       await schema.validate(form, {abortEarly:false});
@@ -59,7 +58,7 @@ import * as yup from 'yup';
       }
       return false;
     }
-  }
+  };
 
   const salvar = async () => {
     const valido = await validarForm();
@@ -83,7 +82,7 @@ import * as yup from 'yup';
       <v-text-field v-model="form.categoria" label="Categoria" :error-messages="errors.categoria" />
       <v-text-field v-model="form.localizacao" label="Localização" :error-messages="errors.localizacao" />
       <v-text-field v-model="form.prazo" label="Prazo" type="date" :error-messages="errors.prazo" />
-      <v-select v-model="form.prioridade" :items="Object.values(PrioridadeDemanda)" label="Prioridade" :error-messages="errors.prioridade" />
+      <v-select v-model="form.prioridade" :items="Object.values(PrioridadeDemanda).map(p => ({ text: labelPrioridade(p), value: p }))" item-title="text" item-value="value" label="Urgência" :error-messages="errors.prioridade" />
       <v-text-field v-model="form.orcamentoEstimado" label="Orçamento Estimado" type="number" :error-messages="errors.orcamentoEstimado" />
     </v-card-text>
     <v-card-actions class="d-flex justify-end">

@@ -1,12 +1,12 @@
 export enum StatusDemanda {
-    ABERTA,
-    EM_ANDAMENTO,
-    CONCLUIDA,
-    CANCELADA
+  ABERTA = 'ABERTA',
+  EM_ANDAMENTO = 'EM_ANDAMENTO',
+  CONCLUIDA = 'CONCLUIDA',
+  CANCELADA = 'CANCELADA',
 }
 
 export enum PrioridadeDemanda {
-    BAIXA,
-    MEDIA,
-    ALTA
+  BAIXA = 'BAIXA',
+  MEDIA = 'MEDIA',
+  ALTA = 'ALTA',
 }

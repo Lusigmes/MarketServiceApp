@@ -6,3 +6,5 @@
     3.2. analisar e entender onde os disparos de consulta 
         acontecem no login;
 4. ajustar controle de status da demanda (e das demais classes com status)
+5. prestar atenção nos consoles.log e sysouts
+6. mostrar localização da demanda somente se o cliente aceitar a proposta da mesma demanda.

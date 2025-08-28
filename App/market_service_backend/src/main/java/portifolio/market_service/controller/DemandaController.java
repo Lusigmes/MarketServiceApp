@@ -1,6 +1,7 @@
 package portifolio.market_service.controller;
 
-import java.util.List;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -33,10 +34,16 @@ public class DemandaController {
     @Autowired
     private DemandaService demandaService;
 
+    // @CrossOrigin
+    // @GetMapping
+    // public ResponseEntity<List<DemandaResponseDTO>> findAll() {
+    //     return ResponseEntity.ok(demandaService.listar());
+    // }
+
     @CrossOrigin
     @GetMapping
-    public ResponseEntity<List<DemandaResponseDTO>> findAll() {
-        return ResponseEntity.ok(demandaService.listar());
+    public ResponseEntity<Page<DemandaResponseDTO>> findAllPaginado(Pageable pageable) {
+        return ResponseEntity.ok(demandaService.listarPaginado(pageable));
     }
 
     @CrossOrigin

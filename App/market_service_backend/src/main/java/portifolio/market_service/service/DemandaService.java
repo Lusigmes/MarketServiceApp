@@ -3,6 +3,8 @@ package portifolio.market_service.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,6 +51,10 @@ public class DemandaService {
             .stream().map(this::responseToDTO)
             .toList();
     }
+    public Page<DemandaResponseDTO> listarPaginado(Pageable pageable){
+        return demandaRepository.findAll(pageable)
+            .map(this::responseToDTO);
+    }
 
     public DemandaResponseDTO responseToDTO(Demanda demanda){
         return new DemandaResponseDTO(
@@ -66,7 +72,6 @@ public class DemandaService {
             demanda.getClienteId()
         );
     }
-    // criar atualização de demanda
 
     public Demanda atualizar(long id, DemandaUpdateDTO dto, long clienteId){
         Demanda demanda = demandaRepository.findDemandaByIdWithClienteAndUsuario(id);
@@ -124,4 +129,20 @@ public class DemandaService {
             case CONCLUIDA, CANCELADA -> throw new IllegalArgumentException("Demanda já finalizada.");
         }       
     }
+    // public Demanda atualizarStatus(long id, StatusDemanda novoStatus, long clienteId) {
+    //     Demanda demanda = demandaRepository.findDemandaByIdWithClienteAndUsuario(id);
+
+    //     if (demanda == null) {
+    //         throw new EntityNotFoundException("Demanda não encontrada com id: " + id);
+    //     }
+
+    //     if (!demanda.getClienteId().equals(clienteId)) {
+    //         throw new SecurityException("Você não tem permissão para alterar o status desta demanda");
+    //     }
+
+    //     regraStatusDemanda(demanda.getStatusDemanda(), novoStatus);
+    //     demanda.setStatusDemanda(novoStatus);
+
+    //     return demandaRepository.save(demanda);
+    // }
 }

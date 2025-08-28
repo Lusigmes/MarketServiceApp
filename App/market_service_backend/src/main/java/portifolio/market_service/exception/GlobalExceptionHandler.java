@@ -3,6 +3,7 @@ package portifolio.market_service.exception;
 import java.time.Instant;
 
 import org.hibernate.LazyInitializationException;
+import org.springframework.aop.AopInvocationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
@@ -66,6 +67,9 @@ public class GlobalExceptionHandler {
             problem = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), "Erro: " + ex.getMessage());
         
         } else if (ex instanceof SecurityException) {
+            problem = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), "Erro: " + ex.getMessage());
+        
+        } else if (ex instanceof AopInvocationException) {
             problem = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), "Erro: " + ex.getMessage());
 
         } else {

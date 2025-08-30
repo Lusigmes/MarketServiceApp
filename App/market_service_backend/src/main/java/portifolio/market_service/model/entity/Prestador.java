@@ -1,5 +1,7 @@
 package portifolio.market_service.model.entity;
 
+import java.io.Serializable;
+
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
@@ -21,7 +23,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Entity
 @Table(name="prestador")
-public class Prestador {
+public class Prestador implements Serializable{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column

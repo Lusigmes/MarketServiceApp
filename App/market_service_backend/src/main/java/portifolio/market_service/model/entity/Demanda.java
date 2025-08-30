@@ -25,6 +25,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -40,8 +41,6 @@ import portifolio.market_service.model.enums.StatusDemanda;
 @NoArgsConstructor
 @Table(name="demanda")
 public class Demanda implements Serializable{
-    // Campos: ID, descrição, categoria, prazo, localização, status (enum), cliente (FK).
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column
@@ -90,6 +89,10 @@ public class Demanda implements Serializable{
     @OneToMany(mappedBy="demanda", cascade=CascadeType.ALL, orphanRemoval=true )
     @JsonManagedReference
     private List<Proposta> propostas = new ArrayList<>();
+    
+    @OneToOne
+    @JoinColumn(name="proposta_aceita_id")
+    private Proposta propostaAceita;
 
     @PrePersist
     public void prePersist(){

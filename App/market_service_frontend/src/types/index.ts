@@ -1,4 +1,4 @@
-import type { PrioridadeDemanda, StatusDemanda } from "./enums";
+import type { PrioridadeDemanda, StatusDemanda, StatusProposta } from "./enums";
 
 // registro e login de usuario
 export interface RegistroUsuarioInterface{
@@ -50,4 +50,17 @@ export interface DemandaResponseInterface{
     dataCriacao: string;
     ultimaAtualizacao: string;
     clienteId: number | null;
+    propostaAceitaId: number | null;
+}
+
+export interface PropostaResponseInterface{
+    id: number,
+     titulo: string,
+     preco: number,
+     comentario: string,
+     statusProposta: StatusProposta,
+     dataCriacao: string,
+     dataAtualizacao: string,
+     demandaId: number,
+     prestadorId: number
 }

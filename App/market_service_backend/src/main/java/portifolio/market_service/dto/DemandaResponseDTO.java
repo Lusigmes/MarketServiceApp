@@ -10,7 +10,7 @@ import portifolio.market_service.model.enums.PrioridadeDemanda;
 import portifolio.market_service.model.enums.StatusDemanda;
 
 public record DemandaResponseDTO(
-    Long id,
+    long id,
     String titulo,
     String descricao,
     String categoria,
@@ -24,6 +24,8 @@ public record DemandaResponseDTO(
     LocalDateTime dataCriacao,
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     LocalDateTime ultimaAtualizacao,
-    Long clienteId
+    long clienteId,
+    long propostaAceitaId
+    
 ) 
 {}

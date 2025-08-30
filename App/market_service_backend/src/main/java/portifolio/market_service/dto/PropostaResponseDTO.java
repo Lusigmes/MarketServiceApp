@@ -17,7 +17,7 @@ public record PropostaResponseDTO(
     LocalDateTime dataCriacao,
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     LocalDateTime dataAtualizacao,
-    Long demandaId,
-    Long prestadorId
+    long demandaId,
+    long prestadorId
 ) 
 {   }

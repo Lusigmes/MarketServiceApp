@@ -1,5 +1,6 @@
 package portifolio.market_service.model.entity;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -32,8 +33,7 @@ import portifolio.market_service.model.enums.StatusProposta;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name="proposta")
-public class Proposta {
-    // Campos: ID, preço, comentário, status (enum), demanda (FK), prestador (FK).
+public class Proposta implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column
@@ -86,6 +86,7 @@ public class Proposta {
     public Long getPrestadorId(){
         return this.getPrestador().getId();
     }
+    
     public Long getDemandaId(){
         return this.getDemanda().getId();
     }

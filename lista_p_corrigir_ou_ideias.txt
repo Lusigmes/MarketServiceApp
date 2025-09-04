@@ -8,3 +8,5 @@
 4. ajustar controle de status da demanda (e das demais classes com status)
 5. prestar atenção nos consoles.log e sysouts
 6. mostrar localização da demanda somente se o cliente aceitar a proposta da mesma demanda.
+7. criar notificações para comunicar ações entre usuarios.
+    7.1. criar bate-papo pós proposta aceita

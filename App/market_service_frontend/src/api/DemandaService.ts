@@ -22,8 +22,8 @@ export const criarDemanda = async ( demanda: Partial<DemandaResponseInterface>) 
     return data;
 }
 
-export const atualizarDemanda = async ( id: number, demanda: Partial<DemandaResponseInterface>, clienteId: number | null) => {
-    const { data } = await httpConnect.put(`/demandas/${id}?clienteId=${clienteId}`, demanda);
+export const atualizarDemanda = async ( idDemanda: number, demanda: Partial<DemandaResponseInterface>, clienteId: number | null) => {
+    const { data } = await httpConnect.put(`/demandas/${idDemanda}?clienteId=${clienteId}`, demanda);
     return data;
 }
 

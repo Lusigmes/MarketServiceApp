@@ -17,7 +17,8 @@ public record DemandaUpdateDTO(
     LocalDate prazo,
     BigDecimal orcamentoEstimado,
     PrioridadeDemanda prioridade,
-    StatusDemanda statusDemanda
+    StatusDemanda statusDemanda,
+    Long propostaAceitaId
 
 ) {
     

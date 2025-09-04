@@ -14,9 +14,11 @@ import portifolio.market_service.dto.DemandaResponseDTO;
 import portifolio.market_service.dto.DemandaUpdateDTO;
 import portifolio.market_service.model.entity.Cliente;
 import portifolio.market_service.model.entity.Demanda;
+import portifolio.market_service.model.entity.Proposta;
 import portifolio.market_service.model.enums.StatusDemanda;
 import portifolio.market_service.repository.ClienteRepository;
 import portifolio.market_service.repository.DemandaRepository;
+import portifolio.market_service.repository.PropostaRepository;
 
 @Service
 public class DemandaService {
@@ -25,6 +27,8 @@ public class DemandaService {
     
     @Autowired
     private ClienteRepository clienteRepository;
+    @Autowired
+    private PropostaRepository propostaRepository;
     
     @Transactional
     public Demanda salvar(DemandaDTO dto){
@@ -51,6 +55,7 @@ public class DemandaService {
             .stream().map(this::responseToDTO)
             .toList();
     }
+    
     public Page<DemandaResponseDTO> listarPaginado(Pageable pageable){
         return demandaRepository.findAll(pageable)
             .map(this::responseToDTO);
@@ -69,7 +74,8 @@ public class DemandaService {
             demanda.getStatusDemanda(),
             demanda.getDataCriacaoDemanda(),
             demanda.getUltimaAtualizacao(),
-            demanda.getClienteId()
+            demanda.getClienteId(),
+            demanda.getPropostaAceitaId()
         );
     }
 
@@ -79,12 +85,6 @@ public class DemandaService {
         if (demanda == null) {
             throw new EntityNotFoundException("Demanda não encontrada com id: " + id);
         }
-        System.out.println("clienteId recebido: " + clienteId);
-        System.out.println("demanda.getClienteUsuarioId(): " + demanda.getClienteUsuarioId());
-        System.out.println("demanda.getCliente().getId(): " + demanda.getCliente().getId());
-        System.out.println("****************************************************");
-        System.out.println("demanda.getStatusDemanda " + demanda.getStatusDemanda());
-        System.out.println("ddto.statusDemanda() " +dto.statusDemanda());
         
         if(!demanda.getClienteId().equals(clienteId)){
             throw new SecurityException("Você não tem permissão para atualizar esta demanda");
@@ -104,6 +104,12 @@ public class DemandaService {
             demanda.setStatusDemanda(dto.statusDemanda());
         }
 
+        if(dto.propostaAceitaId() != null) {
+            Proposta propostaAceita = propostaRepository.findById(dto.propostaAceitaId())
+                .orElseThrow(() -> new EntityNotFoundException("Proposta não encontrada com id: " + dto.propostaAceitaId()));
+            demanda.setPropostaAceita(propostaAceita);
+        }
+        
         return demandaRepository.save(demanda);
     }
 

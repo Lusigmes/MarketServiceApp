@@ -2,7 +2,7 @@
 import { atualizarDemanda } from '@/api/DemandaService';
 import type { DemandaResponseInterface } from '@/types';
 import { PrioridadeDemanda, StatusDemanda } from '@/types/enums';
-import { labelPrioridade } from '@/utils/demandaLabels';
+import { labelPrioridade } from '@/utils/labelsUtils';
 import { onMounted, reactive, ref } from 'vue';
 import * as yup from 'yup';
 

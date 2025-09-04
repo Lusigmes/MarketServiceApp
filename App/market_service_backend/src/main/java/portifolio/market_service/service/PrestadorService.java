@@ -28,5 +28,9 @@ public class PrestadorService {
         return prestadorRepository.findAllWithUsuarioAndRelationPrestadors()
             .stream().map(this::toDTO).toList();
     }
+  
+    public long findClienteIdByUsuarioId(long usuarioId){
+        return prestadorRepository.findPrestadorIdByUsuarioId(usuarioId);
+    }
 
 }

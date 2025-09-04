@@ -50,4 +50,12 @@ public class PrestadorController {
         Prestador savedPrestadors = prestadorRepository.save(prestador);
         return new ResponseEntity<>(savedPrestadors, HttpStatus.CREATED);
     }
+
+    @CrossOrigin
+    @GetMapping("/usuario/{usuarioId}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<Long> findClienteIdByUsuarioId(@PathVariable("usuarioId") long usuarioId){
+        return ResponseEntity.ok(prestadorService.findClienteIdByUsuarioId(usuarioId));
+    }
+
 }

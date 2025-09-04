@@ -5,13 +5,16 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import jakarta.persistence.EntityNotFoundException;
 import portifolio.market_service.dto.PropostaDTO;
 import portifolio.market_service.dto.PropostaResponseDTO;
+import portifolio.market_service.dto.PropostaUpdateDTO;
 import portifolio.market_service.model.entity.Demanda;
 import portifolio.market_service.model.entity.Prestador;
 import portifolio.market_service.model.entity.Proposta;
+import portifolio.market_service.model.enums.StatusProposta;
 import portifolio.market_service.repository.DemandaRepository;
 import portifolio.market_service.repository.PrestadorRepository;
 import portifolio.market_service.repository.PropostaRepository;
@@ -51,6 +54,11 @@ public class PropostaService {
             .toList();
     }
     
+    public Page<PropostaResponseDTO> listarPaginado(Long demandaId, Pageable pageable){
+        return propostaRepository.findByDemanda_Id(demandaId, pageable)
+            .map(this::responseToDTO);
+    }
+
     public PropostaResponseDTO responseToDTO(Proposta proposta){
         return new PropostaResponseDTO(
             proposta.getId(),
@@ -64,4 +72,49 @@ public class PropostaService {
             proposta.getPrestadorId()
         );
     }
+
+    public Proposta atualizar(long id, PropostaUpdateDTO dto){
+        Proposta proposta = propostaRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Proposta não encontrada"));
+
+        if(dto.titulo() != null) proposta.setTitulo(dto.titulo());
+        if(dto.preco() != null) proposta.setPreco(dto.preco());
+        if(dto.comentario() != null) proposta.setComentario(dto.comentario());
+
+        if (dto.statusProposta() != null && dto.statusProposta() != proposta.getStatusProposta()) {
+            regraStatusProposta(proposta.getStatusProposta(), dto.statusProposta());
+            proposta.setStatusProposta(dto.statusProposta());
+        }
+
+        return propostaRepository.save(proposta);
+    }
+
+    private void regraStatusProposta(StatusProposta atual, StatusProposta novo) {
+    if (atual == null) {
+        if (novo != StatusProposta.PENDENTE) {
+            throw new IllegalArgumentException("Nova proposta deve iniciar com status PENDENTE");
+        }
+        return;
+    }
+
+    switch (atual) {
+        case PENDENTE -> {
+            if (!(novo == StatusProposta.ACEITA || novo == StatusProposta.RECUSADA)) {
+                throw new IllegalArgumentException(
+                    "Proposta PENDENTE só pode ir para ACEITA ou RECUSADA"
+                );
+            }
+        }
+        case ACEITA -> {
+            if (!(novo == StatusProposta.CONCLUIDA || novo == StatusProposta.CANCELADA)) {
+                throw new IllegalArgumentException(
+                    "Proposta ACEITA só pode ir para CONCLUIDA ou CANCELADA"
+                );
+            }
+        }
+        case RECUSADA, CONCLUIDA, CANCELADA ->
+            throw new IllegalArgumentException("Proposta já finalizada e não pode ser alterada");
+    }
+}
+
 }

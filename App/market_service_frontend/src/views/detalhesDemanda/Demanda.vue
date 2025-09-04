@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import type { DemandaResponseInterface } from '@/types';
+import type { DemandaResponseInterface, PropostaResponseInterface } from '@/types';
 import { computed, ref, onMounted } from 'vue';
 import EditarDemandaForm from './EditarDemandaForm.vue';
-import { corPrioridade, corStatus, labelPrioridade, labelStatus } from '@/utils/demandaLabels';
+import { corPrioridade, corStatus, labelPrioridade, labelStatus } from '@/utils/labelsUtils';
 import PropostasRecebidas from './PropostasRecebidas.vue';
+import { StatusDemanda, StatusProposta } from '@/types/enums';
+import { atualizarDemanda } from '@/api/DemandaService';
+import CriarPropostaForm from '../detalhesProposta/CriarPropostaForm.vue';
+import { atualizarProposta } from '@/api/PropostaService';
 
   interface Props {
     demanda: DemandaResponseInterface;
@@ -16,10 +20,10 @@ import PropostasRecebidas from './PropostasRecebidas.vue';
 
   const emit = defineEmits<{
     (e: 'atualizar-demanda', payload: Partial<DemandaResponseInterface>): void;
-    (e: 'proposta', payload: DemandaResponseInterface): void;
     (e: 'fechar'): void;
   }>();
 
+  const abaSelecionada = ref("detalhes"); 
 
   const permissaoClienteResponsavel = computed(() => 
     props.tipoUsuario === 'CLIENTE' && props.clienteId === props.demanda.clienteId
@@ -30,21 +34,57 @@ import PropostasRecebidas from './PropostasRecebidas.vue';
   );
 
   const editando = ref(false); 
-  
   const abrirFormEdicao = () => { editando.value = true; };
   const fecharFormEdicao = () => { editando.value = false; };
   
   const salvarEdicao = (demandaAtualizada: Partial<DemandaResponseInterface>) => {
     emit('atualizar-demanda', demandaAtualizada);
-    editando.value = false;
+    fecharFormEdicao();
   }
   
-  const abaSelecionada = ref("detalhes"); 
+  const formProposta = ref(false);
 
-  onMounted(async () => {
-    console.log("cliente no card", props.clienteId);
-    console.log("demanda no CARD", props.demanda.id);
-  });
+  const abrirFormProposta = () => {
+    formProposta.value = true;
+  };
+  
+  const fecharFormProposta = () => {
+    formProposta.value = false;
+  };
+  
+  const propostaCriada = () => {
+    fecharFormProposta();
+    console.log("Proposta criada");
+
+  }
+
+  const propostaAtualizadaRef = ref<PropostaResponseInterface | null>(null);
+
+  const atualizarDemandaAndPropostaAceita = async (proposta: PropostaResponseInterface) => {
+    
+    const demandaAtualizada = {
+      statusDemanda: StatusDemanda.EM_ANDAMENTO,
+      propostaAceitaId: proposta.id
+    };
+    await atualizarDemanda(props.demanda.id, demandaAtualizada, props.clienteId);
+    
+    const propostaAtualizada = {
+      statusProposta: StatusProposta.ACEITA
+    }
+    const propostaAtt = await atualizarProposta(proposta.id, propostaAtualizada);
+    
+    emit("atualizar-demanda", {...props.demanda, ...demandaAtualizada});
+    
+    propostaAtualizadaRef.value = propostaAtt;
+  };
+  
+  const recusarProposta = async (proposta: PropostaResponseInterface) => {
+    const propostaRecusada = {
+      statusProposta: StatusProposta.RECUSADA
+    };
+    const propostaAtt = await atualizarProposta(proposta.id, propostaRecusada);
+    propostaAtualizadaRef.value = propostaAtt;
+  };
 
 </script>
 
@@ -106,7 +146,7 @@ import PropostasRecebidas from './PropostasRecebidas.vue';
           <v-btn
             v-else-if="podeEnviarProposta"
             color="success"
-            @click="$emit('proposta', props.demanda)"
+            @click="abrirFormProposta"
           >
           Enviar Proposta
           </v-btn>
@@ -121,7 +161,7 @@ import PropostasRecebidas from './PropostasRecebidas.vue';
 
       <template v-else>
         <EditarDemandaForm
-        :demanda="props.demanda"
+          :demanda="props.demanda"
           :cliente-id="props.clienteId"
           @cancelar="fecharFormEdicao"
           @salvar="salvarEdicao"
@@ -130,8 +170,23 @@ import PropostasRecebidas from './PropostasRecebidas.vue';
       </v-window-item>
 
       <v-window-item value="propostas">
-        <PropostasRecebidas :demanda-id="props.demanda.id" @fechar="$emit('fechar')" />
+        <PropostasRecebidas
+          :demanda-id="props.demanda.id"
+          :proposta-atualizada-prop="propostaAtualizadaRef"
+          @fechar="$emit('fechar')"
+          @aceitar-proposta="atualizarDemandaAndPropostaAceita"
+          @recusar-proposta="recusarProposta"
+        />
       </v-window-item>
+
+    <v-dialog v-model="formProposta" max-width="600px">
+      <CriarPropostaForm
+        :usuario-id="props.usuarioId"
+        :demanda-id="props.demanda.id"
+        @cancelar="fecharFormProposta"
+        @criar-proposta="propostaCriada"
+      />
+    </v-dialog>
    </v-window>
   </v-card>
 </template>

@@ -4,7 +4,7 @@ import type { DemandaResponseInterface } from '@/types';
 import { PrioridadeDemanda, StatusDemanda } from '@/types/enums';
 import { criarDemanda } from '@/api/DemandaService';
 import * as yup from 'yup';
-import { labelPrioridade } from '@/utils/demandaLabels';
+import { labelPrioridade } from '@/utils/labelsUtils';
 
   interface Props {
     clienteId: number | null;

@@ -5,8 +5,8 @@ import { onMounted, ref } from 'vue';
 import Demanda from './detalhesDemanda/Demanda.vue';
 import CriarDemandaForm from './detalhesDemanda/CriarDemandaForm.vue';
 import { findClienteIdByUsuarioId } from '@/api/ClienteService';
-import { corStatus, corPrioridade } from '@/utils/demandaLabels';
-import { usePagination } from '@/composables/usePagination';
+import { corStatus, corPrioridade } from '@/utils/labelsUtils';
+import { useDemandaPagination } from '@/composables/usePagination';
 
   interface Props {
     usuario: any;
@@ -21,7 +21,7 @@ import { usePagination } from '@/composables/usePagination';
     items: demandas,
     page, totalPages,
     loading, atualizarPagina 
-  } = usePagination<DemandaResponseInterface>(carregarDemandas, 9);
+  } = useDemandaPagination<DemandaResponseInterface>(carregarDemandas, 9);
 
   const dialogDetalhe = ref(false);
   const demandaSelecionada = ref<DemandaResponseInterface | null>(null);
@@ -72,13 +72,13 @@ import { usePagination } from '@/composables/usePagination';
   <v-container>
     <v-row justify="end" class="mb-4 mr-1">
       <v-btn
-  color="primary"
-  prepend-icon="mdi-plus"
-  class="px-4"
-  @click="dialogCriacao = true"
->
-  Nova Demanda
-</v-btn>
+        color="primary"
+        prepend-icon="mdi-plus"
+        class="px-4"
+        @click="dialogCriacao = true"
+      >
+        Nova Demanda
+      </v-btn>
     </v-row>
 
     <v-row justify="center" v-if="loading">

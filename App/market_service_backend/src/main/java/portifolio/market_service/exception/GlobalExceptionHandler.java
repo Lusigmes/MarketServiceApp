@@ -54,26 +54,8 @@ public class GlobalExceptionHandler {
         } else if (ex instanceof UnexpectedTypeException) {
             problem = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), "Erro ao adicionar: " + ex.getMessage());
 
-        } else if (ex instanceof LazyInitializationException) {
-            problem = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), "Erro: " + ex.getMessage());
-        
-        } else if (ex instanceof MethodArgumentNotValidException) {
-            problem = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), "Erro: " + ex.getMessage());
-            
-        } else if (ex instanceof NoHandlerFoundException) {
-            problem = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), "Erro: " + ex.getMessage());
-        
-        } else if (ex instanceof HttpMessageNotReadableException) {
-            problem = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), "Erro: " + ex.getMessage());
-        
-        } else if (ex instanceof SecurityException) {
-            problem = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), "Erro: " + ex.getMessage());
-        
-        } else if (ex instanceof AopInvocationException) {
-            problem = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), "Erro: " + ex.getMessage());
-
         } else {
-            problem = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), "Erro interno desconhecido");
+            problem = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), "Erro interno desconhecido: "+ ex.getMessage());
         }
 
         // Adiciona timestamp e classe da exceção para facilitar debugging
@@ -82,12 +64,5 @@ public class GlobalExceptionHandler {
 
         return problem;
     }
-
-    // @ExceptionHandler(ConstraintViolationException.class)
-    // public ProblemDetail handleConstraintViolationException(ConstraintViolationException ex) {
-    //     ProblemDetail problem = 
-    //     problem.setProperty("timestamp", Instant.now().toString());
-    //     problem.setProperty("exception", ex.getClass().getSimpleName());
-    //     return problem;
 }
 

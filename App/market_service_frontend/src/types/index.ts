@@ -55,12 +55,12 @@ export interface DemandaResponseInterface{
 
 export interface PropostaResponseInterface{
     id: number,
-     titulo: string,
-     preco: number,
-     comentario: string,
-     statusProposta: StatusProposta,
-     dataCriacao: string,
-     dataAtualizacao: string,
-     demandaId: number,
-     prestadorId: number
+    titulo: string,
+    preco: number,
+    comentario: string,
+    statusProposta: StatusProposta,
+    dataCriacao: string,
+    dataAtualizacao: string,
+    demandaId: number,
+    prestadorId: number | null
 }

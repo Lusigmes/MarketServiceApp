@@ -14,6 +14,7 @@ export enum PrioridadeDemanda {
 export enum StatusProposta {
     PENDENTE = 'PENDENTE', //ENVIADA PELO PRESTADOR
     ACEITA = 'ACEITA',        // ACEITA PELO CLIENTE
+    CONCLUIDA = 'CONCLUIDA',
     RECUSADA = 'RECUSADA',        // RECUSADA PELO CLIENTE
     CANCELADA = 'CANCELADA'      //CANCELADA PELO PRESTADOR
 }

@@ -9,3 +9,10 @@ export const carregarPrestadores = async () => {
         throw error;
     }
 };
+
+
+
+export const findPrestadorIdByUsuarioId = async(usuarioId: number): Promise<number> => {
+    const {data} = await httpConnect.get<number>(`/prestadores/usuario/${usuarioId}`);
+    return data;
+};

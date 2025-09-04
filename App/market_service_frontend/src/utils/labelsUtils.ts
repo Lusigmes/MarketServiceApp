@@ -1,4 +1,4 @@
-import { StatusDemanda, PrioridadeDemanda } from "@/types/enums";
+import { StatusDemanda, PrioridadeDemanda, StatusProposta } from "@/types/enums";
 
 export const labelStatus = (status: StatusDemanda) => {
     switch(status){
@@ -39,5 +39,16 @@ export const corPrioridade = (prioridade: PrioridadeDemanda) => {
   }
 };
 
+export const corStatusProposta = (status: StatusProposta) => {
+  switch(status){
+
+    case StatusProposta.PENDENTE: return 'bg-blue-lighten-4';
+    case StatusProposta.ACEITA: return 'bg-amber-lighten-4';
+    case StatusProposta.CONCLUIDA: return 'bg-green-lighten-4';
+    case StatusProposta.RECUSADA: return 'bg-red-lighten-4';
+    case StatusProposta.CANCELADA: return 'bg-red-darken-4';
+    default: return 'bg-grey-lighten-3';
+  }
+}
 
 

@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { atualizarDemanda } from '@/api/DemandaService';
+import DataInput from '@/components/DataInput.vue';
 import type { DemandaResponseInterface } from '@/types';
-import { PrioridadeDemanda, StatusDemanda } from '@/types/enums';
+import { PrioridadeDemanda } from '@/types/enums';
+import { formatarDataBr } from '@/utils/dateUtils';
 import { labelPrioridade } from '@/utils/labelsUtils';
-import { onMounted, reactive, ref } from 'vue';
+import { onMounted, reactive } from 'vue';
 import * as yup from 'yup';
 
   interface Props {
@@ -63,8 +65,18 @@ import * as yup from 'yup';
   const salvar = async () => {
     const valido = await validarForm();
     if(!valido) return;
-    const demandaAtualizada = await atualizarDemanda(props.demanda.id, form, props.clienteId);
-    emit('salvar', { ...demandaAtualizada }); // ...props.demanda  / id: props.demanda.id 
+
+    const payload = {
+      ...form,
+      prazo: form.prazo ? formatarDataBr(form.prazo) : ''
+    };
+    try{
+      const demandaAtualizada = await atualizarDemanda(props.demanda.id, payload, props.clienteId);
+      emit('salvar', { ...demandaAtualizada }); // ...props.demanda  / id: props.demanda.id 
+    } catch (error) {
+      console.error("Erro ao atualizar:", error);
+    }
+ 
   };
 
     
@@ -81,7 +93,7 @@ import * as yup from 'yup';
       <v-textarea v-model="form.descricao" label="Descrição" :error-messages="errors.descricao" />
       <v-text-field v-model="form.categoria" label="Categoria" :error-messages="errors.categoria" />
       <v-text-field v-model="form.localizacao" label="Localização" :error-messages="errors.localizacao" />
-      <v-text-field v-model="form.prazo" label="Prazo" type="date" :error-messages="errors.prazo" />
+      <DataInput v-model="form.prazo" label="Prazo" :error-msg="errors.prazo" />
       <v-select v-model="form.prioridade" :items="Object.values(PrioridadeDemanda).map(p => ({ text: labelPrioridade(p), value: p }))" item-title="text" item-value="value" label="Urgência" :error-messages="errors.prioridade" />
       <v-text-field v-model="form.orcamentoEstimado" label="Orçamento Estimado" type="number" :error-messages="errors.orcamentoEstimado" />
     </v-card-text>

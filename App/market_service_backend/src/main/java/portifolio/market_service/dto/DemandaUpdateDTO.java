@@ -9,17 +9,16 @@ import portifolio.market_service.model.enums.PrioridadeDemanda;
 import portifolio.market_service.model.enums.StatusDemanda;
 
 public record DemandaUpdateDTO(
-    String titulo,
-    String descricao,
-    String categoria,
-    String localizacao,
-    @JsonFormat(pattern = "dd/MM/yyyy")
-    LocalDate prazo,
-    BigDecimal orcamentoEstimado,
-    PrioridadeDemanda prioridade,
-    StatusDemanda statusDemanda,
-    Long propostaAceitaId
+        String titulo,
+        String descricao,
+        String categoria,
+        String localizacao,
+        @JsonFormat(pattern = "dd/MM/yyyy")
+        LocalDate prazo,
+        BigDecimal orcamentoEstimado,
+        PrioridadeDemanda prioridade,
+        StatusDemanda statusDemanda,
+        Long propostaAceitaId
+        ) {
 
-) {
-    
 }

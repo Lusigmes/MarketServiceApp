@@ -43,6 +43,7 @@
           outlined 
           dense 
           class="mb-3" 
+          v-mask="'###.###.###-##'"
           :error-messages="errors.cpf"
         />
         
@@ -72,6 +73,7 @@
           outlined 
           dense 
           class="mb-3" 
+          v-mask="'#####-###'"
           :error-messages="errors.cep"
         />
 
@@ -124,10 +126,11 @@ import { validarCPF } from '@/utils/validarCPF';
       .max(100, 'Nome deve ter no máximo 100 caracteres'),
     cpf: yup.string()
       .required('CPF é obrigatório')
-      .matches(/^\d{11}$/, 'CPF deve conter exatamente 11 números')
+      .transform(value => value ? value.replace(/\D/g, '') : '') 
+      .length(11, 'CPF deve conter exatamente 11 números')
       .test('cpf-valido', 'CPF inválido', (value) => {
-        if (!value) return false;
-        return validarCPF(value); 
+        const resultado = validarCPF(value);
+        return resultado;
       }),
     email: yup.string()
       .required('E-mail é obrigatório')
@@ -136,19 +139,26 @@ import { validarCPF } from '@/utils/validarCPF';
     .required('Senha é obrigatória')
     .min(6, 'Senha deve ter pelo menos 6 caracteres'),
     cep: yup.string()
+      .transform(value => value.replace(/\D/g, ''))
       .required('CEP é obrigatório')
-      .matches(/^\d{8}$/, 'CEP deve conter exatamente 8 números'),
+      .length(8, 'CEP deve conter exatamente 8 números'),
     tipoUsuario: yup.string()
      .required('Tipo de usuário é obrigatório')
       .oneOf(['CLIENTE', 'PRESTADOR'], 'Tipo de usuário deve ser CLIENTE ou PRESTADOR')
   });
 
   async function registrarUsuario(){
-    const valido = await validarForm();
-    if(!valido) return;
-
+    
     try {
-      await registro(usuario);
+      const usuarioParaEnviar = {
+        ...usuario,
+        cpf: usuario.cpf.replace(/\D/g, ''),
+        cep: usuario.cep.replace(/\D/g, ''),
+      };
+      const valido = await validarForm();
+      if(!valido) return;
+
+      await registro(usuarioParaEnviar);
       alert("Registro realizado com sucesso!");
       router.push("/dashboard")
     } catch (error) {
@@ -161,15 +171,11 @@ import { validarCPF } from '@/utils/validarCPF';
     try {
       await schema.validate(usuario, { abortEarly: false });
     
-      Object.keys(errors).forEach(key => {
-        errors[key as keyof typeof errors] = '';
-      });
+      Object.keys(errors).forEach(key => { errors[key as keyof typeof errors] = ''; });
       return true;
     } catch (erro: any) {
-      Object.keys(errors).forEach(key => {
-        errors[key as keyof typeof errors] = '';
-      });
-         // Preenche os erros específicos
+      Object.keys(errors).forEach(key => { errors[key as keyof typeof errors] = ''; });
+      
       if (erro.inner) {
         erro.inner.forEach((e: yup.ValidationError) => {
           const field = e.path as keyof typeof errors;

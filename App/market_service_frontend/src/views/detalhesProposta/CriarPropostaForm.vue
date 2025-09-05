@@ -68,7 +68,7 @@ import { criarProposta } from '@/api/PropostaService';
         }
     };
 
-    watch(prestadorId, (idAtualizado) => { form.prestadorId = idAtualizado ?? null; console.log("ATT",idAtualizado) });
+    watch(prestadorId, (prestadorIdAtualizado) => { form.prestadorId = prestadorIdAtualizado ?? null; console.log("ATT",prestadorIdAtualizado) });
 
     onMounted(async ()=>{
         prestadorId.value = await findPrestadorIdByUsuarioId(props.usuarioId)

@@ -61,31 +61,79 @@ import { atualizarProposta } from '@/api/PropostaService';
   const propostaAtualizadaRef = ref<PropostaResponseInterface | null>(null);
 
   const atualizarDemandaAndPropostaAceita = async (proposta: PropostaResponseInterface) => {
-    
-    const demandaAtualizada = {
+    try {
+      if (props.demanda.propostaAceitaId && props.demanda.propostaAceitaId !== proposta.id) {
+        alert("Já existe uma proposta aceita. Desfaça antes de aceitar outra.");
+        return;
+      }
+      const demandaAtualizada = {
       statusDemanda: StatusDemanda.EM_ANDAMENTO,
       propostaAceitaId: proposta.id
-    };
-    await atualizarDemanda(props.demanda.id, demandaAtualizada, props.clienteId);
+      };
+      await atualizarDemanda(props.demanda.id, demandaAtualizada, props.clienteId);
     
-    const propostaAtualizada = {
-      statusProposta: StatusProposta.ACEITA
+      const propostaAtualizada = {
+        statusProposta: StatusProposta.ACEITA
+      }
+      const propostaAtt = await atualizarProposta(proposta.id, propostaAtualizada);
+      
+      propostaAtualizadaRef.value = propostaAtt;
+      
+      emit("atualizar-demanda", {...props.demanda, ...demandaAtualizada});
+    } catch (err: any) {
+      if (err.response?.data?.message?.includes("Já existe uma proposta ACEITA")) {
+        alert("Já existe uma proposta aceita. Desfaça antes de aceitar outra.");
+      } else {
+        console.error(err);
+        alert("Erro ao aceitar a proposta.");
+      }
     }
-    const propostaAtt = await atualizarProposta(proposta.id, propostaAtualizada);
-    
-    emit("atualizar-demanda", {...props.demanda, ...demandaAtualizada});
-    
-    propostaAtualizadaRef.value = propostaAtt;
+
   };
   
   const recusarProposta = async (proposta: PropostaResponseInterface) => {
-    const propostaRecusada = {
-      statusProposta: StatusProposta.RECUSADA
-    };
-    const propostaAtt = await atualizarProposta(proposta.id, propostaRecusada);
-    propostaAtualizadaRef.value = propostaAtt;
+    try {
+      const propostaRecusada = {
+        statusProposta: StatusProposta.RECUSADA
+      };
+      const propostaAtt = await atualizarProposta(proposta.id, propostaRecusada);
+      propostaAtualizadaRef.value = propostaAtt;   
+    } catch (err) { console.error(err); }
   };
 
+  const desfazerPropostaAceitaOrRecusada = async (proposta: PropostaResponseInterface) => {
+    try {
+      if(proposta.statusProposta === StatusProposta.ACEITA){
+        const desfazerDemandaEmAndamento = {
+          statusDemanda: StatusDemanda.ABERTA,
+          propostaAceitaId: null
+        };
+        await atualizarDemanda(props.demanda.id, desfazerDemandaEmAndamento, props.clienteId);
+        
+        const desfazerPropostaAceita = {
+          statusProposta: StatusProposta.PENDENTE
+        };
+        const propostaAttUndo = await atualizarProposta(proposta.id, desfazerPropostaAceita);
+        
+        propostaAtualizadaRef.value = propostaAttUndo;
+        emit("atualizar-demanda", {...props.demanda, ...desfazerDemandaEmAndamento});
+        
+      }else if(proposta.statusProposta === StatusProposta.CANCELADA || proposta.statusProposta === StatusProposta.RECUSADA){
+        
+        const desfazerPropostaRecusada = {
+          statusProposta: StatusProposta.PENDENTE
+        };
+        const propostaAttUndo = await atualizarProposta(proposta.id, desfazerPropostaRecusada);
+
+        propostaAtualizadaRef.value = propostaAttUndo;
+        
+      }
+    } catch (err) {
+        console.error(err);
+    }
+
+    
+  }
 </script>
 
 <template>
@@ -176,6 +224,7 @@ import { atualizarProposta } from '@/api/PropostaService';
           @fechar="$emit('fechar')"
           @aceitar-proposta="atualizarDemandaAndPropostaAceita"
           @recusar-proposta="recusarProposta"
+          @desfazer-proposta="desfazerPropostaAceitaOrRecusada"
         />
       </v-window-item>
 

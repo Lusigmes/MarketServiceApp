@@ -41,6 +41,14 @@ public class PropostaController {
         Pageable pageable){   
         return ResponseEntity.ok(propostaService.listarPaginado(demandaId, pageable));
     }
+
+    @CrossOrigin
+    @GetMapping(value = "/doPrestador")
+    public ResponseEntity<Page<PropostaResponseDTO>> listarPropostasdoPrestadorPaginado(
+        @RequestParam Long prestadorId, 
+        Pageable pageable){   
+        return ResponseEntity.ok(propostaService.listarDoPrestadorPaginado(prestadorId, pageable));
+    }
     
     @CrossOrigin
     @DeleteMapping(value = "/{id}")

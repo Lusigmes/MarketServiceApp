@@ -25,7 +25,12 @@ const routes = [
           path: 'prestadores',
           name: 'TodosPrestadores',
           component: () => import('@/views/ListaPrestadores.vue')
-        }
+        },
+        {
+          path: 'propostas',
+          name: 'TodasPropostasDoPrestador',
+          component: () => import('@/views/ListaPropostas.vue')
+        },
       ]
     }
 ]

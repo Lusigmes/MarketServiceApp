@@ -41,7 +41,6 @@ export const corPrioridade = (prioridade: PrioridadeDemanda) => {
 
 export const corStatusProposta = (status: StatusProposta) => {
   switch(status){
-
     case StatusProposta.PENDENTE: return 'bg-blue-lighten-4';
     case StatusProposta.ACEITA: return 'bg-amber-lighten-4';
     case StatusProposta.CONCLUIDA: return 'bg-green-lighten-4';

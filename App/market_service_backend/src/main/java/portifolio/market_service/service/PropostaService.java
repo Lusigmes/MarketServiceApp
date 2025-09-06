@@ -54,12 +54,16 @@ public class PropostaService {
                 .stream().map(this::responseToDTO)
                 .toList();
     }
-
+    // listar proposta para a demanda
     public Page<PropostaResponseDTO> listarPaginado(Long demandaId, Pageable pageable) {
         return propostaRepository.findByDemanda_Id(demandaId, pageable)
                 .map(this::responseToDTO);
     }
-
+    // listar proposta par o prestador
+    public Page<PropostaResponseDTO> listarDoPrestadorPaginado(Long prestadorId, Pageable pageable) {
+        return propostaRepository.findByPrestador_Id(prestadorId, pageable)
+                .map(this::responseToDTO);
+    }
     public PropostaResponseDTO responseToDTO(Proposta proposta) {
         return new PropostaResponseDTO(
                 proposta.getId(),

@@ -13,5 +13,7 @@ public interface PropostaRepository extends JpaRepository<Proposta, Long> {
 
     Page<Proposta> findByDemanda_Id(Long demandaId, Pageable pageable);
 
+    Page<Proposta> findByPrestador_Id(Long prestadorId, Pageable pageable);
+
     boolean existsByDemanda_IdAndStatusProposta(long demandaId, StatusProposta status);
 }

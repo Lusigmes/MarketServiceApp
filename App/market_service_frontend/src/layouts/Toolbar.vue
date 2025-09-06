@@ -7,33 +7,66 @@ const { usuario, logout } = useAuth();
 const router = useRouter();
 const menu = ref(false);
 
-const tabs = [
-  {
-    id: "telaInicial",
-    title: "Dashboard",
-    icon: 'mdi-view-dashboard',
-    route: '/dashboard'
-  },
-  {
-    id: "demandas", 
-    title: "Demandas",
-    icon: 'mdi-clipboard-list',
-    route: '/dashboard/demandas'
-  },
-  {
-    id: "prestadores",
-    title: "Prestadores", 
-    icon: 'mdi-account-group',
-    route: '/dashboard/prestadores'
+const tabs = computed(() => {
+  if (!usuario.value) return;
+
+  if (usuario.value?.tipoUsuario === "CLIENTE"){
+    return [
+      {
+        id: "telaInicial",
+        title: "Dashboard",
+        icon: 'mdi-view-dashboard',
+        route: '/dashboard'
+      },
+      {
+        id: "demandas", 
+        title: "Demandas",
+        icon: 'mdi-clipboard-list',
+        route: '/dashboard/demandas'
+      },
+      {
+        id: "prestadores",
+        title: "Prestadores", 
+        icon: 'mdi-account-group',
+        route: '/dashboard/prestadores'
+      }
+    ]
   }
-];
+
+  if (usuario.value?.tipoUsuario === "PRESTADOR"){
+    return [
+      {
+        id: "telaInicial",
+        title: "Dashboard",
+        icon: 'mdi-view-dashboard',
+        route: '/dashboard'
+      },
+      {
+        id: "demandas", 
+        title: "Demandas",
+        icon: 'mdi-clipboard-list',
+        route: '/dashboard/demandas'
+      },
+      {
+        id: "Propostas",
+        title: "Propostas", 
+        icon: 'mdi-account-group',
+        route: '/dashboard/propostas'
+      }
+    ]
+
+  }
+
+
+})
 
 const tabAtual = computed(() => {
   const currentRoute = router.currentRoute.value.path;
   if (currentRoute === '/dashboard') return 'telaInicial';
   if (currentRoute === '/dashboard/demandas') return 'demandas';
   if (currentRoute === '/dashboard/prestadores') return 'prestadores';
-  return '';
+  if (currentRoute === '/dashboard/propostas') return 'propostas';
+  
 });
 
 const estaLogado = computed(() => usuario.value);

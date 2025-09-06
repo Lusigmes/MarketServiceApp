@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { computed } from 'vue';
-  import { itemListaDashboard, itemListaDashboardDemandas, itemListaDashboardPrestadores } from '@/api/itemService';
+  import { itemListaDashboard, itemListaDashboardDemandas, itemListaDashboardPrestadores, itemListaDashboardPropostasDosPrestadores } from '@/api/itemService';
   import { useRoute } from 'vue-router';
   import { useAuth } from '@/composables/useAuth';
 
@@ -10,7 +10,8 @@
   const breadcrumbMap: Record<string, () => any[]> = {
     '/dashboard': itemListaDashboard,
     '/dashboard/demandas': itemListaDashboardDemandas,
-    '/dashboard/prestadores': itemListaDashboardPrestadores
+    '/dashboard/prestadores': itemListaDashboardPrestadores,
+    '/dashboard/propostas': itemListaDashboardPropostasDosPrestadores
   };
 
   const breadcrumbItems = computed(() =>

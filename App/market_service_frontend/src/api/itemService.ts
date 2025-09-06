@@ -38,3 +38,10 @@ export function itemListaDashboardPrestadores() {
     { title: 'Prestadores', disabled: true, href: '/dashboard/prestadores' }
   ];
 }
+
+export function itemListaDashboardPropostasDosPrestadores() {
+  return [
+    { title: 'Tela Inicial', disabled: true, href: '/dashboard' },
+    { title: 'Propostas', disabled: true, href: '/dashboard/propostas' }
+  ];
+}

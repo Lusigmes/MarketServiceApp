@@ -39,36 +39,37 @@ import portifolio.market_service.model.enums.StatusDemanda;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name="demanda")
-public class Demanda implements Serializable{
+@Table(name = "demanda")
+public class Demanda implements Serializable {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column
     private long id;
 
-    @Column(nullable=false,  length=100)
+    @Column(nullable = false, length = 100)
     private String titulo;
 
-    @Column(nullable=false,  columnDefinition = "TEXT")
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String descricao;
 
-    @Column(nullable=false)
+    @Column(nullable = false)
     private String categoria;
 
-    @Column(nullable=false)
+    @Column(nullable = false)
     private String localizacao;
 
     @Column
     private LocalDate prazo;
-    
+
     @Column(name = "status_demanda", nullable = false)
     @Enumerated(EnumType.STRING)
     private StatusDemanda statusDemanda;
-    
+
     @Enumerated(EnumType.STRING)
     @Column(name = "prioridade_demanda")
     private PrioridadeDemanda prioridade;
-    
+
     @CreationTimestamp
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     @Column(name = "data_criacao_demanda", nullable = false, updatable = false)
@@ -78,46 +79,48 @@ public class Demanda implements Serializable{
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     @Column(name = "ultima_atualizacao", nullable = false)
     private LocalDateTime ultimaAtualizacao;
-    
-    @Column(precision=10, scale=2)
+
+    @Column(precision = 10, scale = 2)
     private BigDecimal orcamentoEstimado;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cliente_id", nullable = false)
     private Cliente cliente;
 
-    @OneToMany(mappedBy="demanda", cascade=CascadeType.ALL, orphanRemoval=true )
+    @OneToMany(mappedBy = "demanda", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<Proposta> propostas = new ArrayList<>();
-    
+
     @OneToOne
-    @JoinColumn(name="proposta_aceita_id")
+    @JoinColumn(name = "proposta_aceita_id")
     private Proposta propostaAceita;
 
+    // @Column //nullable = false
+    // private boolean reaberta = false;
     @PrePersist
-    public void prePersist(){
+    public void prePersist() {
         this.dataCriacaoDemanda = LocalDateTime.now();
         this.ultimaAtualizacao = LocalDateTime.now();
     }
 
     @PreUpdate
-    public void preUpdate(){
+    public void preUpdate() {
         this.ultimaAtualizacao = LocalDateTime.now();
     }
 
-    public Long getClienteId(){
+    public Long getClienteId() {
         return this.getCliente().getId();
     }
-    public Long getClienteUsuarioId(){
+
+    public Long getClienteUsuarioId() {
         return this.getCliente().getUsuario().getId();
     }
-    public Long getPropostaAceitaId(){
-        if(this.propostaAceita == null){
+
+    public Long getPropostaAceitaId() {
+        if (this.propostaAceita == null) {
             return null;
         }
         return this.propostaAceita.getId();
     }
-    
 
 }
-

@@ -27,6 +27,9 @@ export const atualizarDemanda = async ( idDemanda: number, demanda: Partial<Dema
     return data;
 }
 
+export const getDemandaById = async (id:number) => {
+    return await httpConnect.get(`/demandas/${id}`); 
+}
 export const deletarDemanda = async (id:number) => {
     return await httpConnect.delete(`/demandas/${id}`); 
 }

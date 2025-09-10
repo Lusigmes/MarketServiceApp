@@ -1,4 +1,5 @@
 package portifolio.market_service.controller;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -40,6 +41,13 @@ public class PropostaController {
         @RequestParam Long demandaId, 
         Pageable pageable){   
         return ResponseEntity.ok(propostaService.listarPaginado(demandaId, pageable));
+    }
+    
+    @CrossOrigin
+    @GetMapping(value = "/daDemanda")
+    public ResponseEntity<List<PropostaResponseDTO>> listarTodosDaDemanda(
+        @RequestParam Long demandaId){   
+        return ResponseEntity.ok(propostaService.listarTodosDaDemanda(demandaId));
     }
 
     @CrossOrigin

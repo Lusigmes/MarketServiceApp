@@ -54,16 +54,24 @@ public class PropostaService {
                 .stream().map(this::responseToDTO)
                 .toList();
     }
+
     // listar proposta para a demanda
     public Page<PropostaResponseDTO> listarPaginado(Long demandaId, Pageable pageable) {
         return propostaRepository.findByDemanda_Id(demandaId, pageable)
                 .map(this::responseToDTO);
     }
+    public List<PropostaResponseDTO> listarTodosDaDemanda(Long demandaId) {
+        return propostaRepository.findByDemanda_Id(demandaId)
+            .stream().map(this::responseToDTO)
+            .toList();
+    }
+
     // listar proposta par o prestador
     public Page<PropostaResponseDTO> listarDoPrestadorPaginado(Long prestadorId, Pageable pageable) {
         return propostaRepository.findByPrestador_Id(prestadorId, pageable)
                 .map(this::responseToDTO);
     }
+
     public PropostaResponseDTO responseToDTO(Proposta proposta) {
         return new PropostaResponseDTO(
                 proposta.getId(),
@@ -112,48 +120,29 @@ public class PropostaService {
     }
 
     private void regraStatusProposta(StatusProposta atual, StatusProposta novo) {
-        if (atual == null) {
-            if (novo != StatusProposta.PENDENTE) {
-                throw new IllegalArgumentException("Nova proposta deve iniciar com status PENDENTE");
-            }
-            return;
-        }
-
         switch (atual) {
             case PENDENTE -> {
-                if (!(novo == StatusProposta.ACEITA || novo == StatusProposta.RECUSADA)) {
-                    throw new IllegalArgumentException(
-                            "Proposta PENDENTE só pode ir para ACEITA ou RECUSADA"
-                    );
+                if (!(novo == StatusProposta.ACEITA || novo == StatusProposta.RECUSADA || novo == StatusProposta.CANCELADA)) {
+                    throw new IllegalArgumentException("Proposta PENDENTE só pode ir para ACEITA, RECUSADA ou CANCELADA");
                 }
             }
             case ACEITA -> {
                 if (!(novo == StatusProposta.CONCLUIDA || novo == StatusProposta.CANCELADA || novo == StatusProposta.PENDENTE)) {
-                    throw new IllegalArgumentException(
-                            "Proposta ACEITA só pode ir para CONCLUIDA ou CANCELADA"
-                    );
+                    throw new IllegalArgumentException("Proposta ACEITA só pode ir para CONCLUIDA ou CANCELADA ou PENDENTE");
                 }
             }
             case RECUSADA -> {
                 if (novo != StatusProposta.PENDENTE) {
-                    throw new IllegalArgumentException(
-                            "Proposta RECUSADA só pode voltar para PENDENTE"
-                    );
-                }
-            }
-            case CONCLUIDA -> {
-                if (novo != StatusProposta.ACEITA) {
-                    throw new IllegalArgumentException(
-                            "Proposta CONCLUIDA só pode voltar para ACEITA"
-                    );
+                    throw new IllegalArgumentException("Proposta RECUSADA só pode voltar para PENDENTE");
                 }
             }
             case CANCELADA -> {
                 if (novo != StatusProposta.PENDENTE) {
-                    throw new IllegalArgumentException(
-                            "Proposta CANCELADA só pode voltar para PENDENTE"
-                    );
+                    throw new IllegalArgumentException("Proposta CANCELADA só pode voltar para PENDENTE");
                 }
+            }
+            case CONCLUIDA -> {
+                throw new IllegalArgumentException("Proposta CONCLUIDA é estado final e não pode ser alterada");
             }
         }
     }

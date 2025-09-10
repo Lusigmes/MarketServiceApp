@@ -45,6 +45,12 @@ public class DemandaController {
         demandaRepository.deleteById(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
+    @CrossOrigin
+    @GetMapping(value = "/{id}")
+    public ResponseEntity<Demanda> getById(@PathVariable(value = "id") long id) {
+        Demanda demanda = demandaService.buscarDemandaPorId(id);
+        return ResponseEntity.ok(demanda);
+    }
 
     @CrossOrigin
     @PostMapping

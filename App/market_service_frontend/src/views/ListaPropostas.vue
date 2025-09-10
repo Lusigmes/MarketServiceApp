@@ -6,38 +6,48 @@ import type { PropostaResponseInterface } from "@/types";
 import Proposta from "./detalhesProposta/Proposta.vue";
 import { corStatusProposta } from "@/utils/labelsUtils";
 
-interface Props {
-  usuario: any;
-  usuarioId: number;
-}
+  interface Props {
+    usuario: any;
+    usuarioId: number;
+    tipoUsuario: 'CLIENTE' | 'PRESTADOR';
+  }
 
-const props = defineProps<Props>();
+  const props = defineProps<Props>();
 
-const prestadorId = ref<number | null>(null);
+  const prestadorId = ref<number | null>(null);
 
-const propostas = ref<PropostaResponseInterface[]>([]);
-const page = ref(0);
-const totalPages = ref(0);
-const loading = ref(false);
+  const propostas = ref<PropostaResponseInterface[]>([]);
+  const page = ref(0);
+  const totalPages = ref(0);
+  const loading = ref(false);
 
-const dialogDetalhe = ref(false);
-const propostaSelecionada = ref<PropostaResponseInterface | null>(null);
-const propostaAtual = computed(() => propostaSelecionada.value);
+  const dialogDetalhe = ref(false);
+  const propostaSelecionada = ref<PropostaResponseInterface | null>(null);
+  
+  const propostaAtual = computed(() => propostaSelecionada.value);
 
-const abrirModalDetalhe = (proposta: PropostaResponseInterface) => {
-  propostaSelecionada.value = proposta;
-  dialogDetalhe.value = true;
-};
-const fecharModalDetalhe = () => {
-  dialogDetalhe.value = false;
-  propostaSelecionada.value = null;
-};
+  const abrirModalDetalhe = (proposta: PropostaResponseInterface) => {
+    propostaSelecionada.value = proposta;
+    dialogDetalhe.value = true;
+  };
+  const fecharModalDetalhe = () => {
+    dialogDetalhe.value = false;
+    propostaSelecionada.value = null;
+  };
+
+  const atualizarProposta = (p: Partial<PropostaResponseInterface>) => {
+    if (!p.id) return;
+    const index = propostas.value.findIndex(item => item.id === p.id);
+    if (index !== -1) propostas.value[index] = { ...propostas.value[index], ...p };
+    if (propostaSelecionada.value?.id === p.id)
+      propostaSelecionada.value = { ...propostas.value[index] };
+  };
 
 async function atualizarPagina(p: number = 0) {
   if (!prestadorId.value) return;
   loading.value = true;
   try {
-    const data = await carregarPropostasDoPrestador(prestadorId.value, p, 6, "dataCriacaoProposta,DESC");
+    const data = await carregarPropostasDoPrestador(prestadorId.value, p, 9, "dataCriacaoProposta,DESC");
     propostas.value = data.content;
     totalPages.value = data.totalPages;
     page.value = p;
@@ -114,8 +124,10 @@ onMounted(async () => {
       <Proposta
         v-if="propostaAtual"
         :prestador-id="prestadorId"
+        :tipo-usuario="props.tipoUsuario"
         :proposta="propostaAtual"
         @fechar="fecharModalDetalhe"
+        @atualizar-proposta="atualizarProposta"
       />
     </v-dialog>
   </v-container>

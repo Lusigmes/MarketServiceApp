@@ -61,7 +61,10 @@ public class DemandaService {
         return demandaRepository.findAll(pageable)
                 .map(this::responseToDTO);
     }
-
+    public Demanda buscarDemandaPorId(Long id) {
+        return demandaRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Demanda não encontrada"));
+    }
     public DemandaResponseDTO responseToDTO(Demanda demanda) {
         return new DemandaResponseDTO(
                 demanda.getId(),
@@ -147,8 +150,16 @@ public class DemandaService {
                     throw new IllegalArgumentException("Status EM_ANDAMENTO só pode ir para CONCLUIDA, CANCELADA ou ABERTA");
                 }
             }
-            case CONCLUIDA, CANCELADA ->
-                throw new IllegalArgumentException("Demanda já finalizada.");
+            case CANCELADA -> {
+                if (!(novo == StatusDemanda.ABERTA)) {
+                    throw new IllegalArgumentException("Status CANCELADA só pode ir para ABERTA");
+                }
+            }
+            case CONCLUIDA -> {
+                if (!(novo == StatusDemanda.ABERTA)) {
+                    throw new IllegalArgumentException("Status CONCLUIDA só pode ir para ABERTA");
+                }
+            }
         }
     }
 }

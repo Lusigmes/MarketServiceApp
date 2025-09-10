@@ -1,7 +1,7 @@
 import type { PropostaResponseInterface } from "@/types";
 import httpConnect from "./connect/connect";
 
-export const carregarPropostas = async (demandaId:number, page = 0, size = 5, sort = 'dataCriacaoProposta,DESC') => {
+export const carregarPropostasDaDemanda = async (demandaId:number, page = 0, size = 5, sort = 'dataCriacaoProposta,DESC') => {
     try {
         const { data } = await httpConnect.get("/propostas",{
             params:{
@@ -16,6 +16,22 @@ export const carregarPropostas = async (demandaId:number, page = 0, size = 5, so
         console.error("Erro: ", error)
         throw error;
     }
+};
+
+export const carregarTodasPropostasDaDemanda = async (demandaId: number) => {
+  try {
+    const { data } = await httpConnect.get("/propostas/daDemanda",{
+        params:{
+            demandaId
+        }
+    });
+
+    return data;
+
+  } catch (error) {
+    console.error("Erro ao carregar propostas da demanda:", error);
+    throw error;
+  }
 };
 
 export const carregarPropostasDoPrestador = async (prestadorId:number, page = 0, size = 10, sort = 'dataCriacaoProposta,DESC') => {

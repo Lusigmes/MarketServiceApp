@@ -3,14 +3,14 @@ import type { PropostaResponseInterface } from '@/types';
 import { computed, onMounted, ref, watch } from 'vue';
 import Proposta from '../detalhesProposta/Proposta.vue';
 import { corStatusProposta } from '@/utils/labelsUtils';
-import { carregarPropostas } from '@/api/PropostaService';
+import { carregarPropostasDaDemanda } from '@/api/PropostaService';
 import { usePropostaPagination } from '@/composables/usePagination';
-import { reactive } from 'vue';
 import { StatusProposta } from '@/types/enums';
 
   interface Props {
     demandaId: number;
     propostaAtualizadaProp: PropostaResponseInterface | null ;
+    recarregar?: number;
   }
 
   const props = defineProps<Props>();
@@ -27,7 +27,7 @@ import { StatusProposta } from '@/types/enums';
     page, totalPages,
     loading, atualizarPagina 
   } = usePropostaPagination<PropostaResponseInterface>(
-    carregarPropostas, props.demandaId, 5);
+    carregarPropostasDaDemanda, props.demandaId, 5);
   
   const propostaSelecionada = ref<PropostaResponseInterface | null>(null);
   const propostaAtual = computed(() => propostaSelecionada.value);
@@ -43,7 +43,6 @@ import { StatusProposta } from '@/types/enums';
     dialogDetalhe.value = false;
     propostaSelecionada.value = null;
   };
-
 
   const aceitarProposta = () => {
     if(!propostaAtual.value) return;
@@ -83,8 +82,15 @@ import { StatusProposta } from '@/types/enums';
       if (propostaListagemAtt) atualizarPropostaListagem(propostaListagemAtt);
     }
   );
+  watch(
+  () => props.recarregar,
+    async (novo) => {
+      if (novo && novo > 0){
+        await atualizarPagina();
+    }
+  });
 
-  onMounted(async () => {
+  onMounted(async () => {  
     await atualizarPagina();
   });
 </script>
@@ -126,7 +132,7 @@ import { StatusProposta } from '@/types/enums';
 
       <div v-else-if="propostaAtual">
         <v-card class="pa-3">
-          <Proposta :proposta="propostaAtual" />
+          <Proposta :proposta="propostaAtual"  />
 
           <v-card-actions>
             <template v-if="propostaAtual && propostaAtual.statusProposta === StatusProposta.PENDENTE">
@@ -134,7 +140,9 @@ import { StatusProposta } from '@/types/enums';
               <v-btn text color="red" @click="recusarProposta">Recusar</v-btn>
             </template>
 
-            <template v-else>
+            <template v-if="propostaAtual &&
+                            propostaAtual.statusProposta === StatusProposta.ACEITA ||
+                            propostaAtual.statusProposta === StatusProposta.RECUSADA ">
               <v-btn text color="orange" @click="desfazerProposta">Cancelar ação</v-btn>
             </template>
 

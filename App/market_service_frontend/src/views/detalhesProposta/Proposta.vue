@@ -56,16 +56,17 @@ import { getDemandaById } from '@/api/DemandaService';
         } catch (err) { console.error(err); }
     };
 
-    const verificarDemanda = ref(false);
 
     const desfazerAcao = async () => { 
         if (![StatusProposta.CANCELADA].includes(props.proposta.statusProposta)) return;       
         try {
             const demandaResponse = await getDemandaById(props.proposta.demandaId);
-            console.log(demandaResponse);
-
-
-
+            const demanda = demandaResponse.data;
+            if(demanda.statusDemanda === 'CANCELADA'){
+                alert("NÃO PODE DESFAZER, A DEMANDA ESTÁ CANCELADA");
+                return;
+            }
+            
             const propostaReativada = {
                 statusProposta: StatusProposta.PENDENTE
             };
@@ -133,7 +134,7 @@ import { getDemandaById } from '@/api/DemandaService';
                     color="success"
                     @click="desfazerAcao"
                 >
-                    Desfazer
+                    Reabrir
                 </v-btn>
                 
                 <v-btn

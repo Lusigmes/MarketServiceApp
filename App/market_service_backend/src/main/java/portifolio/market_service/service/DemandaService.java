@@ -62,8 +62,12 @@ public class DemandaService {
                 .map(this::responseToDTO);
     }
     public Demanda buscarDemandaPorId(Long id) {
-        return demandaRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Demanda não encontrada"));
+        Demanda demanda = demandaRepository.findDemandaById(id);
+
+        if (demanda == null) {
+            throw new EntityNotFoundException("Demanda não encontrada com id: " + id);
+        }
+        return demanda;
     }
     public DemandaResponseDTO responseToDTO(Demanda demanda) {
         return new DemandaResponseDTO(

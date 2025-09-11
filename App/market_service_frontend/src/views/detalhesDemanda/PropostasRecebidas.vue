@@ -5,12 +5,13 @@ import Proposta from '../detalhesProposta/Proposta.vue';
 import { corStatusProposta } from '@/utils/labelsUtils';
 import { carregarPropostasDaDemanda } from '@/api/PropostaService';
 import { usePropostaPagination } from '@/composables/usePagination';
-import { StatusProposta } from '@/types/enums';
+import { StatusProposta, StatusDemanda } from '@/types/enums';
 
   interface Props {
     demandaId: number;
     propostaAtualizadaProp: PropostaResponseInterface | null ;
     recarregar?: number;
+    statusDemanda?: StatusDemanda;
   }
 
   const props = defineProps<Props>();
@@ -143,7 +144,7 @@ import { StatusProposta } from '@/types/enums';
             <template v-if="propostaAtual &&
                             propostaAtual.statusProposta === StatusProposta.ACEITA ||
                             propostaAtual.statusProposta === StatusProposta.RECUSADA ">
-              <v-btn text color="orange" @click="desfazerProposta">Cancelar ação</v-btn>
+              <v-btn v-if="props.statusDemanda !== StatusDemanda.CANCELADA " text color="orange" @click="desfazerProposta">Cancelar ação</v-btn>
             </template>
 
             <v-spacer></v-spacer>

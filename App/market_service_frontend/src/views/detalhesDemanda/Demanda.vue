@@ -7,7 +7,7 @@ import PropostasRecebidas from './PropostasRecebidas.vue';
 import { StatusDemanda, StatusProposta } from '@/types/enums';
 import { atualizarDemanda } from '@/api/DemandaService';
 import CriarPropostaForm from '../detalhesProposta/CriarPropostaForm.vue';
-import { atualizarProposta, carregarTodasPropostasDaDemanda } from '@/api/PropostaService';
+import { atualizarProposta, carregarTodasPropostasDaDemanda, getPropostaById } from '@/api/PropostaService';
 
   interface Props {
     demanda: DemandaResponseInterface;
@@ -33,15 +33,6 @@ import { atualizarProposta, carregarTodasPropostasDaDemanda } from '@/api/Propos
     props.tipoUsuario === 'PRESTADOR' && props.demanda.statusDemanda === StatusDemanda.ABERTA
   );
 
-
-  const podeConcluirDemanda = computed(() => 
-    permissaoClienteResponsavel.value && 
-    props.demanda.statusDemanda === StatusDemanda.EM_ANDAMENTO &&
-    (props.demanda.propostaAceitaId === propostaAtualizadaRef.value?.id && 
-      propostaAtualizadaRef.value?.statusProposta === StatusProposta.CONCLUIDA) 
-    
-  );
-
   const podeCancelarDemanda = computed(() => 
     permissaoClienteResponsavel.value && 
     (props.demanda.statusDemanda === StatusDemanda.ABERTA || 
@@ -50,10 +41,19 @@ import { atualizarProposta, carregarTodasPropostasDaDemanda } from '@/api/Propos
 
   const podeDesfazerDemanda = computed(() => 
     permissaoClienteResponsavel.value && 
-    (props.demanda.statusDemanda === StatusDemanda.CONCLUIDA || 
-    props.demanda.statusDemanda === StatusDemanda.CANCELADA)
+    props.demanda.statusDemanda === StatusDemanda.CANCELADA
   );
 
+  const propostaAceitaEstaConcluida = computed(() =>
+    propostaAceita.value?.statusProposta === StatusProposta.CONCLUIDA
+  );
+
+  const podeConcluirDemanda = computed(() => 
+    permissaoClienteResponsavel.value && 
+    props.demanda.statusDemanda === StatusDemanda.EM_ANDAMENTO &&
+    propostaAceitaEstaConcluida.value
+  );
+  
 
   const editando = ref(false); 
   const abrirFormEdicao = () => { editando.value = true; };
@@ -155,20 +155,53 @@ import { atualizarProposta, carregarTodasPropostasDaDemanda } from '@/api/Propos
     }
   };
   
-  const concluirDemanda = async () => {
+  const propostaAceita = ref<PropostaResponseInterface | null>(null);
+  const carregandoPropostaAceita = ref(false);
+
+  const carregarPropostaAceita  = async () => {
+    if( !props.demanda.propostaAceitaId ){
+      propostaAceita.value = null; return;
+    }
+
+    carregandoPropostaAceita.value = true;
+
     try {
+      const response = await getPropostaById(props.demanda.propostaAceitaId!);
+      propostaAceita.value = response.data;
+    } catch (error) {
+      console.error("Erro ao carregar proposta aceita:", error);
+      propostaAceita.value = null;
+    } finally {
+      carregandoPropostaAceita.value = false;
+    }
+  };
+
+  const concluirDemanda = async () => {//RESOLVER AQUI
+
+    if (!propostaAceitaEstaConcluida.value) {
+      alert("Não é possível concluir a demanda. A proposta aceita não está concluída.");
+      return;
+    }
+    try {
+      
       const demandaAtualizada = {
-        statusDemanda: StatusDemanda.CONCLUIDA,
-        propostaAceitaId: null
+        statusDemanda: StatusDemanda.CONCLUIDA
+        // propostaAceitaId: null
       };
       await atualizarDemanda(props.demanda.id, demandaAtualizada, props.clienteId);
       
       emit("atualizar-demanda", {...props.demanda, ...demandaAtualizada});
-      
-    } catch (err) { console.error(err); }
+    } catch (err) { 
+      console.error("Erro ao concluir demanda:", err);
+      alert("Erro ao concluir demanda.");
+    }
   };
-  
-  const cancelarDemanda = async () => {
+    
+    const cancelarDemanda = async () => { //RESOLVER AQUI
+    if(props.demanda.statusDemanda === "EM_ANDAMENTO"){
+      alert("Não é possível cancelar uma demadna em andamento")
+      return;
+    }
     try {
       const demandaAtualizada = {
         statusDemanda: StatusDemanda.CANCELADA,
@@ -179,8 +212,11 @@ import { atualizarProposta, carregarTodasPropostasDaDemanda } from '@/api/Propos
       const propostasDaDemanda = await carregarTodasPropostasDaDemanda(props.demanda.id);
 
       for(const proposta of propostasDaDemanda){
-        if(proposta.statusProposta !== StatusProposta.CONCLUIDA){
-          await atualizarProposta(proposta.id, {statusProposta: StatusProposta.CANCELADA})
+        if (proposta.statusProposta === StatusProposta.PENDENTE || //RESOLVER AQUI
+          proposta.statusProposta === StatusProposta.ACEITA) {
+          await atualizarProposta(proposta.id, { statusProposta: StatusProposta.RECUSADA }); //RESOLVER AQUI
+        }else{
+          alert("NÃO PODE cancelar, A DEMANDA ESTÁ EM ANDAMENTO ");
         }
       }
       
@@ -190,7 +226,7 @@ import { atualizarProposta, carregarTodasPropostasDaDemanda } from '@/api/Propos
     } catch (err) { console.error(err); }
   };
   
-  const desfazerAcaoDemanda = async () => {
+  const desfazerAcaoDemanda = async () => {//RESOLVER AQUI
     try {
       if(props.demanda.statusDemanda === StatusDemanda.CANCELADA){
         const demandaReaberta = {
@@ -203,7 +239,8 @@ import { atualizarProposta, carregarTodasPropostasDaDemanda } from '@/api/Propos
 
         for(const proposta of propostasDaDemanda){
           if(proposta.statusProposta !== StatusProposta.CONCLUIDA &&
-            proposta.statusProposta === StatusProposta.CANCELADA
+            // proposta.statusProposta === StatusProposta.ACEITA || //RESOLVER AQUI
+            proposta.statusProposta !== StatusProposta.CANCELADA 
           ){
             await atualizarProposta(proposta.id, {statusProposta: StatusProposta.PENDENTE})
           }
@@ -228,6 +265,20 @@ import { atualizarProposta, carregarTodasPropostasDaDemanda } from '@/api/Propos
       regarregarPropostas.value++;
     }
   });
+
+  watch(() => props.demanda, async (novaDemanda) => {
+    if(novaDemanda && novaDemanda.propostaAceitaId){
+      await carregarPropostaAceita();
+    }else{
+      propostaAceita.value = null;
+    }
+  }, {immediate: true});
+
+  watch(() => propostaAtualizadaRef.value, (novaProposta)=>{
+    if(novaProposta && novaProposta.id === props.demanda.propostaAceitaId){
+      propostaAceita.value = novaProposta;
+    }
+  })
 
 </script>
 
@@ -275,7 +326,31 @@ import { atualizarProposta, carregarTodasPropostasDaDemanda } from '@/api/Propos
           <v-chip small outlined>
             <strong>Prazo Proposto:</strong> {{ props.demanda.prazo }}
           </v-chip>
+          <v-chip small outlined>
+            <strong>Orçamento Estimado:</strong> {{ props.demanda.orcamentoEstimado }}
+          </v-chip>
         </div>
+
+    <!-- MOSTRAR INFO DA PROPOSTA ACEITA -->
+        <v-alert
+          v-if="props.demanda.statusDemanda === StatusDemanda.EM_ANDAMENTO && propostaAceita"
+          :color="propostaAceitaEstaConcluida ? 'green' : 'blue'"
+          variant="outlined"
+          class="mb-3"
+        >
+          <strong>Proposta Aceita:</strong> {{ propostaAceita.titulo }}
+          <br>
+          <strong>Status:</strong> {{ propostaAceita.statusProposta }}
+          <br>
+          <strong>Valor:</strong> R$ {{ propostaAceita.preco?.toFixed(2) }}
+          
+          <v-icon v-if="propostaAceitaEstaConcluida" color="green" class="ml-2">
+            mdi-check-circle
+          </v-icon>
+          <v-icon v-else color="blue" class="ml-2">
+            mdi-progress-clock
+          </v-icon>
+        </v-alert>
 
         <v-card-actions>
            <v-btn
@@ -296,8 +371,7 @@ import { atualizarProposta, carregarTodasPropostasDaDemanda } from '@/api/Propos
               color="warning"
               @click="desfazerAcaoDemanda"
             >
-            <v-icon left>mdi-undo</v-icon> 
-            Reabrir Demanda
+            Reabrir
           </v-btn>
           
           <v-btn
@@ -313,7 +387,6 @@ import { atualizarProposta, carregarTodasPropostasDaDemanda } from '@/api/Propos
               color="green"
               @click="concluirDemanda"
             >
-            <v-icon left>mdi-check</v-icon>
             Concluir Demanda
           </v-btn>
           <v-spacer></v-spacer>
@@ -345,6 +418,7 @@ import { atualizarProposta, carregarTodasPropostasDaDemanda } from '@/api/Propos
           :demanda-id="props. demanda.id"
           :proposta-atualizada-prop="propostaAtualizadaRef"
           :recarregar="regarregarPropostas"
+          :status-demanda="props.demanda.statusDemanda"
           @fechar="$emit('fechar')"
           @aceitar-proposta="atualizarDemandaAndPropostaAceita"
           @recusar-proposta="recusarProposta"

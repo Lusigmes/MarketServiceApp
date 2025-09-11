@@ -47,9 +47,9 @@ public class DemandaController {
     }
     @CrossOrigin
     @GetMapping(value = "/{id}")
-    public ResponseEntity<Demanda> getById(@PathVariable(value = "id") long id) {
+    public ResponseEntity<DemandaResponseDTO> getById(@PathVariable(value = "id") long id) {
         Demanda demanda = demandaService.buscarDemandaPorId(id);
-        return ResponseEntity.ok(demanda);
+        return ResponseEntity.ok(demandaService.responseToDTO(demanda));
     }
 
     @CrossOrigin

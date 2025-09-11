@@ -67,3 +67,6 @@ export const atualizarProposta = async ( idProposta: number, proposta: Partial<P
 // }
 
 
+export const getPropostaById = async (id:number) => {
+    return await httpConnect.get(`/propostas/${id}`); 
+}

@@ -72,6 +72,14 @@ public class PropostaService {
                 .map(this::responseToDTO);
     }
 
+    public Proposta buscarPropostaPorId(Long id) {
+            Proposta proposta = propostaRepository.findPropostaById(id);
+
+            if (proposta == null) {
+                throw new EntityNotFoundException("Proposta não encontrada com id: " + id);
+            }
+            return proposta;
+        }
     public PropostaResponseDTO responseToDTO(Proposta proposta) {
         return new PropostaResponseDTO(
                 proposta.getId(),

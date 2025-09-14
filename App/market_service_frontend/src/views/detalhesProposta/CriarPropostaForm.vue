@@ -5,7 +5,10 @@ import { StatusProposta } from '@/types/enums';
 import { onMounted, ref, reactive, watch} from 'vue';
 import * as yup from 'yup';
 import { criarProposta } from '@/api/PropostaService';
+import { useNotification } from '@/composables/useNotification';
 
+    const {showNotification} = useNotification();
+    
     interface Props {
         usuarioId: number,
         demandaId: number
@@ -63,8 +66,9 @@ import { criarProposta } from '@/api/PropostaService';
         try {
             const propostaSalva = await criarProposta(form);
             emit('criar-proposta', propostaSalva as PropostaResponseInterface);
+            showNotification("Proposta criada com sucesso.", "success");
         } catch (error) {
-            console.error("ERRO: ", error)
+            showNotification("Erro ao criar proposta.", "error");
         }
     };
 

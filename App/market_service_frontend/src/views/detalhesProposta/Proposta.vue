@@ -4,18 +4,24 @@ import { corStatusProposta } from '@/utils/labelsUtils';
 import { ref, computed } from 'vue';
 import EditarPropostaForm from './EditarPropostaForm.vue';
 import { atualizarProposta } from '@/api/PropostaService';
-import { StatusProposta } from '@/types/enums';
+import { StatusDemanda, StatusProposta } from '@/types/enums';
 import { getDemandaById } from '@/api/DemandaService';
+import { useNotification } from '@/composables/useNotification';
+
+    const{showNotification} = useNotification();
 
     interface Props{
         proposta: PropostaResponseInterface; 
         prestadorId?: number | null;
         tipoUsuario?: 'CLIENTE' | 'PRESTADOR';
+        statusDemanda?: StatusDemanda;
+
     };
 
     const emit = defineEmits<{
         (e: 'fechar'): void;
         (e: 'atualizar-proposta', payload: Partial<PropostaResponseInterface>): void;
+        (e: 'proposta-aceita-cancelada'): void;//8
 
     }>();
 
@@ -38,8 +44,9 @@ import { getDemandaById } from '@/api/DemandaService';
             propostaAtualizadaRef.value = propostaAtt;
                 
             emit("atualizar-proposta", {...props.proposta, ...propostaAtualizada});      
+            showNotification("Proposta concluída com sucesso.","success");
         } catch (error) {
-            console.error("Erro ao concluir proposta:", error);
+            showNotification("Erro ao concluir proposta.","error");
         }
     };
     
@@ -53,17 +60,23 @@ import { getDemandaById } from '@/api/DemandaService';
             
             propostaAtualizadaRef.value = propostaAtt;   
             emit("atualizar-proposta",{...props.proposta, ...propostaCancelada})
-        } catch (err) { console.error(err); }
+            console.log("Proposta status anterior:", props.proposta.statusProposta);
+            if (props.proposta.statusProposta === StatusProposta.ACEITA) {
+                console.log("Emitindo proposta-aceita-cancelada");
+                emit('proposta-aceita-cancelada');
+            }
+            showNotification("Proposta cancelada com sucesso.", "success");
+        } catch (err) { showNotification("Erro ao cancelar proposta", "error"); }
     };
-
-
+    
+    
     const desfazerAcao = async () => { 
         if (![StatusProposta.CANCELADA].includes(props.proposta.statusProposta)) return;       
         try {
             const demandaResponse = await getDemandaById(props.proposta.demandaId);
             const demanda = demandaResponse.data;
             if(demanda.statusDemanda === 'CANCELADA'){
-                alert("NÃO PODE DESFAZER, A DEMANDA ESTÁ CANCELADA");
+                showNotification("Não pode desfazer ação quando a demanda vinculada está Cancelada", "warning");
                 return;
             }
             
@@ -71,10 +84,11 @@ import { getDemandaById } from '@/api/DemandaService';
                 statusProposta: StatusProposta.PENDENTE
             };
             const propostaAtt = await atualizarProposta(props.proposta.id, propostaReativada);
-
+            
             propostaAtualizadaRef.value = propostaAtt;   
             emit("atualizar-proposta",{...props.proposta, ...propostaReativada})
-        } catch (err) { console.error(err); }
+            showNotification("Ação desfeita", "success");
+        } catch (err) { showNotification("Erro ao desfazer ação.", "error");  }
     };
 
 
@@ -87,12 +101,20 @@ import { getDemandaById } from '@/api/DemandaService';
     const podeConcluir = computed(() => 
         permissaoPrestadorResponsavel.value && props.proposta.statusProposta === StatusProposta.ACEITA
     );
+//8
+    const podeCancelar = computed(() => {
+        if(!permissaoPrestadorResponsavel.value) return false;
+        
+        const demandaPermiteCancelar = 
+        props.statusDemanda !== StatusDemanda.CONCLUIDA &&
+        props.statusDemanda !== StatusDemanda.CANCELADA;
+        
+        if(!demandaPermiteCancelar) return false;
 
-    const podeCancelar = computed(() => 
-        permissaoPrestadorResponsavel.value &&
-            (props.proposta.statusProposta === StatusProposta.PENDENTE || 
-                props.proposta.statusProposta === StatusProposta.ACEITA)
-    );
+        return props.proposta.statusProposta === StatusProposta.PENDENTE || 
+            props.proposta.statusProposta === StatusProposta.ACEITA;
+    });
+
 
     const podeDesfazer = computed(() => 
         permissaoPrestadorResponsavel.value &&
@@ -124,6 +146,7 @@ import { getDemandaById } from '@/api/DemandaService';
                 <v-btn
                     v-if="podeConcluir"
                     color="success"
+                    rounded
                     @click="concluirProposta"
                 >
                     Concluir
@@ -132,6 +155,7 @@ import { getDemandaById } from '@/api/DemandaService';
                 <v-btn
                     v-if="podeDesfazer"
                     color="success"
+                    rounded
                     @click="desfazerAcao"
                 >
                     Reabrir
@@ -153,12 +177,13 @@ import { getDemandaById } from '@/api/DemandaService';
                 <v-btn
                     v-if="permissaoPrestadorResponsavel"
                     color="primary"
+                    rounded
                     @click="abrirFormEdicao"
                 >
                     Editar
                 </v-btn>
                 
-                <v-btn color="red" variant="text" @click="emit('fechar')">
+                <v-btn color="red" rounded variant="text" @click="emit('fechar')">
                     Fechar
                 </v-btn>
             </v-card-actions>

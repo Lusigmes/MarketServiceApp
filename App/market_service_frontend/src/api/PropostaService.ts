@@ -13,7 +13,6 @@ export const carregarPropostasDaDemanda = async (demandaId:number, page = 0, siz
         });
         return data;
     } catch (error) {
-        console.error("Erro: ", error)
         throw error;
     }
 };
@@ -29,7 +28,6 @@ export const carregarTodasPropostasDaDemanda = async (demandaId: number) => {
     return data;
 
   } catch (error) {
-    console.error("Erro ao carregar propostas da demanda:", error);
     throw error;
   }
 };
@@ -44,10 +42,8 @@ export const carregarPropostasDoPrestador = async (prestadorId:number, page = 0,
                 sort
             }
         });
-        console.log("carregarPropostasDoPrestador: ", data)
         return data;
     } catch (error) {
-        console.error("Erro: ", error)
         throw error;
     }
 };

@@ -1,7 +1,7 @@
 <template>
   <v-text-field
-    :model-value="dataFormatada"
-    @update:model-value="atualizarData"
+    :model-value="modelValue"
+    @update:model-value="emit('update:modelValue', $event)"
     :label="label"
     :error-messages="errorMsg"
     v-mask="'##/##/####'"
@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 import { 
   formatarDataBr, 
   formatarDataISO, 
@@ -29,87 +29,54 @@ import {
   isValidISOFormat
 } from '@/utils/dateUtils';
 
-    const props = defineProps<{
-        modelValue: string | undefined;
-        label: string;
-        errorMsg: string;
-    }>();
+const props = defineProps<{
+    modelValue: string | undefined;
+    label: string;
+    errorMsg: string;
+}>();
 
-    const emit = defineEmits<{
-        (e: 'update:modelValue', payload: string): void;
-    }>();
+const emit = defineEmits<{
+    (e: 'update:modelValue', payload: string): void;
+}>();
 
-    const inputRef = ref<HTMLInputElement>();
-    const datePickerRef = ref<HTMLInputElement>();
-    const valorISO = ref('');
+const inputRef = ref<HTMLInputElement>();
+const datePickerRef = ref<HTMLInputElement>();
+const valorISO = ref('');
 
-    watch(() => props.modelValue, (newValue) => {
-        if (newValue && isValidISOFormat(newValue)) {
-            valorISO.value = newValue;
-        } else {
-            valorISO.value = '';
-        }
-        }, { immediate: true });
-
-        const dataFormatada = computed(() => {
-        if (!props.modelValue) return '';
-
-        if (isValidISOFormat(props.modelValue)) {
-            return formatarDataBr(props.modelValue);
-        }
-        
-        return props.modelValue;
-    });
-
-    const atualizarData = (valor: string) => {
-        if (!valor) {
-            emit('update:modelValue', '');
-            return;
+// Converter valor ISO para BR quando o componente receber um valor do pai
+watch(() => props.modelValue, (newValue) => {
+    if (newValue && isValidISOFormat(newValue)) {
+        // Se veio do backend em ISO, converter para BR
+        valorISO.value = newValue;
+        emit('update:modelValue', formatarDataBr(newValue));
+    } else if (newValue && newValue.includes('/')) {
+        // Se já está em BR, manter
+        valorISO.value = formatarDataISO(newValue);
+    } else {
+        valorISO.value = '';
     }
+}, { immediate: true });
 
-    const partes = extrairPartesDataBr(valor);
-        if (partes) {
-            const { dia, mes, ano } = partes;
-            const dataBr = `${dia}/${mes}/${ano}`;
-            
-            if (validarDataBr(dataBr)) {
-            const isoDate = formatarDataISO(dataBr);
-            emit('update:modelValue', isoDate);
-            } else {
-            emit('update:modelValue', valor);
-            }
-        } else {
-            emit('update:modelValue', valor);
+const validarData = () => {
+    if (!props.modelValue) return;
+    
+    if (props.modelValue.includes('/')) {
+        if (!validarDataBr(props.modelValue)) {
+            emit('update:modelValue', '');
         }
-    };
+    }
+};
 
-    const validarData = () => {
-        if (!props.modelValue) return;
-        
-        if (!isValidISOFormat(props.modelValue)) {
-            const partes = extrairPartesDataBr(props.modelValue);
-            if (partes) {
-            const { dia, mes, ano } = partes;
-            const dataBr = `${dia}/${mes}/${ano}`;
-            
-            if (validarDataBr(dataBr)) {
-                const isoDate = formatarDataISO(dataBr);
-                emit('update:modelValue', isoDate);
-            }
-            }
-        }
-    };
+const mostrarPicker = () => {
+    if (datePickerRef.value) {
+        datePickerRef.value.showPicker();
+    }
+};
 
-    const mostrarPicker = () => {
-        if (datePickerRef.value) {
-            datePickerRef.value.showPicker();
-        }
-    };
-
-    const onDatePickerChange = (event: Event) => {
-        const target = event.target as HTMLInputElement;
-        if (target.value) {
-            emit('update:modelValue', target.value);
-        }
-    };
+const onDatePickerChange = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    if (target.value) {
+        emit('update:modelValue', formatarDataBr(target.value));
+    }
+};
 </script>

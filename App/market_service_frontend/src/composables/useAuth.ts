@@ -38,7 +38,6 @@ export function useAuth(){
                 usuario.value = await getUsuarioAutenticado();
             }
         } catch (err) {
-            console.error("Erro ao buscar usuário:", err);
             usuario.value = null;
             logout(); 
         }

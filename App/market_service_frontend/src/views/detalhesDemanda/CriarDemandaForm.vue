@@ -6,6 +6,9 @@ import { criarDemanda } from '@/api/DemandaService';
 import * as yup from 'yup';
 import { labelPrioridade } from '@/utils/labelsUtils';
 import DataInput from '@/components/DataInput.vue';
+import { useNotification } from "@/composables/useNotification";
+
+  const { showNotification } = useNotification();
 
   interface Props {
     clienteId: number | null;
@@ -68,15 +71,17 @@ import DataInput from '@/components/DataInput.vue';
       return false;
     }
   };
-
+  
   const salvar = async () => {
     const valido = await validarForm();
     if(!valido) return;
     try {
-        const salvarDemanda = await criarDemanda(form);
-        emit('salvar', salvarDemanda as DemandaResponseInterface);
+      const salvarDemanda = await criarDemanda(form);
+      emit('salvar', salvarDemanda as DemandaResponseInterface);
+      showNotification("Demanda criada com sucesso!", "success");
     } catch (error) {
-        console.error("ERRO: ", error)
+      showNotification("Erro ao criar demanda!", "error");
+      throw error;    
     }
   };
 </script>

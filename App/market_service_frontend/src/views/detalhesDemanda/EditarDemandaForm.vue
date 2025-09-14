@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { atualizarDemanda } from '@/api/DemandaService';
 import DataInput from '@/components/DataInput.vue';
+import { useNotification } from '@/composables/useNotification';
 import type { DemandaResponseInterface } from '@/types';
 import { PrioridadeDemanda } from '@/types/enums';
-import { formatarDataBr } from '@/utils/dateUtils';
 import { labelPrioridade } from '@/utils/labelsUtils';
-import { onMounted, reactive } from 'vue';
+import { reactive } from 'vue';
 import * as yup from 'yup';
+import { formatarDataBr, formatarDataParaISO, isValidISOFormat } from '../../utils/dateUtils';
+
+  const {showNotification} = useNotification();
 
   interface Props {
       demanda: DemandaResponseInterface,
@@ -20,7 +23,10 @@ import * as yup from 'yup';
       (e: 'cancelar'): void
   }>();
 
-  const form = reactive({...props.demanda});
+  const form = reactive({
+    ...props.demanda, 
+    prazo: props.demanda.prazo ? formatarDataParaVisualizacao(props.demanda.prazo) : ''
+  });
 
   const errors = reactive({
     titulo: '',
@@ -61,6 +67,21 @@ import * as yup from 'yup';
       return false;
     }
   };
+  function formatarDataParaVisualizacao(data: string): string {
+    if (!data) return '';
+    
+    // Se já estiver no formato BR, retorna como está
+    if (data.includes('/')) {
+      return data;
+    }
+    
+    // Se estiver no formato ISO, converte para BR
+    if (isValidISOFormat(data)) {
+      return formatarDataBr(data);
+    }
+    
+    return '';
+  }
 
   const salvar = async () => {
     const valido = await validarForm();
@@ -68,21 +89,18 @@ import * as yup from 'yup';
 
     const payload = {
       ...form,
-      prazo: form.prazo ? formatarDataBr(form.prazo) : ''
     };
     try{
       const demandaAtualizada = await atualizarDemanda(props.demanda.id, payload, props.clienteId);
       emit('salvar', { ...demandaAtualizada }); // ...props.demanda  / id: props.demanda.id 
+      showNotification("Demanda atualizada.", "success");
     } catch (error) {
-      console.error("Erro ao atualizar:", error);
+      showNotification("Não foi possivel atualizar a demanda.", "error");
     }
  
   };
 
-    
-  onMounted(async () => {
-    console.log("NO EDIT", props.clienteId);
-  });
+  
 </script>
 
 <template>

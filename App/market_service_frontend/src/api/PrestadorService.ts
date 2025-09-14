@@ -5,7 +5,6 @@ export const carregarPrestadores = async () => {
         const { data } = await httpConnect.get("/prestadores");
         return data;
     } catch (error) {
-        console.error("Erro: ", error)
         throw error;
     }
 };

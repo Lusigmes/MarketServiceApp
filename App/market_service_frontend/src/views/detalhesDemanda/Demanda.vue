@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { DemandaResponseInterface, PropostaResponseInterface } from '@/types';
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch , onMounted} from 'vue';
 import EditarDemandaForm from './EditarDemandaForm.vue';
 import { corPrioridade, corStatus, labelPrioridade, labelStatus } from '@/utils/labelsUtils';
 import PropostasRecebidas from './PropostasRecebidas.vue';
@@ -8,7 +8,10 @@ import { StatusDemanda, StatusProposta } from '@/types/enums';
 import { atualizarDemanda } from '@/api/DemandaService';
 import CriarPropostaForm from '../detalhesProposta/CriarPropostaForm.vue';
 import { atualizarProposta, carregarTodasPropostasDaDemanda, getPropostaById } from '@/api/PropostaService';
+import { useNotification } from "@/composables/useNotification";
 
+  const { showNotification } = useNotification();
+  
   interface Props {
     demanda: DemandaResponseInterface;
     tipoUsuario: 'CLIENTE' | 'PRESTADOR';
@@ -85,7 +88,7 @@ import { atualizarProposta, carregarTodasPropostasDaDemanda, getPropostaById } f
   const atualizarDemandaAndPropostaAceita = async (proposta: PropostaResponseInterface) => {
     try {
       if (props.demanda.propostaAceitaId && props.demanda.propostaAceitaId !== proposta.id) {
-        alert("Já existe uma proposta aceita. Desfaça antes de aceitar outra.");
+        showNotification("Já existe uma proposta aceita. Desfaça antes de aceitar outra.","warning")
         return;
       }
       const demandaAtualizada = {
@@ -102,12 +105,12 @@ import { atualizarProposta, carregarTodasPropostasDaDemanda, getPropostaById } f
       propostaAtualizadaRef.value = propostaAtt;
       
       emit("atualizar-demanda", {...props.demanda, ...demandaAtualizada});
+      showNotification("Sucesso ao aceitar proposta.", "success");
     } catch (err: any) {
       if (err.response?.data?.message?.includes("Já existe uma proposta ACEITA")) {
-        alert("Já existe uma proposta aceita. Desfaça antes de aceitar outra.");
+        showNotification("Já existe uma proposta aceita. Desfaça antes de aceitar outra.", "warning");
       } else {
-        console.error(err);
-        alert("Erro ao aceitar a proposta.");
+        showNotification("Erro ao aceitar a proposta.", "error");
       }
     }
 
@@ -120,7 +123,8 @@ import { atualizarProposta, carregarTodasPropostasDaDemanda, getPropostaById } f
       };
       const propostaAtt = await atualizarProposta(proposta.id, propostaRecusada);
       propostaAtualizadaRef.value = propostaAtt;   
-    } catch (err) { console.error(err); }
+      showNotification("Sucesso ao recusar a proposta.", "success");
+    } catch (err) { showNotification("Erro ao recusar a proposta.", "error"); }
   };
 
   const desfazerPropostaAceitaOrRecusada = async (proposta: PropostaResponseInterface) => {
@@ -140,18 +144,20 @@ import { atualizarProposta, carregarTodasPropostasDaDemanda, getPropostaById } f
         propostaAtualizadaRef.value = propostaAttUndo;
         emit("atualizar-demanda", {...props.demanda, ...desfazerDemandaEmAndamento});
         
+        showNotification("Ação desfeita", "success");
       }else if( proposta.statusProposta === StatusProposta.RECUSADA){
         
         const desfazerPropostaRecusada = {
           statusProposta: StatusProposta.PENDENTE
         };
         const propostaAttUndo = await atualizarProposta(proposta.id, desfazerPropostaRecusada);
-
+        
         propostaAtualizadaRef.value = propostaAttUndo;
         
+        showNotification("Ação desfeita", "success");
       }
     } catch (err) {
-        console.error(err);
+        showNotification("Erro ao desfazer ação", "error");
     }
   };
   
@@ -169,17 +175,19 @@ import { atualizarProposta, carregarTodasPropostasDaDemanda, getPropostaById } f
       const response = await getPropostaById(props.demanda.propostaAceitaId!);
       propostaAceita.value = response.data;
     } catch (error) {
-      console.error("Erro ao carregar proposta aceita:", error);
       propostaAceita.value = null;
+      showNotification("Erro ao carregar proposta aceita", "error");
+      throw error;
+      
     } finally {
       carregandoPropostaAceita.value = false;
     }
   };
-
+  
   const concluirDemanda = async () => {//RESOLVER AQUI
-
+    
     if (!propostaAceitaEstaConcluida.value) {
-      alert("Não é possível concluir a demanda. A proposta aceita não está concluída.");
+      showNotification("Não é possível concluir a demanda. A proposta aceita não está concluída.", "error");
       return;
     }
     try {
@@ -192,14 +200,15 @@ import { atualizarProposta, carregarTodasPropostasDaDemanda, getPropostaById } f
       
       emit("atualizar-demanda", {...props.demanda, ...demandaAtualizada});
     } catch (err) { 
-      console.error("Erro ao concluir demanda:", err);
-      alert("Erro ao concluir demanda.");
+      showNotification("Erro ao concluir demanda", "error");
+      throw err;
     }
   };
-    
-    const cancelarDemanda = async () => { //RESOLVER AQUI
+  
+  const cancelarDemanda = async () => { //RESOLVER AQUI
     if(props.demanda.statusDemanda === "EM_ANDAMENTO"){
-      alert("Não é possível cancelar uma demadna em andamento")
+      showNotification("Não é possível cancelar uma demanda em andamento", "error");
+      
       return;
     }
     try {
@@ -216,14 +225,15 @@ import { atualizarProposta, carregarTodasPropostasDaDemanda, getPropostaById } f
           proposta.statusProposta === StatusProposta.ACEITA) {
           await atualizarProposta(proposta.id, { statusProposta: StatusProposta.RECUSADA }); //RESOLVER AQUI
         }else{
-          alert("NÃO PODE cancelar, A DEMANDA ESTÁ EM ANDAMENTO ");
+          showNotification("Não é possível cancelar uma demanda em andamento", "error");
         }
       }
       
       emit("atualizar-demanda", {...props.demanda, ...demandaAtualizada});
+      showNotification("Sucesso ao cancelar demanda", "success");
+
       
-      
-    } catch (err) { console.error(err); }
+    } catch (err) { showNotification("Erro", "error");}
   };
   
   const desfazerAcaoDemanda = async () => {//RESOLVER AQUI
@@ -247,16 +257,37 @@ import { atualizarProposta, carregarTodasPropostasDaDemanda, getPropostaById } f
         }
 
         emit("atualizar-demanda", {...props.demanda, ...demandaReaberta});
-
-
-      }// 
-       // else if (props.demanda.statusDemanda === StatusDemanda.CONCLUIDA) {
-       // Voltar demanda para EM_ANDAMENTO
-
+        showNotification("Sucesso ao desfazer ação da demanda", "success");
+      }
     } catch (err) {
-      console.error("Erro ao desfazer ação da demanda:", err);
+      showNotification("Erro ao desfazer ação da demanda", "error");
+
     }
   };
+  //8
+    const handlePropostaAceitaCancelada = () =>{
+      console.log('Evento recebido em demanda');
+      tratarDemandaEmAndamentoComPropostaCancelada();
+    }
+//8
+  const tratarDemandaEmAndamentoComPropostaCancelada = async () => {
+    console.log("Função tratarDemandaEmAndamentoComPropostaCancelada chamada");
+    try {      
+      if (props.demanda.statusDemanda !== StatusDemanda.EM_ANDAMENTO) {
+        console.log("Demanda não está em andamento, não é necessário tratar");
+        return;
+      }
+      const demandaCanceladaPorProposta = {
+        statusDemanda: StatusDemanda.ABERTA,
+        propostaAceitaId: null
+      };
+      await atualizarDemanda(props.demanda.id, demandaCanceladaPorProposta, props.clienteId);
+      emit("atualizar-demanda", {...props.demanda, ...demandaCanceladaPorProposta});
+      showNotification("Demanda atualizada com sucesso", "success");
+    } catch (err) {
+      showNotification("Erro ao atualizar demanda após cancelamento", "error");
+    }
+  }
   
   const regarregarPropostas = ref(0);
 
@@ -278,8 +309,13 @@ import { atualizarProposta, carregarTodasPropostasDaDemanda, getPropostaById } f
     if(novaProposta && novaProposta.id === props.demanda.propostaAceitaId){
       propostaAceita.value = novaProposta;
     }
-  })
+  });
 
+  onMounted(() => {
+    console.log("Demanda.vue montado");
+    console.log("Demanda ID:", props.demanda.id);
+    console.log("Status demanda:", props.demanda.statusDemanda);
+});
 </script>
 
 <template>
@@ -369,6 +405,7 @@ import { atualizarProposta, carregarTodasPropostasDaDemanda, getPropostaById } f
           <v-btn
             v-if="podeDesfazerDemanda"
               color="warning"
+              rounded
               @click="desfazerAcaoDemanda"
             >
             Reabrir
@@ -376,15 +413,16 @@ import { atualizarProposta, carregarTodasPropostasDaDemanda, getPropostaById } f
           
           <v-btn
             v-if="podeEnviarProposta"
-              color="success"
+              color="secundary"
+              rounded
               @click="abrirFormProposta"
             >
-            <v-icon left>mdi-send</v-icon> 
             Enviar Proposta
           </v-btn>
           <v-btn
             v-if="podeConcluirDemanda"
               color="green"
+              rounded
               @click="concluirDemanda"
             >
             Concluir Demanda
@@ -393,11 +431,12 @@ import { atualizarProposta, carregarTodasPropostasDaDemanda, getPropostaById } f
           <v-btn
             v-if="permissaoClienteResponsavel"
             color="primary"
+            rounded
             @click="abrirFormEdicao"
             >
             Editar
           </v-btn>
-          <v-btn text color="red" @click="$emit('fechar')">
+          <v-btn text color="red" rounded @click="$emit('fechar')">
             Fechar
           </v-btn>
         </v-card-actions>
@@ -423,6 +462,7 @@ import { atualizarProposta, carregarTodasPropostasDaDemanda, getPropostaById } f
           @aceitar-proposta="atualizarDemandaAndPropostaAceita"
           @recusar-proposta="recusarProposta"
           @desfazer-proposta="desfazerPropostaAceitaOrRecusada"
+          @proposta-aceita-cancelada="handlePropostaAceitaCancelada"
         />
       </v-window-item>
 

@@ -73,3 +73,19 @@ export const extrairPartesDataBr = (dataBr: string): { dia: string, mes: string,
 export const isValidISOFormat = (data: string): boolean => {
   return /^\d{4}-\d{2}-\d{2}$/.test(data);
 };
+
+export function formatarDataParaISO(data: string): string {
+  if (!data) return '';
+  
+  // Se já estiver no formato ISO, retorna como está
+  if (isValidISOFormat(data)) {
+    return data;
+  }
+  
+  // Se estiver no formato BR (dd/MM/yyyy), converte para ISO
+  if (data.includes('/')) {
+    const [dia, mes, ano] = data.split('/');
+    return `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+  }
+  return '';
+}

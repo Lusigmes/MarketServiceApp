@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { atualizarProposta } from '@/api/PropostaService';
+import { useNotification } from '@/composables/useNotification';
 import type { PropostaResponseInterface } from '@/types';
-import { onMounted, reactive } from 'vue';
+import { reactive } from 'vue';
 import * as yup from 'yup';
 
+  const {showNotification} = useNotification();
+  
   interface Props {
       proposta: PropostaResponseInterface,
       prestadorId: number | null
@@ -53,16 +56,13 @@ import * as yup from 'yup';
     try{
       const propostaAtualizada = await atualizarProposta(props.proposta.id, form);
       emit('salvar', { ...propostaAtualizada }); 
+      showNotification("Proposta atualizada com sucecsso.","success");
     } catch (error) {
-      console.error("Erro ao atualizar:", error);
+      showNotification("Erro ao atualizar proposta.","error");
     }
  
   };
 
-    
-  onMounted(async () => {
-    console.log("NO EDIT", props.prestadorId);
-  });
 </script>
 
 <template>

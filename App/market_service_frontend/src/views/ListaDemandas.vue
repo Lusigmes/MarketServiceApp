@@ -62,7 +62,7 @@ import { useDemandaPagination } from '@/composables/usePagination';
       }
       await atualizarPagina();
     } catch (error) {
-      console.error('Erro ao buscar clienteId:', error);
+      throw error;    
     }
   });
 
@@ -76,6 +76,7 @@ import { useDemandaPagination } from '@/composables/usePagination';
         prepend-icon="mdi-plus"
         class="px-4"
         @click="dialogCriacao = true"
+        v-if="props.tipoUsuario === 'CLIENTE'"
       >
         Nova Demanda
       </v-btn>

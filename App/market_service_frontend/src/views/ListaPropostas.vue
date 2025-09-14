@@ -52,7 +52,7 @@ async function atualizarPagina(p: number = 0) {
     totalPages.value = data.totalPages;
     page.value = p;
   } catch (err) {
-    console.error("Erro ao carregar propostas:", err);
+    throw err;
   } finally {
     loading.value = false;
   }
@@ -65,7 +65,7 @@ onMounted(async () => {
       await atualizarPagina();
     }
   } catch (err) {
-    console.error("Erro ao buscar prestadorId:", err);
+      throw err;    
   }
 });
 </script>
@@ -96,11 +96,7 @@ onMounted(async () => {
               R$ {{ proposta.preco.toFixed(2) }}
             </v-chip>
           </div>
-
-          <p class="text-body-2 text-blue-darken-4 mb-2 text-truncate">
-            {{ proposta.titulo }}
-          </p>
-
+          <!-- <p class="text-body-2 text-blue-darken-4 mb-2 text-truncate">         </p> -->
           <div class="d-flex justify-space-between text-caption text-grey-darken-1">
             <span>Status: {{ proposta.statusProposta }}</span>
             <span>{{ new Date(proposta.dataCriacao).toLocaleDateString() }}</span>

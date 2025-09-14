@@ -97,6 +97,9 @@ import type { RegistroUsuarioInterface } from '@/types';
 import { itemListaRegistro } from '@/api/itemService';
 import * as yup from 'yup'
 import { validarCPF } from '@/utils/validarCPF';
+import { useNotification } from "@/composables/useNotification";
+
+  const { showNotification } = useNotification();
 
   const itemBreadCrumb = reactive(itemListaRegistro());
   const {registro, error} = useAuth();
@@ -159,11 +162,10 @@ import { validarCPF } from '@/utils/validarCPF';
       if(!valido) return;
 
       await registro(usuarioParaEnviar);
-      alert("Registro realizado com sucesso!");
+        showNotification("Usuário cadastrado com sucesso!", "success");
       router.push("/dashboard")
     } catch (error) {
-      console.error(error);
-      alert("Erro ao registrar usuário");
+        showNotification("Erro ao cadastrar usuário!", "error");
     }
   };
 

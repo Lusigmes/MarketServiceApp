@@ -4,6 +4,7 @@
 
     <v-main>
       <router-view />
+      <NotificationProvider/>
     </v-main>
 
     <Footer />
@@ -13,4 +14,5 @@
 <script setup lang="ts">
 import Footer from '@/layouts/Footer.vue';
 import Toolbar from '@/layouts/Toolbar.vue';
+import NotificationProvider from './components/NotificationProvider.vue';
 </script>

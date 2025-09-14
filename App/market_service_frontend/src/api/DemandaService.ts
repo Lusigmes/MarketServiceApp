@@ -12,7 +12,6 @@ export const carregarDemandas = async (page = 0, size = 8, sort = 'dataCriacaoDe
         });
         return data;
     } catch (error) {
-        console.error("Erro: ", error)
         throw error;
     }
 };

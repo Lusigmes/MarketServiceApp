@@ -21,7 +21,6 @@ import { StatusProposta, StatusDemanda } from '@/types/enums';
     (e: 'aceitar-proposta', payload: PropostaResponseInterface): void;
     (e: 'recusar-proposta', payload: PropostaResponseInterface): void;
     (e: 'desfazer-proposta', payload: PropostaResponseInterface): void;
-    (e: 'proposta-aceita-cancelada'): void;
   }>();
 
   const {
@@ -77,12 +76,6 @@ import { StatusProposta, StatusDemanda } from '@/types/enums';
       dialogDetalhe.value = true;
     }
   };
-//8
-  const handlePropostaAceitaCancelada = () => {
-    console.log("evento recebido propostas recebidas");
-    emit('proposta-aceita-cancelada');
-  };
-
   watch(
   () => props.propostaAtualizadaProp,
     (propostaListagemAtt) => {
@@ -98,8 +91,6 @@ import { StatusProposta, StatusDemanda } from '@/types/enums';
   });
 
   onMounted(async () => {  
-    console.log("PropostasRecebidas.vue montado");
-    console.log("Demanda ID:", props.demandaId);
     await atualizarPagina();
   });
 </script>
@@ -144,7 +135,6 @@ import { StatusProposta, StatusDemanda } from '@/types/enums';
           <Proposta 
           :proposta="propostaAtual" 
           :status-demanda="props.statusDemanda"
-          @proposta-aceita-cancelada="handlePropostaAceitaCancelada"
           />
 
           <v-card-actions>

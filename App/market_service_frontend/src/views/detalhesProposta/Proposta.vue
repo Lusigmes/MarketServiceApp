@@ -21,7 +21,6 @@ import { useNotification } from '@/composables/useNotification';
     const emit = defineEmits<{
         (e: 'fechar'): void;
         (e: 'atualizar-proposta', payload: Partial<PropostaResponseInterface>): void;
-        (e: 'proposta-aceita-cancelada'): void;//8
 
     }>();
 
@@ -61,10 +60,6 @@ import { useNotification } from '@/composables/useNotification';
             propostaAtualizadaRef.value = propostaAtt;   
             emit("atualizar-proposta",{...props.proposta, ...propostaCancelada})
             console.log("Proposta status anterior:", props.proposta.statusProposta);
-            if (props.proposta.statusProposta === StatusProposta.ACEITA) {
-                console.log("Emitindo proposta-aceita-cancelada");
-                emit('proposta-aceita-cancelada');
-            }
             showNotification("Proposta cancelada com sucesso.", "success");
         } catch (err) { showNotification("Erro ao cancelar proposta", "error"); }
     };
@@ -101,7 +96,7 @@ import { useNotification } from '@/composables/useNotification';
     const podeConcluir = computed(() => 
         permissaoPrestadorResponsavel.value && props.proposta.statusProposta === StatusProposta.ACEITA
     );
-//8
+
     const podeCancelar = computed(() => {
         if(!permissaoPrestadorResponsavel.value) return false;
         

@@ -10,3 +10,7 @@
 6. mostrar localização da demanda somente se o cliente aceitar a proposta da mesma demanda.
 7. criar notificações para comunicar ações entre usuarios.
     7.1. criar bate-papo pós proposta aceita
+8. verificar comportamento se a demanda estiver em andamento(e proposta aceita), em um cenário que o
+prestador cancelar a proposta aceita, os atributos status e propostaAceitaId da demanda devem mudar.(prioridade)
+	^ implementado e testado mas não concluido.
+9. controle de notificação entre usuarios e notificação para experiencia individual

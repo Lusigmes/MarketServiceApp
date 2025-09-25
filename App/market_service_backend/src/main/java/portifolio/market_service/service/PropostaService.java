@@ -3,10 +3,11 @@ package portifolio.market_service.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import jakarta.persistence.EntityNotFoundException;
 import portifolio.market_service.dto.PropostaDTO;
 import portifolio.market_service.dto.PropostaResponseDTO;
@@ -31,6 +32,9 @@ public class PropostaService {
     @Autowired
     private DemandaRepository demandaRepository;
 
+    @Autowired
+    private NotificacaoService notificacaoService;
+    
     @Transactional
     public Proposta salvar(PropostaDTO dto) {
         Demanda demanda = demandaRepository.findById(dto.demandaId())
@@ -45,7 +49,11 @@ public class PropostaService {
         proposta.setStatusProposta(dto.statusProposta());
         proposta.setDemanda(demanda);
         proposta.setPrestador(prestador);
-
+      
+        notificacaoService.criarNotificacao(
+            demanda.getCliente().getUsuario(),
+            "O prestador " + prestador.getUsuario().getNome() + " enviou uma proposta para sua demanda \"" + demanda.getTitulo() + "\"."
+        );
         return propostaRepository.save(proposta);
     }
 

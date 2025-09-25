@@ -8,7 +8,7 @@ import '@/api/connect/connect';
 import 'vuetify/styles';
 import '@mdi/font/css/materialdesignicons.css';
 import VueTheMask from 'vue-the-mask';
-
+import {createPinia} from 'pinia';
 
 const vuetify = createVuetify({
   components,
@@ -18,5 +18,6 @@ const vuetify = createVuetify({
 createApp(App)
   .use(vuetify)
   .use(router)
+  .use(createPinia())
   .use(VueTheMask)
   .mount('#app')

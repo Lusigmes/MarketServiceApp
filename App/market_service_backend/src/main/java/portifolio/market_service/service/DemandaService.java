@@ -30,7 +30,8 @@ public class DemandaService {
     private ClienteRepository clienteRepository;
     @Autowired
     private PropostaRepository propostaRepository;
-
+    @Autowired
+    private NotificacaoService notificacaoService;
     @Transactional
     public Demanda salvar(DemandaDTO dto) {
         Cliente cliente = clienteRepository.findById(dto.clienteId())
@@ -47,7 +48,10 @@ public class DemandaService {
         demanda.setCliente(cliente);
 
         demanda.setStatusDemanda(dto.statusDemanda() != null ? dto.statusDemanda() : StatusDemanda.ABERTA);
-
+        notificacaoService.criarNotificacao(
+            cliente.getUsuario(),
+            "Sua demanda \"" + demanda.getTitulo() + "\" foi criada com sucesso."
+        );
         return demandaRepository.save(demanda);
     }
 
@@ -124,6 +128,16 @@ public class DemandaService {
         if (dto.statusDemanda() != null && !dto.statusDemanda().equals(demanda.getStatusDemanda())) {
             regraStatusDemanda(demanda.getStatusDemanda(), dto.statusDemanda());
             demanda.setStatusDemanda(dto.statusDemanda());
+             
+            String mensagem = switch (dto.statusDemanda()) {
+                case CANCELADA -> "Sua demanda \"" + demanda.getTitulo() + "\" foi cancelada.";
+                case CONCLUIDA -> "Sua demanda \"" + demanda.getTitulo() + "\" foi concluída.";
+                case EM_ANDAMENTO -> "Sua demanda \"" + demanda.getTitulo() + "\" está em andamento.";
+                case ABERTA -> "Sua demanda \"" + demanda.getTitulo() + "\" foi reaberta.";
+            };
+            
+            notificacaoService.criarNotificacao(demanda.getCliente().getUsuario(), mensagem);
+        
         }
 
         if (dto.propostaAceitaId() != null) {

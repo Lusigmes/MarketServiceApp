@@ -166,7 +166,10 @@ import { useNotification } from "@/composables/useNotification";
 
   const carregarPropostaAceita  = async () => {
     if( !props.demanda.propostaAceitaId ){
-      propostaAceita.value = null; return;
+      propostaAceita.value = null;
+      propostaAceitaCancelada.value = false;
+      alertaPropostaCancelada.value = false;
+      return;
     }
 
     carregandoPropostaAceita.value = true;
@@ -174,8 +177,19 @@ import { useNotification } from "@/composables/useNotification";
     try {
       const response = await getPropostaById(props.demanda.propostaAceitaId!);
       propostaAceita.value = response.data;
+
+      if (response.data.statusProposta === StatusProposta.CANCELADA && 
+        props.demanda.statusDemanda === StatusDemanda.EM_ANDAMENTO) {
+        propostaAceitaCancelada.value = true;
+        alertaPropostaCancelada.value = true;
+      } else {
+        propostaAceitaCancelada.value = false;
+        alertaPropostaCancelada.value = false;
+      }
     } catch (error) {
       propostaAceita.value = null;
+      propostaAceitaCancelada.value = false;
+      alertaPropostaCancelada.value = false;
       showNotification("Erro ao carregar proposta aceita", "error");
       throw error;
       
@@ -184,7 +198,7 @@ import { useNotification } from "@/composables/useNotification";
     }
   };
   
-  const concluirDemanda = async () => {//RESOLVER AQUI
+  const concluirDemanda = async () => {
     
     if (!propostaAceitaEstaConcluida.value) {
       showNotification("Não é possível concluir a demanda. A proposta aceita não está concluída.", "error");
@@ -205,7 +219,7 @@ import { useNotification } from "@/composables/useNotification";
     }
   };
   
-  const cancelarDemanda = async () => { //RESOLVER AQUI
+  const cancelarDemanda = async () => { 
     if(props.demanda.statusDemanda === "EM_ANDAMENTO"){
       showNotification("Não é possível cancelar uma demanda em andamento", "error");
       
@@ -221,9 +235,9 @@ import { useNotification } from "@/composables/useNotification";
       const propostasDaDemanda = await carregarTodasPropostasDaDemanda(props.demanda.id);
 
       for(const proposta of propostasDaDemanda){
-        if (proposta.statusProposta === StatusProposta.PENDENTE || //RESOLVER AQUI
+        if (proposta.statusProposta === StatusProposta.PENDENTE ||
           proposta.statusProposta === StatusProposta.ACEITA) {
-          await atualizarProposta(proposta.id, { statusProposta: StatusProposta.RECUSADA }); //RESOLVER AQUI
+          await atualizarProposta(proposta.id, { statusProposta: StatusProposta.RECUSADA }); 
         }else{
           showNotification("Não é possível cancelar uma demanda em andamento", "error");
         }
@@ -236,7 +250,7 @@ import { useNotification } from "@/composables/useNotification";
     } catch (err) { showNotification("Erro", "error");}
   };
   
-  const desfazerAcaoDemanda = async () => {//RESOLVER AQUI
+  const desfazerAcaoDemanda = async () => {
     try {
       if(props.demanda.statusDemanda === StatusDemanda.CANCELADA){
         const demandaReaberta = {
@@ -249,7 +263,6 @@ import { useNotification } from "@/composables/useNotification";
 
         for(const proposta of propostasDaDemanda){
           if(proposta.statusProposta !== StatusProposta.CONCLUIDA &&
-            // proposta.statusProposta === StatusProposta.ACEITA || //RESOLVER AQUI
             proposta.statusProposta !== StatusProposta.CANCELADA 
           ){
             await atualizarProposta(proposta.id, {statusProposta: StatusProposta.PENDENTE})
@@ -264,30 +277,58 @@ import { useNotification } from "@/composables/useNotification";
 
     }
   };
-  //8
-    const handlePropostaAceitaCancelada = () =>{
-      console.log('Evento recebido em demanda');
-      tratarDemandaEmAndamentoComPropostaCancelada();
-    }
-//8
-  const tratarDemandaEmAndamentoComPropostaCancelada = async () => {
-    console.log("Função tratarDemandaEmAndamentoComPropostaCancelada chamada");
-    try {      
-      if (props.demanda.statusDemanda !== StatusDemanda.EM_ANDAMENTO) {
-        console.log("Demanda não está em andamento, não é necessário tratar");
-        return;
-      }
-      const demandaCanceladaPorProposta = {
+
+  const reabrirDemandaAposCancelamento = async () => {
+    try{
+      const demandaReaberta = {
         statusDemanda: StatusDemanda.ABERTA,
         propostaAceitaId: null
       };
-      await atualizarDemanda(props.demanda.id, demandaCanceladaPorProposta, props.clienteId);
-      emit("atualizar-demanda", {...props.demanda, ...demandaCanceladaPorProposta});
-      showNotification("Demanda atualizada com sucesso", "success");
-    } catch (err) {
-      showNotification("Erro ao atualizar demanda após cancelamento", "error");
+      await atualizarDemanda(props.demanda.id, demandaReaberta, props.clienteId);
+
+      emit("atualizar-demanda", {...props.demanda, ...demandaReaberta});
+      propostaAceitaCancelada.value = false;
+      alertaPropostaCancelada.value = false;
+
+      showNotification("Demanda reaberta com sucesso! Agora pode receber novas propostas.", "success");
+
+    } catch (error) {
+      showNotification("Erro ao reabrir demanda", "error");
+      console.error("Erro ao reabrir demanda:", error);
     }
-  }
+  };
+
+
+  const propostaAceitaCancelada = ref(false);
+  const alertaPropostaCancelada = ref(false);
+
+  watch(() => propostaAceita.value?.statusProposta, 
+    (novoStatus, statusAnterior) => {
+      console.log("Status da proposta aceita mudou:", statusAnterior, "->", novoStatus);
+      if(novoStatus === StatusProposta.CANCELADA &&
+        props.demanda.statusDemanda === StatusDemanda.EM_ANDAMENTO
+      ){
+        propostaAceitaCancelada.value = true;
+        alertaPropostaCancelada.value = true;
+        showNotification("A proposta aceita foi cancelada pelo prestador!", "warning");
+      }else if(novoStatus !== StatusProposta.CANCELADA && propostaAceitaCancelada.value){
+        propostaAceitaCancelada.value = false;
+        alertaPropostaCancelada.value = false;
+      }
+    });
+    
+  watch(() => propostaAceita.value, 
+    (novaProposta, propostaAnterior) => {
+      if(novaProposta && 
+      novaProposta.statusProposta === StatusProposta.CANCELADA &&
+      props.demanda.statusDemanda === StatusDemanda.EM_ANDAMENTO
+    ){
+        propostaAceitaCancelada.value = true;
+        alertaPropostaCancelada.value = true;
+        showNotification("A proposta aceita foi cancelada pelo prestador!", "warning");
+      }
+  },{deep:true});
+
   
   const regarregarPropostas = ref(0);
 
@@ -315,173 +356,199 @@ import { useNotification } from "@/composables/useNotification";
     console.log("Demanda.vue montado");
     console.log("Demanda ID:", props.demanda.id);
     console.log("Status demanda:", props.demanda.statusDemanda);
-});
+  });
 </script>
 
-<template>
-  <v-card
-    :color="corStatus(props.demanda.statusDemanda)"
-    class="pa-4 rounded-lg elevation-4"
-  >
-    <v-tabs v-model="abaSelecionada" background-color="white" grow>
-      <v-tab value="detalhes">Detalhes</v-tab>
-      <v-tab value="propostas" v-if="permissaoClienteResponsavel">Propostas Recebidas</v-tab>
-    </v-tabs>
+  <template>
+    <v-card
+      :color="corStatus(props.demanda.statusDemanda)"
+      class="pa-4 rounded-lg elevation-4"
+    >
+      <v-tabs v-model="abaSelecionada" background-color="white" grow>
+        <v-tab value="detalhes">Detalhes</v-tab>
+        <v-tab value="propostas" v-if="permissaoClienteResponsavel">Propostas Recebidas</v-tab>
+      </v-tabs>
 
-    <v-window v-model="abaSelecionada" class="mt-3">     
-      <v-window-item value="detalhes">
-        <template v-if="!editando">
-          <div class="d-flex justify-space-between align-center mt-2 mb-3">
-            <h3 class="text-h6 text-truncate" style="max-width: 70%;">
-            {{ props.demanda.titulo }}
-          </h3>
-          <v-chip
-          :color="corPrioridade(props.demanda.prioridade)"
-          class="white--text"
-          small
+      <v-window v-model="abaSelecionada" class="mt-3">     
+        <v-window-item value="detalhes">
+          <template v-if="!editando">
+            <div class="d-flex justify-space-between align-center mt-2 mb-3">
+              <h3 class="text-h6 text-truncate" style="max-width: 70%;">
+              {{ props.demanda.titulo }}
+            </h3>
+            <v-chip
+            :color="corPrioridade(props.demanda.prioridade)"
+            class="white--text"
+            small
+            >
+            Urgência:
+            {{ labelPrioridade(props.demanda.prioridade) }}
+            </v-chip>
+          </div>
+
+          <p class="mb-3" style="line-height: 1.4em;">
+            {{ props.demanda.descricao }}
+          </p>
+          
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            <v-chip small outlined>
+              <strong>Status:</strong> {{ labelStatus(props.demanda.statusDemanda) }}
+            </v-chip>
+            <v-chip small outlined>
+              <strong>Categoria:</strong> {{ props.demanda.categoria }}
+            </v-chip>
+            <v-chip small outlined>
+              <strong>Localização:</strong> {{ props.demanda.localizacao }}
+            </v-chip>
+            <v-chip small outlined>
+              <strong>Prazo Proposto:</strong> {{ props.demanda.prazo }}
+            </v-chip>
+            <v-chip small outlined>
+              <strong>Orçamento Estimado:</strong> {{ props.demanda.orcamentoEstimado }}
+            </v-chip>
+          </div>
+
+          <v-alert
+            v-if="alertaPropostaCancelada && props.demanda.statusDemanda === StatusDemanda.EM_ANDAMENTO"
+            color="orange"
+            variant="outlined"
+            class="mb-3"
           >
-          Urgência:
-          {{ labelPrioridade(props.demanda.prioridade) }}
-          </v-chip>
-        </div>
+            <strong>Proposta Aceita:</strong> {{ propostaAceita?.titulo }}
+            <br>
+            <strong>Status:</strong> {{ propostaAceita?.statusProposta }}
+            <br>
+            <strong>Valor:</strong> R$ {{ propostaAceita?.preco?.toFixed(2) }}
+            <br>
+            <strong>Atenção:</strong> Esta proposta foi cancelada pelo prestador
+            
+            <v-icon color="orange" class="ml-2">
+              mdi-alert-circle
+            </v-icon>
+          </v-alert>
 
-        <p class="mb-3" style="line-height: 1.4em;">
-          {{ props.demanda.descricao }}
-        </p>
-        
-        <div class="d-flex flex-wrap gap-2 mb-3">
-          <v-chip small outlined>
-            <strong>Status:</strong> {{ labelStatus(props.demanda.statusDemanda) }}
-          </v-chip>
-          <v-chip small outlined>
-            <strong>Categoria:</strong> {{ props.demanda.categoria }}
-          </v-chip>
-          <v-chip small outlined>
-            <strong>Localização:</strong> {{ props.demanda.localizacao }}
-          </v-chip>
-          <v-chip small outlined>
-            <strong>Prazo Proposto:</strong> {{ props.demanda.prazo }}
-          </v-chip>
-          <v-chip small outlined>
-            <strong>Orçamento Estimado:</strong> {{ props.demanda.orcamentoEstimado }}
-          </v-chip>
-        </div>
+          <v-alert
+            v-else-if="props.demanda.statusDemanda === StatusDemanda.EM_ANDAMENTO && propostaAceita"
+            :color="propostaAceitaEstaConcluida ? 'green' : 'blue'"
+            variant="outlined"
+            class="mb-3"
+          >
+            <strong>Proposta Aceita:</strong> {{ propostaAceita.titulo }}
+            <br>
+            <strong>Status:</strong> {{ propostaAceita.statusProposta }}
+            <br>
+            <strong>Valor:</strong> R$ {{ propostaAceita.preco?.toFixed(2) }}
+            
+            <v-icon v-if="propostaAceitaEstaConcluida" color="green" class="ml-2">
+              mdi-check-circle
+            </v-icon>
+            <v-icon v-else color="blue" class="ml-2">
+              mdi-progress-clock
+            </v-icon>
+          </v-alert>
 
-    <!-- MOSTRAR INFO DA PROPOSTA ACEITA -->
-        <v-alert
-          v-if="props.demanda.statusDemanda === StatusDemanda.EM_ANDAMENTO && propostaAceita"
-          :color="propostaAceitaEstaConcluida ? 'green' : 'blue'"
-          variant="outlined"
-          class="mb-3"
-        >
-          <strong>Proposta Aceita:</strong> {{ propostaAceita.titulo }}
-          <br>
-          <strong>Status:</strong> {{ propostaAceita.statusProposta }}
-          <br>
-          <strong>Valor:</strong> R$ {{ propostaAceita.preco?.toFixed(2) }}
-          
-          <v-icon v-if="propostaAceitaEstaConcluida" color="green" class="ml-2">
-            mdi-check-circle
-          </v-icon>
-          <v-icon v-else color="blue" class="ml-2">
-            mdi-progress-clock
-          </v-icon>
-        </v-alert>
-
-        <v-card-actions>
-           <v-btn
-            v-if="podeCancelarDemanda"
-            icon
-            color="red"
-            class="position-absolute mt-10"
-            style="top: 8px; right: 8px;"
-            @click="cancelarDemanda"
-        >
-            <v-icon>mdi-delete</v-icon>
-        </v-btn>
-        
-        
-          
-          <v-btn
-            v-if="podeDesfazerDemanda"
+          <v-card-actions>
+                 
+            <v-btn
+              v-if="podeDesfazerDemanda"
               color="warning"
               rounded
               @click="desfazerAcaoDemanda"
             >
-            Reabrir
-          </v-btn>
-          
-          <v-btn
-            v-if="podeEnviarProposta"
-              color="secundary"
+              Reabrir
+            </v-btn>
+            
+            <v-btn
+              v-if="propostaAceitaCancelada && props.demanda.statusDemanda === StatusDemanda.EM_ANDAMENTO"
+              color="orange"
+              rounded
+              @click="reabrirDemandaAposCancelamento"
+            >
+              Reabrir Demanda
+            </v-btn>
+            
+            <v-btn
+              v-if="podeEnviarProposta"
+              color="secondary"
               rounded
               @click="abrirFormProposta"
             >
-            Enviar Proposta
-          </v-btn>
-          <v-btn
-            v-if="podeConcluirDemanda"
+              Enviar Proposta
+            </v-btn>
+            
+            <v-btn
+              v-if="podeConcluirDemanda"
               color="green"
               rounded
               @click="concluirDemanda"
             >
-            Concluir Demanda
-          </v-btn>
-          <v-spacer></v-spacer>
-          <v-btn
-            v-if="permissaoClienteResponsavel"
-            color="primary"
-            rounded
-            @click="abrirFormEdicao"
+              Concluir Demanda
+            </v-btn>
+            
+            <v-spacer></v-spacer>
+            <v-btn
+              v-if="podeCancelarDemanda"
+              icon
+              color="red"
+              class="mr-2"
+              @click="cancelarDemanda"
             >
-            Editar
-          </v-btn>
-          <v-btn text color="red" rounded @click="$emit('fechar')">
-            Fechar
-          </v-btn>
-        </v-card-actions>
-      </template>
+              <v-icon>mdi-delete</v-icon>
+            </v-btn>
+            <v-btn
+              v-if="permissaoClienteResponsavel"
+              color="primary"
+              rounded
+              @click="abrirFormEdicao"
+            >
+              Editar
+            </v-btn>
+            
+            <v-btn text color="red" rounded @click="$emit('fechar')">
+              Fechar
+            </v-btn>
+          </v-card-actions>
+        </template>
 
-      <template v-else>
-        <EditarDemandaForm
-          :demanda="props.demanda"
-          :cliente-id="props.clienteId"
-          @cancelar="fecharFormEdicao"
-          @salvar="salvarEdicao"
+        <template v-else>
+          <EditarDemandaForm
+            :demanda="props.demanda"
+            :cliente-id="props.clienteId"
+            @cancelar="fecharFormEdicao"
+            @salvar="salvarEdicao"
+          />
+        </template>
+        </v-window-item>
+
+        <v-window-item value="propostas">
+          <PropostasRecebidas
+            :demanda-id="props.demanda.id"
+            :proposta-atualizada-prop="propostaAtualizadaRef"
+            :recarregar="regarregarPropostas"
+            :status-demanda="props.demanda.statusDemanda"
+            @fechar="$emit('fechar')"
+            @aceitar-proposta="atualizarDemandaAndPropostaAceita"
+            @recusar-proposta="recusarProposta"
+            @desfazer-proposta="desfazerPropostaAceitaOrRecusada"
+          />
+        </v-window-item>
+
+      <v-dialog v-model="formProposta" max-width="600px">
+        <CriarPropostaForm
+          :usuario-id="props.usuarioId"
+          :demanda-id="props.demanda.id"
+          @cancelar="fecharFormProposta"
+          @criar-proposta="propostaCriada"
         />
-      </template>
-      </v-window-item>
+      </v-dialog>
+    </v-window>
+    </v-card>
+  </template>
 
-      <v-window-item value="propostas">
-        <PropostasRecebidas
-          :demanda-id="props. demanda.id"
-          :proposta-atualizada-prop="propostaAtualizadaRef"
-          :recarregar="regarregarPropostas"
-          :status-demanda="props.demanda.statusDemanda"
-          @fechar="$emit('fechar')"
-          @aceitar-proposta="atualizarDemandaAndPropostaAceita"
-          @recusar-proposta="recusarProposta"
-          @desfazer-proposta="desfazerPropostaAceitaOrRecusada"
-          @proposta-aceita-cancelada="handlePropostaAceitaCancelada"
-        />
-      </v-window-item>
-
-    <v-dialog v-model="formProposta" max-width="600px">
-      <CriarPropostaForm
-        :usuario-id="props.usuarioId"
-        :demanda-id="props.demanda.id"
-        @cancelar="fecharFormProposta"
-        @criar-proposta="propostaCriada"
-      />
-    </v-dialog>
-   </v-window>
-  </v-card>
-</template>
-
-<style scoped>
-.text-truncate {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-</style>
+  <style scoped>
+  .text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  </style>

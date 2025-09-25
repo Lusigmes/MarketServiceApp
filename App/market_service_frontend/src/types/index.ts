@@ -64,3 +64,10 @@ export interface PropostaResponseInterface{
     demandaId: number,
     prestadorId: number | null
 }
+
+export interface Notificacao {
+  id: number;
+  mensagem: string;
+  lida: boolean;
+  dataCriacaoNotificacao: string;
+}

@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { useAuth } from '@/composables/useAuth';
 import { useRouter } from 'vue-router';
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted } from 'vue';
+import { useNotificacaoStore } from '@/store/notificacaoStore';
 
 const { usuario, logout } = useAuth();
 const router = useRouter();
 const menu = ref(false);
+const notificacaoStore = useNotificacaoStore();
+
 
 const tabs = computed(() => {
   if (!usuario.value) return;
@@ -83,6 +86,22 @@ function irLogin() {
 function navegarPara(route: string) {
   router.push(route);
 }
+
+onMounted(() => {
+  if (usuario.value?.id) {
+    notificacaoStore.carregar(usuario.value.id).catch((err) => {
+      console.error("Erro ao carregar notificações:", err);
+    });
+
+    setInterval(() => {
+      if (usuario.value?.id) {
+        notificacaoStore.carregar(usuario.value.id).catch((err) => {
+          console.error("Erro ao atualizar notificações:", err);
+        });
+      }
+    }, 10000);
+  }
+});
 </script>
 
 <template>

@@ -23,10 +23,15 @@ public class NotificacaoController {
     public List<Notificacao> listar(@PathVariable long usuarioId){
         return notificacaoService.listarNotificacaos(usuarioId);
     }
-
+    
     @PostMapping("/{id}/lida")
     public void marcarComoLida(@PathVariable long id){
         notificacaoService.marcarComoLida(id);
+    }
+    
+    @GetMapping("/{usuarioId}/count")
+    public long contarNaoLidas(@PathVariable long usuarioId){
+        return notificacaoService.contarNotificacoesNaoLidas(usuarioId);
     }
 
 }

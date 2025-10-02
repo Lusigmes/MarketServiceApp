@@ -7,7 +7,7 @@ import * as yup from 'yup';
 import { labelPrioridade } from '@/utils/labelsUtils';
 import DataInput from '@/components/DataInput.vue';
 import { useNotification } from "@/composables/useNotification";
-
+import  {formatarDataParaISO} from "@/utils/dateUtils";
   const { showNotification } = useNotification();
 
   interface Props {
@@ -71,17 +71,23 @@ import { useNotification } from "@/composables/useNotification";
       return false;
     }
   };
-  
+    
   const salvar = async () => {
     const valido = await validarForm();
-    if(!valido) return;
+    if (!valido) return;
+
     try {
-      const salvarDemanda = await criarDemanda(form);
+      const payload = {
+        ...form,
+        prazo: formatarDataParaISO(form.prazo || '')
+      };
+
+      const salvarDemanda = await criarDemanda(payload);
       emit('salvar', salvarDemanda as DemandaResponseInterface);
       showNotification("Demanda criada com sucesso!", "success");
     } catch (error) {
       showNotification("Erro ao criar demanda!", "error");
-      throw error;    
+      throw error;
     }
   };
 </script>

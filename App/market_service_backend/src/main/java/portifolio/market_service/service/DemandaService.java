@@ -14,11 +14,13 @@ import portifolio.market_service.dto.DemandaResponseDTO;
 import portifolio.market_service.dto.DemandaUpdateDTO;
 import portifolio.market_service.model.entity.Cliente;
 import portifolio.market_service.model.entity.Demanda;
+import portifolio.market_service.model.entity.Prestador;
 import portifolio.market_service.model.entity.Proposta;
 import portifolio.market_service.model.enums.StatusDemanda;
 import portifolio.market_service.repository.ClienteRepository;
 import portifolio.market_service.repository.DemandaRepository;
 import portifolio.market_service.repository.PropostaRepository;
+import portifolio.market_service.repository.PrestadorRepository;
 
 @Service
 public class DemandaService {
@@ -28,10 +30,16 @@ public class DemandaService {
 
     @Autowired
     private ClienteRepository clienteRepository;
+
     @Autowired
     private PropostaRepository propostaRepository;
+
+    @Autowired
+    private PrestadorRepository prestadorRepository;
+
     @Autowired
     private NotificacaoService notificacaoService;
+
     @Transactional
     public Demanda salvar(DemandaDTO dto) {
         Cliente cliente = clienteRepository.findById(dto.clienteId())
@@ -48,11 +56,17 @@ public class DemandaService {
         demanda.setCliente(cliente);
 
         demanda.setStatusDemanda(dto.statusDemanda() != null ? dto.statusDemanda() : StatusDemanda.ABERTA);
+       
+        Demanda novaDemanda = demandaRepository.save(demanda);
+
         notificacaoService.criarNotificacao(
             cliente.getUsuario(),
             "Sua demanda \"" + demanda.getTitulo() + "\" foi criada com sucesso."
         );
-        return demandaRepository.save(demanda);
+
+        notificarTodosPrestadores(novaDemanda);
+
+        return novaDemanda;
     }
 
     public List<DemandaResponseDTO> listar() {
@@ -138,15 +152,44 @@ public class DemandaService {
             
             notificacaoService.criarNotificacao(demanda.getCliente().getUsuario(), mensagem);
         
+            notificarPrestadoresVinculados(demanda, dto.statusDemanda());
+
         }
 
         if (dto.propostaAceitaId() != null) {
             Proposta propostaAceita = propostaRepository.findById(dto.propostaAceitaId())
                     .orElseThrow(() -> new EntityNotFoundException("Proposta não encontrada com id: " + dto.propostaAceitaId()));
             demanda.setPropostaAceita(propostaAceita);
+            
+            notificacaoService.criarNotificacao(propostaAceita.getPrestador().getUsuario(),
+             "Sua proposta para a demanda \"" + demanda.getTitulo() + "\" foi aceita!");
         }
 
         return demandaRepository.save(demanda);
+    }
+
+    private void notificarPrestadoresVinculados(Demanda demanda, StatusDemanda novoStatus){
+        List<Prestador> prestadoresVinculados = propostaRepository.findPrestadoresByDemandaId(demanda.getId());
+        if(prestadoresVinculados.isEmpty()){
+            return;
+        }
+        String mensagemStatus = switch (novoStatus) {
+            case CANCELADA -> "A demanda \"" + demanda.getTitulo() + "\" que você propôs foi cancelada.";
+            case CONCLUIDA -> "A demanda \"" + demanda.getTitulo() + "\" que você propôs foi concluída.";
+            case EM_ANDAMENTO -> "A demanda \"" + demanda.getTitulo() + "\" que você propôs está em andamento.";
+            case ABERTA -> "A demanda \"" + demanda.getTitulo() + "\" que você propôs foi reaberta.";
+        };
+        
+        for(Prestador prestador: prestadoresVinculados){
+            notificacaoService.criarNotificacao(prestador.getUsuario(), mensagemStatus);
+        }
+    }
+
+    private void notificarTodosPrestadores(Demanda demanda){
+        List<Prestador> todosPrestadores = prestadorRepository.findAllWithUsuarioAndRelationPrestadors();
+        for(Prestador prestador: todosPrestadores){
+            notificacaoService.criarNotificacao(prestador.getUsuario(), "Nova demanda disponível: " + demanda.getTitulo());
+        }
     }
 
     private void regraStatusDemanda(StatusDemanda atual, StatusDemanda novo) {

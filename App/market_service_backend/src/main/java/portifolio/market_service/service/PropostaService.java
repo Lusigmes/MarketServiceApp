@@ -54,6 +54,7 @@ public class PropostaService {
             demanda.getCliente().getUsuario(),
             "O prestador " + prestador.getUsuario().getNome() + " enviou uma proposta para sua demanda \"" + demanda.getTitulo() + "\"."
         );
+        
         return propostaRepository.save(proposta);
     }
 

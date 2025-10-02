@@ -92,7 +92,7 @@ import { formatarDataBr, formatarDataParaISO, isValidISOFormat } from '../../uti
     };
     try{
       const demandaAtualizada = await atualizarDemanda(props.demanda.id, payload, props.clienteId);
-      emit('salvar', { ...demandaAtualizada }); // ...props.demanda  / id: props.demanda.id 
+      emit('salvar', { ...demandaAtualizada });
       showNotification("Demanda atualizada.", "success");
     } catch (error) {
       showNotification("Não foi possivel atualizar a demanda.", "error");

@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import jakarta.transaction.Transactional;
 import portifolio.market_service.model.entity.Notificacao;
 import portifolio.market_service.model.entity.Usuario;
 import portifolio.market_service.repository.NotificacaoRepository;
@@ -15,11 +16,18 @@ public class NotificacaoService {
     @Autowired
     private NotificacaoRepository notificacaoRepository;
 
+    @Transactional
     public void criarNotificacao(Usuario usuario, String mensagem){
-        Notificacao n = new Notificacao();
-        n.setUsuario(usuario);
-        n.setMensagem(mensagem);
-        notificacaoRepository.save(n);
+        try {
+            Notificacao n = new Notificacao();
+            n.setUsuario(usuario);
+            n.setMensagem(mensagem);
+            n.setLida(false);
+            notificacaoRepository.save(n);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     
     public List<Notificacao> listarNotificacaos(long usuarioId){
@@ -33,6 +41,10 @@ public class NotificacaoService {
         n.setLida(true);
         notificacaoRepository.save(n);
         
+    }
+
+    public long contarNotificacoesNaoLidas(long usuarioId){
+        return notificacaoRepository.countByUsuarioANdLidaFalse(usuarioId);
     }
 
 }

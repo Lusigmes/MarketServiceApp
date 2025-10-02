@@ -13,4 +13,6 @@ public interface NotificacaoRepository extends JpaRepository<Notificacao, Long>{
     @Query("SELECT n FROM Notificacao n JOIN FETCH n.usuario WHERE n.usuario.id = :usuarioId ORDER BY n.dataCriacaoNotificacao DESC")
     List<Notificacao> findByUsuarioOrderByDataCriacaoNotificacaoDesc(@Param("usuarioId") long usuarioId);
 
+    @Query("SELECT COUNT(n) FROM Notificacao n WHERE n.usuario.id = :usuarioId AND n.lida = false")
+    long countByUsuarioANdLidaFalse(@Param("usuarioId") long usuarioId);
 }

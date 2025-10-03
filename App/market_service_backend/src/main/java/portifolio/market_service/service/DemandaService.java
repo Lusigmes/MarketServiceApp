@@ -152,6 +152,7 @@ public class DemandaService {
             
             notificacaoService.criarNotificacao(demanda.getCliente().getUsuario(), mensagem);
         
+            // melhorar aqui
             notificarPrestadoresVinculados(demanda, dto.statusDemanda());
 
         }
@@ -167,7 +168,7 @@ public class DemandaService {
 
         return demandaRepository.save(demanda);
     }
-
+    // melhorar aqui
     private void notificarPrestadoresVinculados(Demanda demanda, StatusDemanda novoStatus){
         List<Prestador> prestadoresVinculados = propostaRepository.findPrestadoresByDemandaId(demanda.getId());
         if(prestadoresVinculados.isEmpty()){

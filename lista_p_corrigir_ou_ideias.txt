@@ -14,3 +14,14 @@
 prestador cancelar a proposta aceita, os atributos status e propostaAceitaId da demanda devem mudar.(prioridade)
 	^ implementado e testado mas não concluido.
 9. controle de notificação entre usuarios e notificação para experiencia individual
+10. Em notificação
+    - corrigir envio de notificações para prestdores
+    - DemandaService e PropostaService disparam notificações
+        - primeiro concluir notificações de demanda
+            - clientes recebem notificações se receberem propostas
+            - prestaores recebem notificações se alguma demanda for criada
+            - prestadores recebem notificações se alguam daemadna que ele enviou proposta mudar de estado
+            (conferir se só notifica se o cliente aceitar a proposta do atual prestador ou se ele aceitar qulquer proposta de qualquer pretador)
+                - notificções sao disparadas mesmo se requisição falhar(corrigir)(quando clientre aceita proposta)
+            - prestador deve receber notificação se sua proposta for recusada
+        - depois começar notificaçoes de propostas

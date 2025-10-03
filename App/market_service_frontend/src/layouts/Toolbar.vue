@@ -8,7 +8,9 @@ const { usuario, logout } = useAuth();
 const router = useRouter();
 const menu = ref(false);
 const menuNotificacoes = ref(false);
+const dialogNotificacao = ref(false);
 const notificacaoStore = useNotificacaoStore();
+const notificacaoSelecionada = ref<any>(null);
 
 const tabs = computed(() => {
   if (!usuario.value) return;
@@ -70,7 +72,6 @@ const tabAtual = computed(() => {
 
 const estaLogado = computed(() => usuario.value);
 
-// Computed para notificações não lidas
 const notificacoesNaoLidas = computed(() => {
   return notificacaoStore.notificacoes.filter(n => !n.lida);
 });
@@ -101,6 +102,20 @@ async function marcarTodasComoLidas() {
     notificacaoStore.marcarComoLida(notificacao.id)
   );
   await Promise.all(promises);
+}
+
+function abrirDetalheNotificacao(notificacao: any) {
+  notificacaoSelecionada.value = notificacao;
+  dialogNotificacao.value = true;
+  
+  if (!notificacao.lida) {
+    marcarComoLida(notificacao.id);
+  }
+}
+
+function fecharDetalheNotificacao() {
+  dialogNotificacao.value = false;
+  notificacaoSelecionada.value = null;
 }
 
 async function carregarNotificacoes() {
@@ -140,7 +155,6 @@ onUnmounted(() => {
       </v-col>
 
       <v-col cols="auto" class="d-flex align-center gap-2">
-        <!-- Botão de Notificações -->
         <v-menu 
           v-if="estaLogado"
           v-model="menuNotificacoes" 
@@ -193,8 +207,9 @@ onUnmounted(() => {
               <v-list-item
                 v-for="notificacao in notificacaoStore.notificacoes"
                 :key="notificacao.id"
-                :class="{ 'bg-grey-lighten-4': !notificacao.lida }"
+                :class="{ 'bg-grey-lighten-4': !notificacao.lida, 'cursor-pointer': true }"
                 class="border-b"
+                @click="abrirDetalheNotificacao(notificacao)"
               >
                 <v-list-item-title class="text-body-2">
                   {{ notificacao.mensagem }}
@@ -211,7 +226,7 @@ onUnmounted(() => {
                     size="x-small"
                     variant="text"
                     color="success"
-                    @click="marcarComoLida(notificacao.id)"
+                    @click.stop="marcarComoLida(notificacao.id)"
                     title="Marcar como lida"
                   />
                 </template>
@@ -285,6 +300,82 @@ onUnmounted(() => {
       </v-col>
     </v-row>
   </v-sheet>
+
+  <v-dialog 
+    v-model="dialogNotificacao" 
+    max-width="500px"
+    persistent
+  >
+    <v-card v-if="notificacaoSelecionada">
+      <v-toolbar color="primary" density="compact">
+        <v-toolbar-title class="text-white">
+          <v-icon class="mr-2">mdi-bell</v-icon>
+          Notificação
+        </v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-btn
+          icon
+          color="white"
+          @click="fecharDetalheNotificacao"
+        >
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </v-toolbar>
+
+      <v-card-text class="pa-4">
+        <div class="mb-4">
+          <v-chip
+            v-if="!notificacaoSelecionada.lida"
+            color="orange"
+            text-color="white"
+            small
+            class="mb-2"
+          >
+            Nova
+          </v-chip>
+          <v-chip
+            v-else
+            color="green"
+            text-color="white"
+            small
+            class="mb-2"
+          >
+            Lida
+          </v-chip>
+        </div>
+
+        <div class="text-body-1 mb-3">
+          {{ notificacaoSelecionada.mensagem }}
+        </div>
+
+        <v-divider class="my-3"></v-divider>
+
+        <div class="text-caption text-medium-emphasis">
+          <v-icon small class="mr-1">mdi-clock</v-icon>
+          Recebida em: {{ new Date(notificacaoSelecionada.dataCriacaoNotificacao).toLocaleString('pt-BR') }}
+        </div>
+      </v-card-text>
+
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn
+          color="primary"
+          variant="text"
+          @click="fecharDetalheNotificacao"
+        >
+          Fechar
+        </v-btn>
+        <v-btn
+          v-if="!notificacaoSelecionada.lida"
+          color="success"
+          variant="flat"
+          @click="marcarComoLida(notificacaoSelecionada.id); fecharDetalheNotificacao()"
+        >
+          Marcar como Lida
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <style lang="css" scoped>
@@ -308,5 +399,14 @@ onUnmounted(() => {
 
 .border-b {
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.cursor-pointer {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.cursor-pointer:hover {
+  background-color: rgba(0, 0, 0, 0.04);
 }
 </style>

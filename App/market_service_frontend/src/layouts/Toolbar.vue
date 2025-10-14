@@ -216,7 +216,7 @@ onUnmounted(() => {
                 </v-list-item-title>
                 
                 <v-list-item-subtitle class="text-caption text-medium-emphasis mt-1">
-                  {{ new Date(notificacao.dataCriacaoNotificacao).toLocaleString('pt-BR') }}
+                  {{ notificacao.dataCriacaoNotificacao }}
                 </v-list-item-subtitle>
 
                 <template #append>
@@ -352,7 +352,7 @@ onUnmounted(() => {
 
         <div class="text-caption text-medium-emphasis">
           <v-icon small class="mr-1">mdi-clock</v-icon>
-          Recebida em: {{ new Date(notificacaoSelecionada.dataCriacaoNotificacao).toLocaleString('pt-BR') }}
+          Recebida em: {{ notificacaoSelecionada.dataCriacaoNotificacao }}
         </div>
       </v-card-text>
 

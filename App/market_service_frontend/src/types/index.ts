@@ -72,11 +72,3 @@ export interface Notificacao {
   dataCriacaoNotificacao: string;
 }
 
-/*// types/index.ts
-export interface Notificacao {
-  id: number;
-  usuario: Usuario;
-  mensagem: string;
-  lida: boolean;
-  dataCriacaoNotificacao: string; // ou Date se você converter
-} */

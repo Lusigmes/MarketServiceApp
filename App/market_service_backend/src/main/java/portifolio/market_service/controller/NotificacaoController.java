@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import portifolio.market_service.model.entity.Notificacao;
+import portifolio.market_service.dto.NotificacaoResponseDTO;
 import portifolio.market_service.service.NotificacaoService;
 
 @RestController
@@ -20,8 +20,8 @@ public class NotificacaoController {
     private NotificacaoService notificacaoService;
 
     @GetMapping("/{usuarioId}")
-    public List<Notificacao> listar(@PathVariable long usuarioId){
-        return notificacaoService.listarNotificacaos(usuarioId);
+    public List<NotificacaoResponseDTO> listar(@PathVariable long usuarioId){
+        return notificacaoService.listarNotificacoes(usuarioId);
     }
     
     @PostMapping("/{id}/lida")

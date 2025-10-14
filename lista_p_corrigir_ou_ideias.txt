@@ -1,27 +1,7 @@
-1. posteriormente otimizar consultas para deletar entidades do banco;
-2. implementar metódos e consutas para atualizar entidades;
-    2.1. implementar a medida que o front for sendo implementado;
-3. corrrigir consultas para registro e login (3~4 consultas hib) ;
-    3.1.  verificar antes e após integração;
-    3.2. analisar e entender onde os disparos de consulta 
-        acontecem no login;
-4. ajustar controle de status da demanda (e das demais classes com status)
-5. prestar atenção nos consoles.log e sysouts
-6. mostrar localização da demanda somente se o cliente aceitar a proposta da mesma demanda.
-7. criar notificações para comunicar ações entre usuarios.
-    7.1. criar bate-papo pós proposta aceita
-8. verificar comportamento se a demanda estiver em andamento(e proposta aceita), em um cenário que o
-prestador cancelar a proposta aceita, os atributos status e propostaAceitaId da demanda devem mudar.(prioridade)
-	^ implementado e testado mas não concluido.
-9. controle de notificação entre usuarios e notificação para experiencia individual
-10. Em notificação
-    - corrigir envio de notificações para prestdores
-    - DemandaService e PropostaService disparam notificações
-        - primeiro concluir notificações de demanda
-            - clientes recebem notificações se receberem propostas
-            - prestaores recebem notificações se alguma demanda for criada
-            - prestadores recebem notificações se alguam daemadna que ele enviou proposta mudar de estado
-            (conferir se só notifica se o cliente aceitar a proposta do atual prestador ou se ele aceitar qulquer proposta de qualquer pretador)
-                - notificções sao disparadas mesmo se requisição falhar(corrigir)(quando clientre aceita proposta)
-            - prestador deve receber notificação se sua proposta for recusada
-        - depois começar notificaçoes de propostas
+1. Melhorar desempenho de consultas no banco com jpa/hibernate.
+	1.1. Entidade pagamento não será usada, plataforma não será responsável por pagamento.
+
+2. Implementar listagem de prestadores
+	2.1. Implementar perfil do prestador
+
+3. Impementar chat e avaliação do prestador

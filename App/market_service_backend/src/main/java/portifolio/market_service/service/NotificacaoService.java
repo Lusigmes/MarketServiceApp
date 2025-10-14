@@ -2,6 +2,7 @@ package portifolio.market_service.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
+import portifolio.market_service.dto.NotificacaoResponseDTO;
 import portifolio.market_service.model.entity.Notificacao;
 import portifolio.market_service.model.entity.Usuario;
 import portifolio.market_service.repository.NotificacaoRepository;
@@ -42,11 +44,13 @@ public class NotificacaoService {
             logger.error("Erro ao criar notificação para usuário: " + (usuario != null ? usuario.getId() : "null"), e);
         }
     }
-    
-    public List<Notificacao> listarNotificacaos(long usuarioId){
-        return notificacaoRepository.findByUsuarioOrderByDataCriacaoNotificacaoDesc(usuarioId);
+    public List<NotificacaoResponseDTO> listarNotificacoes(long usuarioId){
+        List<Notificacao> notificacoes = notificacaoRepository.findByUsuarioWithUsuarioOrderByDataCriacaoNotificacaoDesc(usuarioId);
+        return notificacoes.stream()
+                .map(NotificacaoResponseDTO::fromEntity)
+                .collect(Collectors.toList());
     }
-    
+
     public void marcarComoLida(long notificacaoId){
         Notificacao notificacao = notificacaoRepository.findById(notificacaoId)
             .orElseThrow(() -> new RuntimeException("Notificação não encontrada"));

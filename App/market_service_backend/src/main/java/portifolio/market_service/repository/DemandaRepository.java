@@ -10,7 +10,13 @@ import portifolio.market_service.model.entity.Demanda;
 
 @RepositoryRestResource(collectionResourceRel = "demandas", path = "demandas")
 public interface DemandaRepository extends JpaRepository<Demanda,Long> {
-    @Query("SELECT d FROM Demanda d LEFT JOIN FETCH d.cliente c LEFT JOIN FETCH c.usuario WHERE d.id = :id")
+   @Query("SELECT d FROM Demanda d " +
+       "LEFT JOIN FETCH d.cliente c " +
+       "LEFT JOIN FETCH c.usuario " +
+       "LEFT JOIN FETCH d.propostaAceita pa " +
+       "LEFT JOIN FETCH pa.prestador p " +
+       "LEFT JOIN FETCH p.usuario " +
+       "WHERE d.id = :id")
     Demanda findDemandaByIdWithClienteAndUsuario(@Param("id") long id);
     
     @Query("SELECT d FROM Demanda d LEFT JOIN FETCH d.cliente WHERE d.id = :id")

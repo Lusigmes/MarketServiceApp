@@ -16,7 +16,9 @@ import portifolio.market_service.model.entity.Cliente;
 import portifolio.market_service.model.entity.Demanda;
 import portifolio.market_service.model.entity.Prestador;
 import portifolio.market_service.model.entity.Proposta;
+import portifolio.market_service.model.entity.Usuario;
 import portifolio.market_service.model.enums.StatusDemanda;
+import portifolio.market_service.model.enums.StatusProposta;
 import portifolio.market_service.repository.ClienteRepository;
 import portifolio.market_service.repository.DemandaRepository;
 import portifolio.market_service.repository.PropostaRepository;
@@ -46,6 +48,7 @@ public class DemandaService {
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
         Demanda demanda = new Demanda();
+
         demanda.setTitulo(dto.titulo());
         demanda.setDescricao(dto.descricao());
         demanda.setCategoria(dto.categoria());
@@ -115,6 +118,9 @@ public class DemandaService {
         if (!demanda.getClienteId().equals(clienteId)) {
             throw new SecurityException("Você não tem permissão para atualizar esta demanda");
         }
+        
+        StatusDemanda statusAnterior = demanda.getStatusDemanda();
+        Long propostaAceitaAnterior = demanda.getPropostaAceitaId();
 
         if (dto.titulo() != null) {
             demanda.setTitulo(dto.titulo());
@@ -139,57 +145,133 @@ public class DemandaService {
             demanda.setPrioridade(dto.prioridade());
         }
 
+        //tratar alteração status
         if (dto.statusDemanda() != null && !dto.statusDemanda().equals(demanda.getStatusDemanda())) {
             regraStatusDemanda(demanda.getStatusDemanda(), dto.statusDemanda());
             demanda.setStatusDemanda(dto.statusDemanda());
              
-            String mensagem = switch (dto.statusDemanda()) {
-                case CANCELADA -> "Sua demanda \"" + demanda.getTitulo() + "\" foi cancelada.";
-                case CONCLUIDA -> "Sua demanda \"" + demanda.getTitulo() + "\" foi concluída.";
-                case EM_ANDAMENTO -> "Sua demanda \"" + demanda.getTitulo() + "\" está em andamento.";
-                case ABERTA -> "Sua demanda \"" + demanda.getTitulo() + "\" foi reaberta.";
-            };
-            
-            notificacaoService.criarNotificacao(demanda.getCliente().getUsuario(), mensagem);
+
+
+            notificacoesStatusDemanda(demanda, statusAnterior, dto.statusDemanda());
+        }
         
-            // melhorar aqui
-            notificarPrestadoresVinculados(demanda, dto.statusDemanda());
-
-        }
-
+        //tratar proposta aceita
         if (dto.propostaAceitaId() != null) {
-            Proposta propostaAceita = propostaRepository.findById(dto.propostaAceitaId())
-                    .orElseThrow(() -> new EntityNotFoundException("Proposta não encontrada com id: " + dto.propostaAceitaId()));
-            demanda.setPropostaAceita(propostaAceita);
+            Proposta propostaAceita = propostaRepository.findPropostaByIdWithRelations(dto.propostaAceitaId());
             
-            notificacaoService.criarNotificacao(propostaAceita.getPrestador().getUsuario(),
-             "Sua proposta para a demanda \"" + demanda.getTitulo() + "\" foi aceita!");
-        }
+            if (propostaAceita == null) {
+                    throw new EntityNotFoundException("Proposta não encontrada com id: " + dto.propostaAceitaId());
+            }
 
+            demanda.setPropostaAceita(propostaAceita);
+
+            notificacaoService.notificarPropostaAceita(
+                propostaAceita.getUsuarioPrestador(), demanda.getTitulo());
+
+        // proposta aceita desfeita
+        } else if(propostaAceitaAnterior != null && dto.propostaAceitaId() == null) {
+            //evitar disparos de notificação quando status da demanda for alterado em outros cenários
+            boolean ehReaberturaManual = dto.statusDemanda() == StatusDemanda.ABERTA && 
+                                        (statusAnterior == StatusDemanda.EM_ANDAMENTO || 
+                                        statusAnterior == StatusDemanda.ABERTA) && // estava com proposta aceita
+                                        !foiCanceladaPeloPrestador(propostaAceitaAnterior); // verifica se não foi cancelamento da proposta
+            
+            if (ehReaberturaManual) {
+                Proposta propostaCompleta = propostaRepository.findPropostaByIdWithRelations(propostaAceitaAnterior);
+                
+                if(propostaCompleta != null && propostaCompleta.getStatusProposta() != StatusProposta.CANCELADA) {
+                    notificacaoService.criarNotificacao(
+                        propostaCompleta.getUsuarioPrestador(), 
+                        "A aceitação da sua proposta para a demanda \"" + demanda.getTitulo() + "\" foi cancelada. " +
+                            "A demanda está novamente disponível"
+                    );
+                }
+            }
+            
+            demanda.setPropostaAceita(null);
+        }
         return demandaRepository.save(demanda);
     }
-    // melhorar aqui
+
+    private boolean foiCanceladaPeloPrestador(Long propostaId) {
+        Proposta proposta = propostaRepository.findPropostaById(propostaId);
+        return proposta != null && proposta.getStatusProposta() == StatusProposta.CANCELADA;
+    }
+    
+    private void notificacoesStatusDemanda(Demanda demanda, StatusDemanda statusAnterior, StatusDemanda novoStatus){
+        Usuario cliente = demanda.getClienteUsuario();
+        String tituloDemanda = demanda.getTitulo();
+
+        switch(novoStatus){
+            case CANCELADA:
+                notificacaoService.notificarDemandaCanceladaCliente(cliente, tituloDemanda);
+            break;
+            case CONCLUIDA:
+                notificacaoService.notificarDemandaConcluidaCliente(cliente, tituloDemanda);
+            break;
+            case EM_ANDAMENTO:
+                notificacaoService.criarNotificacao(cliente, "Sua demanda \"" + tituloDemanda + "\" está em andamento.");
+            break;
+            case ABERTA:
+                notificacaoService.criarNotificacao(cliente, "Sua demanda \"" + tituloDemanda + "\" foi reaberta.");
+            break;
+        }
+
+        if(novoStatus == StatusDemanda.CANCELADA || novoStatus == StatusDemanda.CONCLUIDA ||
+            novoStatus == StatusDemanda.EM_ANDAMENTO || novoStatus == StatusDemanda.ABERTA){
+            notificarPrestadoresVinculados(demanda, novoStatus);
+        }
+    }
+
+
     private void notificarPrestadoresVinculados(Demanda demanda, StatusDemanda novoStatus){
-        List<Prestador> prestadoresVinculados = propostaRepository.findPrestadoresByDemandaId(demanda.getId());
-        if(prestadoresVinculados.isEmpty()){
-            return;
+        String tituloDemanda = demanda.getTitulo();
+
+        if(demanda.getPropostaAceita() != null){
+            Usuario prestadorComPropostaAceita = demanda.getPrestadorResponsavelPorPropostaAceita();
+            if(novoStatus == StatusDemanda.CONCLUIDA){
+                notificacaoService.notificarDemandaConcluidaPrestador(
+                    prestadorComPropostaAceita, tituloDemanda);
+           
+            }else if(novoStatus == StatusDemanda.CANCELADA){
+                notificacaoService.notificarDemandaCanceladaPrestador(prestadorComPropostaAceita, tituloDemanda);
+           
+            }else if(novoStatus == StatusDemanda.EM_ANDAMENTO){
+                notificacaoService.criarNotificacao(prestadorComPropostaAceita, 
+                    "A demanda \"" + tituloDemanda + "\" que você está atendendo está em andamento.");
+          
+            } else if(novoStatus == StatusDemanda.ABERTA){
+                notificacaoService.criarNotificacao(prestadorComPropostaAceita,
+                    "A demanda \"" + tituloDemanda + "\" que você estava atendendo foi reaberta.");
+            }
+        }else {  
+            List<Prestador> prestadoresVinculados = propostaRepository.findPrestadoresByDemandaIdWithUsuario(demanda.getId());
+            if(prestadoresVinculados.isEmpty()){
+                return;
+            }
+            
+            String mensagemStatus = switch (novoStatus) {
+                case CANCELADA -> "A demanda \"" + demanda.getTitulo() + "\" que você propôs foi cancelada.";
+                case CONCLUIDA -> "A demanda \"" + demanda.getTitulo() + "\" que você propôs foi concluída.";
+                case EM_ANDAMENTO -> "A demanda \"" + demanda.getTitulo() + "\" que você propôs está em andamento.";
+                case ABERTA -> "A demanda \"" + demanda.getTitulo() + "\" que você propôs foi reaberta.";
+                default -> null;
+            };
+
+            if(mensagemStatus != null){
+                for(Prestador prestador: prestadoresVinculados){
+                    notificacaoService.criarNotificacao(
+                        prestador.getUsuario(), mensagemStatus);
+                }
+            }
         }
-        String mensagemStatus = switch (novoStatus) {
-            case CANCELADA -> "A demanda \"" + demanda.getTitulo() + "\" que você propôs foi cancelada.";
-            case CONCLUIDA -> "A demanda \"" + demanda.getTitulo() + "\" que você propôs foi concluída.";
-            case EM_ANDAMENTO -> "A demanda \"" + demanda.getTitulo() + "\" que você propôs está em andamento.";
-            case ABERTA -> "A demanda \"" + demanda.getTitulo() + "\" que você propôs foi reaberta.";
-        };
-        
-        for(Prestador prestador: prestadoresVinculados){
-            notificacaoService.criarNotificacao(prestador.getUsuario(), mensagemStatus);
-        }
+
     }
 
     private void notificarTodosPrestadores(Demanda demanda){
         List<Prestador> todosPrestadores = prestadorRepository.findAllWithUsuarioAndRelationPrestadors();
         for(Prestador prestador: todosPrestadores){
-            notificacaoService.criarNotificacao(prestador.getUsuario(), "Nova demanda disponível: " + demanda.getTitulo());
+            notificacaoService.notificarNovaDemanda(prestador.getUsuario(), demanda.getTitulo());
         }
     }
 

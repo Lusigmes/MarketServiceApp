@@ -15,6 +15,7 @@ import portifolio.market_service.dto.PropostaUpdateDTO;
 import portifolio.market_service.model.entity.Demanda;
 import portifolio.market_service.model.entity.Prestador;
 import portifolio.market_service.model.entity.Proposta;
+import portifolio.market_service.model.entity.Usuario;
 import portifolio.market_service.model.enums.StatusProposta;
 import portifolio.market_service.repository.DemandaRepository;
 import portifolio.market_service.repository.PrestadorRepository;
@@ -49,13 +50,15 @@ public class PropostaService {
         proposta.setStatusProposta(dto.statusProposta());
         proposta.setDemanda(demanda);
         proposta.setPrestador(prestador);
-      
-        notificacaoService.criarNotificacao(
-            demanda.getCliente().getUsuario(),
-            "O prestador " + prestador.getUsuario().getNome() + " enviou uma proposta para sua demanda \"" + demanda.getTitulo() + "\"."
-        );
         
-        return propostaRepository.save(proposta);
+        Proposta novaProposta = propostaRepository.save(proposta);
+
+        notificacaoService.notificarPropostaEnviada( // quando prestdor envia proposta, o cliente é notificado
+            demanda.getClienteUsuario(),
+            prestador.getNomeUsuarioPrestador(), 
+            demanda.getTitulo()
+        );
+        return novaProposta;
     }
 
     public List<PropostaResponseDTO> listar() {
@@ -104,8 +107,13 @@ public class PropostaService {
     }
 
     public Proposta atualizar(long id, PropostaUpdateDTO dto) {
-        Proposta proposta = propostaRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Proposta não encontrada"));
+        Proposta proposta = propostaRepository.findByIdWithRelations(id);
+
+        if (proposta == null) {
+            throw new EntityNotFoundException("Proposta não encontrada");
+        }
+
+        StatusProposta statusAnterior = proposta.getStatusProposta();
 
         if (dto.titulo() != null) {
             proposta.setTitulo(dto.titulo());
@@ -120,7 +128,7 @@ public class PropostaService {
         if (dto.statusProposta() != null && dto.statusProposta() != proposta.getStatusProposta()) {
 
             if (dto.statusProposta() == StatusProposta.ACEITA) {
-                Long demandaId = proposta.getDemanda().getId(); // pega demanda da proposta
+                Long demandaId = proposta.getDemandaId(); // pega demanda da proposta
                 boolean existeAceita = propostaRepository
                         .existsByDemanda_IdAndStatusProposta(demandaId, StatusProposta.ACEITA);
 
@@ -131,6 +139,9 @@ public class PropostaService {
             }
             regraStatusProposta(proposta.getStatusProposta(), dto.statusProposta());
             proposta.setStatusProposta(dto.statusProposta());
+            
+            notificacoesStatusProposta(proposta,statusAnterior, dto.statusProposta());
+            
         }
 
         return propostaRepository.save(proposta);
@@ -161,6 +172,40 @@ public class PropostaService {
             case CONCLUIDA -> {
                 throw new IllegalArgumentException("Proposta CONCLUIDA é estado final e não pode ser alterada");
             }
+        }
+    }
+
+    private void notificacoesStatusProposta(Proposta proposta, StatusProposta statusAnterior, StatusProposta novoStatus){
+        Usuario cliente = proposta.getClienteResponsavelPorDemanda();
+        Usuario prestador = proposta.getUsuarioPrestador();
+        String tituloDemanda = proposta.getTituloDemandaVinculada();
+
+        switch(novoStatus){
+            case CANCELADA:
+                if(statusAnterior == StatusProposta.ACEITA ){ 
+                    notificacaoService.criarNotificacao(
+                        proposta.getClienteResponsavelPorDemanda(),
+                        "O prestador " + prestador.getNome() + " cancelou a proposta aceita para sua demanda \"" + 
+                        tituloDemanda + "\". A demanda foi reaberta para novas propostas."
+                    );
+                }
+                break;
+
+            case RECUSADA:
+                if(statusAnterior == StatusProposta.PENDENTE ){
+                    notificacaoService.notificarPropostaRecusada(
+                        prestador, tituloDemanda);
+                }
+                
+                break;
+
+            case CONCLUIDA:
+                if(statusAnterior == StatusProposta.ACEITA ){
+                    notificacaoService.notificarPropostaConcluidaPrestador(
+                        cliente, prestador.getNome(), tituloDemanda);
+                }
+
+                break;
         }
     }
 }

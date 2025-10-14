@@ -115,6 +115,13 @@ public class Demanda implements Serializable {
     public Long getClienteUsuarioId() {
         return this.getCliente().getUsuario().getId();
     }
+    
+    public Usuario getClienteUsuario() {
+        return this.getCliente().getUsuario();
+    }
+    public Usuario getPrestadorResponsavelPorPropostaAceita() {
+        return this.getPropostaAceita().getUsuarioPrestador();
+    }
 
     public Long getPropostaAceitaId() {
         if (this.propostaAceita == null) {

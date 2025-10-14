@@ -90,5 +90,18 @@ public class Proposta implements Serializable {
     public Long getDemandaId(){
         return this.getDemanda().getId();
     }
+
+    public Usuario getUsuarioPrestador(){
+        return this.getPrestador().getUsuario();
+    }
+
+    public Usuario getClienteResponsavelPorDemanda(){
+        return this.getDemanda().getClienteUsuario();
+    }
+
+    public String getTituloDemandaVinculada(){
+        return this.getDemanda().getTitulo();
+    }
+
 }
 

@@ -29,6 +29,24 @@ public interface PropostaRepository extends JpaRepository<Proposta, Long> {
     @Query("SELECT DISTINCT p.prestador FROM Proposta p WHERE p.demanda.id = :demandaId")
     List<Prestador> findPrestadoresByDemandaId(@Param("demandaId") long demandaId);
 
+    @Query("SELECT DISTINCT pr FROM Proposta p JOIN p.prestador pr JOIN FETCH pr.usuario WHERE p.demanda.id = :demandaId")
+    List<Prestador> findPrestadoresByDemandaIdWithUsuario(@Param("demandaId") long demandaId);
+
     @Query("SELECT DISTINCT p.prestador.id from Proposta p WHERE p.demanda.id = :demandaId")
     List<Long> findPrestadoresIdsByDemandaId(@Param("demandaId") long demandaId);
+
+    // @Query("SELECT DISTINCT pr FROM Proposta p JOIN p.prestador pr JOIN FETCH pr.usuario WHERE p.demanda.id = :demandaId")
+    // List<Prestador> findPrestadorByDemandaIdWithUsuario(@Param("demandaId") long demandaId);
+
+    @Query("SELECT p FROM Proposta p JOIN FETCH p.prestador pr JOIN FETCH pr.usuario JOIN FETCH p.demanda WHERE p.id = :id")
+    Proposta findPropostaByIdWithRelations(@Param("id") long id);
+    
+    @Query("SELECT p FROM Proposta p " +
+           "LEFT JOIN FETCH p.demanda d " +
+           "LEFT JOIN FETCH d.cliente c " +
+           "LEFT JOIN FETCH c.usuario " +
+           "LEFT JOIN FETCH p.prestador pr " +
+           "LEFT JOIN FETCH pr.usuario " +
+           "WHERE p.id = :id")
+    Proposta findByIdWithRelations(@Param("id") long id);
 }

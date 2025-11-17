@@ -38,12 +38,12 @@ public class SecurityConfiguration {
             .authorizeHttpRequests(auth -> auth
             // .requestMatchers(HttpMethod.POST , "/usuarios").permitAll()
             .requestMatchers("/auth/registro", "/auth/login").permitAll()
-            .requestMatchers("/usuarios/**").hasAnyRole("ADMIN")
+            .requestMatchers("/usuarios/**").hasAnyRole("USER","ADMIN")
             .requestMatchers("/clientes/**").hasAnyRole("USER", "ADMIN")
             .requestMatchers("/prestadores/**").hasAnyRole("USER", "ADMIN")
             .requestMatchers("/avaliacoes/**").hasAnyRole("USER", "ADMIN")
             .requestMatchers("/demandas/**").hasAnyRole("USER", "ADMIN")
-            
+            // escolha de roles que podem trabalhar em detemrinados metodos
             
             .anyRequest().authenticated()
             )

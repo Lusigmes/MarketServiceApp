@@ -2,8 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 
 const routes = [
-  { path: "/", name: "Home", component: () => import('@/components/Home.vue') },
-  { path: "/login", name: "Login", component: () => import('@/components/LoginForm.vue') },
+  { path: "/", name: "Login", component: () => import('@/components/LoginForm.vue') },
   { path: "/registro", name: "Registro", component: () => import('@/components/RegistroForm.vue') },
   { 
       path: "/dashboard", 
@@ -61,12 +60,12 @@ router.beforeEach(async (to) => {
     await fetchUsuario();
   }
   if (to.meta.requiresAuth && !token.value) {
-    return "/login";
+    return "/";
   }
   if(token.value && to.path === '/') {
     return "/dashboard";
   }
-  if(token.value && (to.path === '/login' || to.path === '/registro')){
+  if(token.value && (to.path === '/' || to.path === '/registro')){
     return "/dashboard";
   }
 

@@ -44,6 +44,7 @@ public class NotificacaoService {
             logger.error("Erro ao criar notificação para usuário: " + (usuario != null ? usuario.getId() : "null"), e);
         }
     }
+    
     public List<NotificacaoResponseDTO> listarNotificacoes(long usuarioId){
         List<Notificacao> notificacoes = notificacaoRepository.findByUsuarioWithUsuarioOrderByDataCriacaoNotificacaoDesc(usuarioId);
         return notificacoes.stream()

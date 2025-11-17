@@ -2,10 +2,6 @@ package portifolio.market_service.dto;
 
 
 import portifolio.market_service.model.entity.Notificacao;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
-
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public record NotificacaoResponseDTO(

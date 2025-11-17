@@ -16,13 +16,3 @@ export const getUsuarioAutenticado = async (): Promise<UsuarioResponseInterface>
     const response = await httpConnect.get('/auth/me');
     return response.data;
 };
-
-export const listarUsuarios = async () => {
-    const response = await httpConnect.get<UsuarioResponseInterface>("/usuarios");
-    return response.data;
-}
-
-export const deletarUsuario = async (id: number) => {
-    await httpConnect.delete(`/usuarios/${id}`);
-}
-

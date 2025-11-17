@@ -1,86 +1,145 @@
 <template>
-  <v-card elevation="0">
-    <v-breadcrumbs class="ml-4 mt-0" :items="itemBreadCrumb">
-      <template v-slot:prepend>
-        <v-icon icon="mdi-home"></v-icon>
-      </template>
-      <template v-slot:divider>
-        <v-icon icon="mdi-chevron-right"></v-icon>
-      </template>
-    </v-breadcrumbs>
-  </v-card>
+  <v-app>
+    <v-main>
+      <!-- Breadcrumb -->
+      <v-card elevation="0">
+        <v-breadcrumbs class="ml-4 mt-0" :items="itemBreadCrumb">
+          <template v-slot:prepend>
+            <v-icon icon="mdi-home"></v-icon>
+          </template>
+          <template v-slot:divider>
+            <v-icon icon="mdi-chevron-right"></v-icon>
+          </template>
+        </v-breadcrumbs>
+      </v-card>
 
-  <v-container class="fill-height d-flex justify-center align-center" fluid>
-    <v-card class="pa-6" width="400" elevation="6">
-      <h2 class="text-center mb-4" style="color:#1a1a1a;">Registrar Usuário</h2>
-      
-      <v-form @submit.prevent="registrarUsuario">
-        <v-row class="mb-4" dense>
-          <v-col cols="6">
+      <v-container class="fill-height d-flex justify-center align-center" fluid>
+        <v-card class="pa-6" width="450" elevation="6">
+          <h2 class="text-center mb-4" style="color:#1a1a1a;">Registrar Usuário</h2>
+          
+          <v-form @submit.prevent="registrarUsuario">
+            <v-row class="mb-3" dense>
+              <v-col cols="6">
+                <v-text-field 
+                  v-model="usuario.nome" 
+                  label="Nome" 
+                  outlined 
+                  dense 
+                  :error-messages="errors.nome"
+                  prepend-inner-icon="mdi-account"
+                />
+              </v-col>
+              <v-col cols="6">
+                <v-select
+                  v-model="usuario.tipoUsuario"
+                  :items="['CLIENTE', 'PRESTADOR']"
+                  label="Tipo"
+                  outlined
+                  dense
+                  :error-messages="errors.tipoUsuario"
+                  prepend-inner-icon="mdi-account-switch"
+                />
+              </v-col>
+            </v-row>
+
             <v-text-field 
-              v-model="usuario.nome" 
-              label="Nome" 
+              v-model="usuario.cpf" 
+              label="CPF" 
               outlined 
               dense 
-              :error-messages="errors.nome"
+              class="mb-3" 
+              v-mask="'###.###.###-##'"
+              :error-messages="errors.cpf"
+              prepend-inner-icon="mdi-card-account-details"
             />
-          </v-col>
-          <v-col cols="6">
-            <v-select
-              v-model="usuario.tipoUsuario"
-              :items="['CLIENTE', 'PRESTADOR']"
-              label="Tipo"
-              outlined
-              dense
-              :error-messages="errors.tipoUsuario"
+            
+            <v-text-field 
+              v-model="usuario.email" 
+              label="E-mail" 
+              type="email" 
+              outlined 
+              dense 
+              class="mb-3" 
+              :error-messages="errors.email"
+              prepend-inner-icon="mdi-email"
             />
-          </v-col>
-        </v-row>
+            
+            <v-text-field 
+              v-model="usuario.senha" 
+              label="Senha" 
+              type="password" 
+              outlined 
+              dense 
+              class="mb-3" 
+              :error-messages="errors.senha"
+              prepend-inner-icon="mdi-lock"
+            />
+            
+            <v-text-field 
+              v-model="usuario.cep" 
+              label="CEP" 
+              outlined 
+              dense 
+              class="mb-4" 
+              v-mask="'#####-###'"
+              :error-messages="errors.cep"
+              prepend-inner-icon="mdi-map-marker"
+            />
 
-        <v-text-field 
-          v-model="usuario.cpf" 
-          label="CPF" 
-          outlined 
-          dense 
-          class="mb-3" 
-          v-mask="'###.###.###-##'"
-          :error-messages="errors.cpf"
-        />
-        
-        <v-text-field 
-          v-model="usuario.email" 
-          label="E-mail" 
-          type="email" 
-          outlined 
-          dense 
-          class="mb-3" 
-          :error-messages="errors.email"
-        />
-        
-        <v-text-field 
-          v-model="usuario.senha" 
-          label="Senha" 
-          type="password" 
-          outlined 
-          dense 
-          class="mb-3" 
-          :error-messages="errors.senha"
-        />
-        
-        <v-text-field 
-          v-model="usuario.cep" 
-          label="CEP" 
-          outlined 
-          dense 
-          class="mb-3" 
-          v-mask="'#####-###'"
-          :error-messages="errors.cep"
-        />
+            <v-btn 
+              type="submit" 
+              color="primary" 
+              class="mt-2" 
+              block
+              :loading="loading"
+              :disabled="loading"
+            >
+              <template v-if="loading">
+                <v-progress-circular
+                  indeterminate
+                  size="20"
+                  width="2"
+                  class="mr-2"
+                />
+                Cadastrando...
+              </template>
+              <template v-else>
+                <v-icon icon="mdi-account-plus" class="mr-2" />
+                Registrar
+              </template>
+            </v-btn>
 
-        <v-btn type="submit" color="primary" class="mt-4" block>Registrar</v-btn>
-      </v-form>
-    </v-card>
-  </v-container>
+            <v-alert
+              v-if="error"
+              type="error"
+              variant="tonal"
+              class="mt-4"
+              closable
+            >
+              {{ error }}
+            </v-alert>
+          </v-form>
+
+          <v-divider class="my-4" />
+
+          <div class="text-center">
+            <span class="text-body-2 text-medium-emphasis mr-2">
+              Já tem uma conta?
+            </span>
+            <v-btn
+              @click="$router.push('/')"
+              variant="text"
+              color="primary"
+              size="small"
+            >
+              <v-icon icon="mdi-login" class="mr-1" />
+              Fazer Login
+            </v-btn>
+          </div>
+        </v-card>
+      </v-container>
+    </v-main>
+  </v-app>
 </template>
 
 <style scoped>
@@ -88,9 +147,8 @@
   border-radius: 12px;
 }
 </style>
-
 <script setup lang="ts">
-import { reactive } from 'vue';
+import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuth } from '@/composables/useAuth';
 import type { RegistroUsuarioInterface } from '@/types';
@@ -99,97 +157,95 @@ import * as yup from 'yup'
 import { validarCPF } from '@/utils/validarCPF';
 import { useNotification } from "@/composables/useNotification";
 
-  const { showNotification } = useNotification();
+const { showNotification } = useNotification();
+const itemBreadCrumb = reactive(itemListaRegistro());
+const { registro, error, loading } = useAuth();
+const router = useRouter();
 
-  const itemBreadCrumb = reactive(itemListaRegistro());
-  const {registro, error} = useAuth();
-  const router = useRouter();
-  
-  const usuario = reactive<RegistroUsuarioInterface>({
-      nome: "",
-      cpf: "",
-      email: "",
-      senha: "",
-      cep: "",
-      tipoUsuario: "CLIENTE"
-  });
-  const errors = reactive({
-      nome: "",
-      cpf: "",
-      email: "",
-      senha: "",
-      cep: "",
-      tipoUsuario: ""
-  });
-  
-  const schema = yup.object({
-    nome: yup.string()
-      .required('Nome é obrigatório')
-      .min(2, 'Nome deve ter pelo menos 2 caracteres')
-      .max(100, 'Nome deve ter no máximo 100 caracteres'),
-    cpf: yup.string()
-      .required('CPF é obrigatório')
-      .transform(value => value ? value.replace(/\D/g, '') : '') 
-      .length(11, 'CPF deve conter exatamente 11 números')
-      .test('cpf-valido', 'CPF inválido', (value) => {
-        const resultado = validarCPF(value);
-        return resultado;
-      }),
-    email: yup.string()
-      .required('E-mail é obrigatório')
-      .email('E-mail deve ser válido'),
-    senha: yup.string()
+const usuario = reactive<RegistroUsuarioInterface>({
+    nome: "",
+    cpf: "",
+    email: "",
+    senha: "",
+    cep: "",
+    tipoUsuario: "CLIENTE"
+});
+
+const errors = reactive({
+    nome: "",
+    cpf: "",
+    email: "",
+    senha: "",
+    cep: "",
+    tipoUsuario: ""
+});
+
+const schema = yup.object({
+  nome: yup.string()
+    .required('Nome é obrigatório')
+    .min(2, 'Nome deve ter pelo menos 2 caracteres')
+    .max(100, 'Nome deve ter no máximo 100 caracteres'),
+  cpf: yup.string()
+    .required('CPF é obrigatório')
+    .transform(value => value ? value.replace(/\D/g, '') : '') 
+    .length(11, 'CPF deve conter exatamente 11 números')
+    .test('cpf-valido', 'CPF inválido', (value) => {
+      const resultado = validarCPF(value);
+      return resultado;
+    }),
+  email: yup.string()
+    .required('E-mail é obrigatório')
+    .email('E-mail deve ser válido'),
+  senha: yup.string()
     .required('Senha é obrigatória')
     .min(6, 'Senha deve ter pelo menos 6 caracteres'),
-    cep: yup.string()
-      .transform(value => value.replace(/\D/g, ''))
-      .required('CEP é obrigatório')
-      .length(8, 'CEP deve conter exatamente 8 números'),
-    tipoUsuario: yup.string()
-     .required('Tipo de usuário é obrigatório')
-      .oneOf(['CLIENTE', 'PRESTADOR'], 'Tipo de usuário deve ser CLIENTE ou PRESTADOR')
-  });
+  cep: yup.string()
+    .transform(value => value.replace(/\D/g, ''))
+    .required('CEP é obrigatório')
+    .length(8, 'CEP deve conter exatamente 8 números'),
+  tipoUsuario: yup.string()
+    .required('Tipo de usuário é obrigatório')
+    .oneOf(['CLIENTE', 'PRESTADOR'], 'Tipo de usuário deve ser CLIENTE ou PRESTADOR')
+});
 
-  async function registrarUsuario(){
+async function registrarUsuario() {
+  try {
+    const usuarioParaEnviar = {
+      ...usuario,
+      cpf: usuario.cpf.replace(/\D/g, ''),
+      cep: usuario.cep.replace(/\D/g, ''),
+    };
     
-    try {
-      const usuarioParaEnviar = {
-        ...usuario,
-        cpf: usuario.cpf.replace(/\D/g, ''),
-        cep: usuario.cep.replace(/\D/g, ''),
-      };
-      const valido = await validarForm();
-      if(!valido) return;
+    const valido = await validarForm();
+    if (!valido) return;
 
-      await registro(usuarioParaEnviar);
-        showNotification("Usuário cadastrado com sucesso!", "success");
-      router.push("/dashboard")
-    } catch (error) {
-        showNotification("Erro ao cadastrar usuário!", "error");
-    }
-  };
-
-  const validarForm = async(): Promise<boolean> => {
-    try {
-      await schema.validate(usuario, { abortEarly: false });
-    
-      Object.keys(errors).forEach(key => { errors[key as keyof typeof errors] = ''; });
-      return true;
-    } catch (erro: any) {
-      Object.keys(errors).forEach(key => { errors[key as keyof typeof errors] = ''; });
-      
-      if (erro.inner) {
-        erro.inner.forEach((e: yup.ValidationError) => {
-          const field = e.path as keyof typeof errors;
-          if (field in errors) {
-            errors[field] = e.message;
-          }
-        });
-      }
-      
-      return false;
-    }
+    await registro(usuarioParaEnviar);
+    showNotification("Usuário cadastrado com sucesso!", "success");
+    router.push("/dashboard")
+  } catch (error) {
+    showNotification("Erro ao cadastrar usuário!", "error");
   }
+};
 
-
+const validarForm = async (): Promise<boolean> => {
+  try {
+    await schema.validate(usuario, { abortEarly: false });
+  
+    Object.keys(errors).forEach(key => { errors[key as keyof typeof errors] = ''; });
+    return true;
+  } catch (erro: any) {
+    Object.keys(errors).forEach(key => { errors[key as keyof typeof errors] = ''; });
+    
+    if (erro.inner) {
+      erro.inner.forEach((e: yup.ValidationError) => {
+        const field = e.path as keyof typeof errors;
+        if (field in errors) {
+          errors[field] = e.message;
+        }
+      });
+    }
+    
+    return false;
+  }
+}
 </script>

@@ -3,6 +3,8 @@ import { useAuth } from '@/composables/useAuth';
 import { useRouter } from 'vue-router';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useNotificacaoStore } from '@/store/notificacaoStore';
+import type { UsuarioResponseInterface } from '@/types';
+import EditarUsuarioForm from '@/components/EditarUsuarioForm.vue';
 
 const { usuario, logout } = useAuth();
 const router = useRouter();
@@ -82,16 +84,36 @@ const quantidadeNotificacoes = computed(() => {
 
 function sair() {
   logout();
-  router.push("/login");
+  router.push("/");
 }
 
 function irLogin() {
-  router.push("/login");
+  router.push("/");
 }
 
 function navegarPara(route: string) {
   router.push(route);
 }
+
+const dialogEditarUsuario = ref(false);
+
+function abrirFormEdicaoUsuario(){
+  dialogEditarUsuario.value = true;
+  menu.value = false;
+}
+
+async function handleUsuarioEditado(usuarioAtt: Partial<UsuarioResponseInterface>){
+  dialogEditarUsuario.value = false;
+  if(usuario.value){
+    usuario.value = {...usuario.value, ...usuarioAtt};
+  }
+}
+
+function fecharFormEdicaoUsuario(){
+  dialogEditarUsuario.value = false;
+}
+
+// SEPARAR RESPONSABILDADES DE NOTIFICACÇÕES EM UM COMPONENTE PROPORIO
 
 async function marcarComoLida(id: number) {
   await notificacaoStore.marcarComoLida(id);
@@ -279,8 +301,8 @@ onUnmounted(() => {
 
               <v-divider></v-divider>
 
-              <v-list-item @click="router.push('/configuracoes')">
-                <v-list-item-title>Editar / Configurações</v-list-item-title>
+              <v-list-item @click="abrirFormEdicaoUsuario">
+                <v-list-item-title>Editar Perfil</v-list-item-title>
               </v-list-item>
 
               <v-list-item @click="sair">
@@ -300,6 +322,22 @@ onUnmounted(() => {
       </v-col>
     </v-row>
   </v-sheet>
+ 
+  <v-dialog 
+    v-model="dialogEditarUsuario" 
+    max-width="600px"
+    persistent
+    :scrollable="false"
+  >
+    <v-card>
+      <EditarUsuarioForm
+        v-if="dialogEditarUsuario && usuario"
+        :usuario="usuario"
+        @salvar="handleUsuarioEditado"
+        @cancelar="fecharFormEdicaoUsuario"
+      />
+    </v-card>
+  </v-dialog>
 
   <v-dialog 
     v-model="dialogNotificacao" 

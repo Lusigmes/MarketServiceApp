@@ -2,6 +2,8 @@ package portifolio.market_service.repository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,4 +19,9 @@ public interface PrestadorRepository extends JpaRepository<Prestador, Long>{
 
     @Query("SELECT p.id FROM Prestador p WHERE p.usuario.id = :id")
     long findPrestadorIdByUsuarioId(@Param("id") long usuarioId);
+
+    @Query("SELECT p FROM Prestador p JOIN FETCH p.usuario u")
+    Page<Prestador> findAllWithUsuario(Pageable pageable);
+
+
 }

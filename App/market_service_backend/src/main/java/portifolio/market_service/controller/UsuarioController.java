@@ -9,10 +9,13 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import portifolio.market_service.dto.UsuarioResponseDTO;
+import portifolio.market_service.dto.UsuarioUpdateDTO;
 import portifolio.market_service.model.entity.Usuario;
 import portifolio.market_service.repository.UsuarioRepository;
 import portifolio.market_service.service.UsuarioService;
@@ -28,7 +31,6 @@ public class UsuarioController {
     @Autowired
     private UsuarioService usuarioService;
         
-    // @PreAuthorize("hasRole('ADMIN')")
     @CrossOrigin
     @GetMapping
     public ResponseEntity<List<UsuarioResponseDTO>> findAll() {
@@ -48,17 +50,13 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
+    @CrossOrigin
+    @PutMapping("/{id}")
+    public ResponseEntity<UsuarioResponseDTO> update(@PathVariable long id, @RequestBody UsuarioUpdateDTO dto) {
+        Usuario usuarioAtualizado = usuarioService.atualizar(id, dto);
+        return ResponseEntity.ok(usuarioService.toDTO(usuarioAtualizado));
+    }
 
 
 
-    // @CrossOrigin
-    // @PutMapping("/{id}")
-    // public ResponseEntity<Usuario> update(@PathVariable long id, @RequestBody Usuario usuario) {
-    //     if (!usuarioRepository.existsById(id)) {
-    //         return ResponseEntity.notFound().build();
-    //     }
-    //     usuario.setId(id); 
-    //     Usuario usuarioAtualizado = usuarioRepository.save(usuario);
-    //     return ResponseEntity.ok(usuarioAtualizado);
-    // }
 }

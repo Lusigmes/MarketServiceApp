@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.AllArgsConstructor;
 import portifolio.market_service.dto.RegistroUsuarioDTO;
 import portifolio.market_service.dto.UsuarioResponseDTO;
+import portifolio.market_service.dto.UsuarioUpdateDTO;
 import portifolio.market_service.model.entity.Cliente;
 import portifolio.market_service.model.entity.Prestador;
 import portifolio.market_service.model.entity.Usuario;
@@ -66,5 +67,16 @@ public class UsuarioService {
             usuario.getTipoUsuario().name(),
             usuario.getRoleUsuario().name()
         );
+    }
+    @Transactional
+    public Usuario atualizar(long id, UsuarioUpdateDTO dto){
+        Usuario usuario = usuarioRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+   
+        usuario.setNome(dto.nome());
+        usuario.setEmail(dto.email());
+        usuario.setCEP(dto.cep());
+   
+        return usuarioRepository.save(usuario);
     }
 }

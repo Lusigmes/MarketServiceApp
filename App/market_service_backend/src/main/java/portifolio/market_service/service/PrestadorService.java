@@ -3,6 +3,8 @@ package portifolio.market_service.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import portifolio.market_service.dto.PrestadorResponseDTO;
@@ -33,4 +35,8 @@ public class PrestadorService {
         return prestadorRepository.findPrestadorIdByUsuarioId(usuarioId);
     }
 
+    public Page<PrestadorResponseDTO> findAllPrestadoresPaginado(Pageable paageable){
+        Page<Prestador> prestadoresPage = prestadorRepository.findAllWithUsuario(paageable);
+        return prestadoresPage.map(this::toDTO);
+    }
 }

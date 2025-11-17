@@ -45,7 +45,6 @@ function irRegistro(){
         </v-breadcrumbs>
       </v-card>
 
-      <!-- Formulário de Login -->
       <v-container class="fill-height d-flex justify-center align-center" fluid>
         <v-card class="pa-6" width="400" elevation="6">
           <h2 class="text-center mb-4" style="color:#1a1a1a;">Login</h2>

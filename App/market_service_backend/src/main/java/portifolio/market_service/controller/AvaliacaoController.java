@@ -1,7 +1,11 @@
 package portifolio.market_service.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import portifolio.market_service.dto.AvaliacaoDTO;
@@ -56,7 +61,48 @@ public class AvaliacaoController {
         return new ResponseEntity<>(dto, HttpStatus.CREATED);
     }
 
+    @GetMapping("/prestador/{prestadorId}/paginadas")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<Page<AvaliacaoResponseDTO>> findAvaliacoesDoPrestadorPaginado(
+            @PathVariable Long prestadorId,
+            Pageable pageable) {
+        Page<AvaliacaoResponseDTO> avaliacoes = avaliacaoService.findAvaliacoesDoPrestador(prestadorId, pageable);
+        
+        return ResponseEntity.ok(avaliacoes);
+    }
 
-    // criar atualização de avaliacao
+    @GetMapping("/cliente/{clienteId}/paginadas")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<Page<AvaliacaoResponseDTO>> findAvaliacoesDoClientePaginado(
+            @PathVariable Long clienteId,
+            Pageable pageable) {
+        Page<AvaliacaoResponseDTO> avaliacoes = avaliacaoService.findAvaliacoesDoCliente(clienteId, pageable);
+        
+        return ResponseEntity.ok(avaliacoes);
+    }
+    
+    @GetMapping("/prestador/{prestadorId}/estatisticas")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<Map<String, Object>> getEstatisticasPrestador(@PathVariable Long prestadorId) {
+        Map<String, Object> estatisticas = avaliacaoService.obterMediasECountAvaliacoes(prestadorId);
+        return ResponseEntity.ok(estatisticas);
+    }
 
+    @GetMapping("/verificar")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<Map<String, Object>> verificarAvaliacaoExistente(
+            @RequestParam Long clienteId,
+            @RequestParam Long prestadorId,
+            @RequestParam Long demandaId) {
+        
+        boolean existeAvaliacao = avaliacaoService.verificarAvaliacaoExistente(clienteId, prestadorId, demandaId);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("existeAvaliacao", existeAvaliacao);
+        response.put("clienteId", clienteId);
+        response.put("prestadorId", prestadorId);
+        response.put("demandaId", demandaId);
+        
+        return ResponseEntity.ok(response);
+    }
 }

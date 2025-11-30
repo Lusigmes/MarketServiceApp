@@ -19,6 +19,12 @@ export interface ClienteResponseInterface{
     id:number;
     usuario: UsuarioResponseInterface;
 }
+export interface PrestadorResponseInterface{
+    id:number;
+    usuario: UsuarioResponseInterface;
+    telefone: string;
+    especializacao:string;
+}
 
 export interface UsuarioResponseInterface{
     id:number;
@@ -72,3 +78,22 @@ export interface Notificacao {
   dataCriacaoNotificacao: string;
 }
 
+export interface AvaliacaoResponseInterface {
+    id: number;
+    nota: number;
+    comentario: string;
+    clienteId: number;
+    prestadorId: number;
+    dataAvaliacao: string;
+    nomeCliente?: string;
+    nomePrestador?: string;
+    demandaId:number;
+}
+
+export interface AvaliacaoInterface {
+    nota: number;
+    comentario: string;
+    clienteId: number;
+    prestadorId: number;
+    demandaId:number;
+}

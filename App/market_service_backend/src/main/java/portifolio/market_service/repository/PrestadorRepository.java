@@ -23,5 +23,7 @@ public interface PrestadorRepository extends JpaRepository<Prestador, Long>{
     @Query("SELECT p FROM Prestador p JOIN FETCH p.usuario u")
     Page<Prestador> findAllWithUsuario(Pageable pageable);
 
-
+    @Query("SELECT p FROM Prestador p JOIN FETCH p.usuario WHERE p.id = :id")
+    Prestador findByIdWithUsuario(@Param("id") Long id);
+    
 }

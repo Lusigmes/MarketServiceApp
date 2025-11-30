@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { itemListaLogin } from '@/api/itemService';
 import { useAuth } from '@/composables/useAuth';
+import { useNotification } from '@/composables/useNotification';
 import type { LoginUsuarioInterface } from '@/types';
 import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -13,6 +14,7 @@ import { useRouter } from 'vue-router';
         email:"",
         senha:""
     });
+    const { showNotification } = useNotification();
 
     const mostrarSenha = ref(false);
 
@@ -21,7 +23,7 @@ import { useRouter } from 'vue-router';
         if(sucesso){
             router.push("/dashboard")
         }else{
-            alert("Falha no login")
+          showNotification("Falha no Login.", "error");
         }
     }
 function irRegistro(){

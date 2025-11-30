@@ -11,5 +11,8 @@ public record AvaliacaoResponseDTO(
     long clienteId,
     long prestadorId,
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
-    LocalDateTime dataAvaliacao
+    LocalDateTime dataAvaliacao,
+    String nomeCliente,
+    String nomePrestador,
+    Long demandaId
 ) {}

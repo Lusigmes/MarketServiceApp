@@ -51,3 +51,45 @@ export const corStatusProposta = (status: StatusProposta) => {
 }
 
 
+export const corVinculoDemandaProposta = (
+  statusDemanda: StatusDemanda, 
+  statusProposta: StatusProposta,
+  propostaAceitaId: number | null,
+  prestadorIdProposta?: number,
+  prestadorIdAtual?: number
+): string => {
+  // Se é o prestador responsável pela proposta aceita
+  const ehPrestadorResponsavel = propostaAceitaId && prestadorIdProposta === prestadorIdAtual;
+  
+  if (statusDemanda === StatusDemanda.EM_ANDAMENTO && ehPrestadorResponsavel) {
+    if (statusProposta === StatusProposta.ACEITA) {
+      return 'yellow-lighten-5'; // Amarelo claro - em andamento
+    } else if (statusProposta === StatusProposta.CONCLUIDA) {
+      return 'green-lighten-5'; // Verde claro - concluído
+    }
+  }
+  
+  // Retorna a cor padrão baseada no status da demanda
+  return corStatus(statusDemanda);
+};
+
+export const corVinculoPropostaDemanda = (
+  statusProposta: StatusProposta,
+  statusDemanda: StatusDemanda,
+  demandaId?: number,
+  propostaAceitaId?: number | null
+): string => {
+  // Se esta proposta é a aceita na demanda
+  const ehPropostaAceita = propostaAceitaId === demandaId;
+  
+  if (ehPropostaAceita && statusDemanda === StatusDemanda.EM_ANDAMENTO) {
+    if (statusProposta === StatusProposta.ACEITA) {
+      return 'yellow-lighten-5'; // Amarelo claro - em andamento
+    } else if (statusProposta === StatusProposta.CONCLUIDA) {
+      return 'green-lighten-5'; // Verde claro - concluído
+    }
+  }
+  
+  // Retorna a cor padrão baseada no status da proposta
+  return corStatusProposta(statusProposta);
+};

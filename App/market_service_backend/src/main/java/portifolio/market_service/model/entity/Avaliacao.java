@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import org.hibernate.annotations.CreationTimestamp;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -41,10 +42,12 @@ public class Avaliacao {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cliente_id", nullable = false)
+    @JsonBackReference
     private Cliente cliente;
-
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "prestador_id", nullable = false)
+    @JsonBackReference
     private Prestador prestador;
 
     @CreationTimestamp
@@ -52,6 +55,14 @@ public class Avaliacao {
     @Column(name = "data_avaliacao", updatable = false)
     private LocalDateTime dataAvaliacao;
 
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "demanda_id")
+    private Demanda demanda;
+
+    public long getDemandaId() {
+        return this.getDemanda().getId();
+    }
     public long getClienteId(){
         return this.getCliente().getId();
     }
@@ -66,6 +77,14 @@ public class Avaliacao {
     
     public Usuario getUsuarioPrestador(){
         return this.getPrestador().getUsuario();
+    }
+
+    public String getNomeCliente(){
+        return this.getCliente().getNomeUsuarioCliente();
+    }
+    
+    public String getNomePrestador(){
+        return this.getPrestador().getNomeUsuarioPrestador();
     }
 
 

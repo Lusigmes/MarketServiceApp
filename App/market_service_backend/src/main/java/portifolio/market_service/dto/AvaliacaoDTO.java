@@ -17,6 +17,8 @@ public record AvaliacaoDTO(
     Long clienteId,
 
     @NotNull(message = "O ID do prestador é obrigatório")
-    Long prestadorId
+    Long prestadorId,
+
+    Long demandaId
 
 ){ }

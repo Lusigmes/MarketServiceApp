@@ -67,6 +67,11 @@ public class PrestadorController {
         return ResponseEntity.ok(prestadorePage);
     }
 
-
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<PrestadorResponseDTO> findById(@PathVariable Long id) {
+        PrestadorResponseDTO prestador = prestadorService.findPrestadorById(id);
+        return ResponseEntity.ok(prestador);
+    }
 
 }

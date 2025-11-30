@@ -1,3 +1,4 @@
+import type { PrestadorResponseInterface } from "@/types";
 import httpConnect from "./connect/connect";
 
 export const carregarPrestadores = async () => {
@@ -14,17 +15,26 @@ export const findPrestadorIdByUsuarioId = async(usuarioId: number): Promise<numb
     return data;
 };
 
-export const carregarPrestadoresPaginado = async (page:0, size: 5, sort:"usuario.nome, asc") => {
+export const carregarPrestadoresPaginado = async (page: number, size: number, sort?: string) => {
     try {
-        const { data } = await httpConnect.get("/prestadores/paginados",{
-            params:{
+        const { data } = await httpConnect.get("/prestadores/paginados", {
+            params: {
                 page,
-                size:5,
+                size,
                 sort
             }
         });
-        return data;
+        return data; 
     } catch (error) {
         throw error;
     }
 }
+
+export const carregarPrestadorPorId = async (prestadorId: number): Promise<PrestadorResponseInterface> => {
+    try {
+        const { data } = await httpConnect.get(`/prestadores/${prestadorId}`);
+        return data;
+    } catch (error) {
+        throw error;
+    }
+};

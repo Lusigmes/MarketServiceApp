@@ -2,7 +2,9 @@ package portifolio.market_service.dto;
 
 public record PrestadorResponseDTO(
     long id,
-    UsuarioResponseDTO usuario
+    UsuarioResponseDTO usuario,
+    String telefone,
+    String especializacao
 ) {
     
 }

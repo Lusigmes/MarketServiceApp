@@ -34,5 +34,7 @@ public class Cliente implements Serializable{
     @JsonManagedReference(value = "cliente-usuario")
     private Usuario usuario;
     
-    
+    public String getNomeUsuarioCliente(){
+        return this.getUsuario().getNome();
+    }
 }

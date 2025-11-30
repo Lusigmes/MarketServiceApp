@@ -34,6 +34,12 @@ public class Prestador implements Serializable{
     @JoinColumn(name="usuario_id", nullable=false, unique=true)
     private Usuario usuario;
 
+    @Column
+    private String telefone;
+    
+    @Column
+    private String especializacao;
+
     public String getNomeUsuarioPrestador(){
         return this.getUsuario().getNome();
     }

@@ -9,6 +9,8 @@ import { atualizarDemanda } from '@/api/DemandaService';
 import CriarPropostaForm from '../detalhesProposta/CriarPropostaForm.vue';
 import { atualizarProposta, carregarTodasPropostasDaDemanda, getPropostaById } from '@/api/PropostaService';
 import { useNotification } from "@/composables/useNotification";
+import GerarAvaliacaoForm from '../detalhesAvaliacoes/GerarAvaliacaoForm.vue';
+import { verificarAvaliacaoExistente } from '@/api/AvaliacaoService';
 
   const { showNotification } = useNotification();
   
@@ -56,6 +58,13 @@ import { useNotification } from "@/composables/useNotification";
     props.demanda.statusDemanda === StatusDemanda.EM_ANDAMENTO &&
     propostaAceitaEstaConcluida.value
   );
+
+  const podeAvaliar = computed(() => 
+    permissaoClienteResponsavel.value && 
+    props.demanda.statusDemanda === StatusDemanda.CONCLUIDA &&
+    propostaAceita.value &&
+    !avaliacaoExistente.value
+  );
   
 
   const editando = ref(false); 
@@ -79,9 +88,55 @@ import { useNotification } from "@/composables/useNotification";
   
   const propostaCriada = () => {
     fecharFormProposta();
-    console.log("Proposta criada");
-
+    showNotification("Proposta criada", "success");
   }
+
+  const formAvaliacao = ref(false);
+  const avaliacaoExistente = ref(false);
+  const carregandoAvaliacao = ref(false);
+
+  const abrirFormAvaliacao = () =>{
+      formAvaliacao.value = true;
+  }
+
+  const fecharFormAvaliacao = () =>{
+    formAvaliacao.value = false;
+  }
+
+  const avaliacaoCriada = () => {
+      fecharFormAvaliacao();
+      showNotification('Avaliação enviada com sucesso!', 'success');
+      
+      avaliacaoExistente.value = true;
+  }
+  
+  const verificarAvaliacao = async () => {
+      if (!propostaAceita.value || !props.clienteId || !props.demanda.id) {
+          return;
+      }
+      
+      carregandoAvaliacao.value = true;
+      try {       
+          const response = await verificarAvaliacaoExistente(
+              props.clienteId, 
+              propostaAceita.value.prestadorId!,
+              props.demanda.id
+          );
+          
+          avaliacaoExistente.value = response.existeAvaliacao;
+          
+          if(!response.existeAvaliacao){
+            showNotification("Avaliação disponível para esta demanda","success");
+          }else{
+            showNotification("Avaliação já relizada","warning");
+          }
+        } catch (error) {
+          showNotification("Erro ao verificar avaliação","error");
+          avaliacaoExistente.value = false;
+      } finally {
+          carregandoAvaliacao.value = false;
+      }
+  };
 
   const propostaAtualizadaRef = ref<PropostaResponseInterface | null>(null);
 
@@ -207,8 +262,8 @@ import { useNotification } from "@/composables/useNotification";
     try {
       
       const demandaAtualizada = {
-        statusDemanda: StatusDemanda.CONCLUIDA
-        // propostaAceitaId: null
+        statusDemanda: StatusDemanda.CONCLUIDA,
+        propostaAceitaId: props.demanda.propostaAceitaId
       };
       await atualizarDemanda(props.demanda.id, demandaAtualizada, props.clienteId);
       
@@ -294,7 +349,6 @@ import { useNotification } from "@/composables/useNotification";
 
     } catch (error) {
       showNotification("Erro ao reabrir demanda", "error");
-      console.error("Erro ao reabrir demanda:", error);
     }
   };
 
@@ -304,7 +358,6 @@ import { useNotification } from "@/composables/useNotification";
 
   watch(() => propostaAceita.value?.statusProposta, 
     (novoStatus, statusAnterior) => {
-      console.log("Status da proposta aceita mudou:", statusAnterior, "->", novoStatus);
       if(novoStatus === StatusProposta.CANCELADA &&
         props.demanda.statusDemanda === StatusDemanda.EM_ANDAMENTO
       ){
@@ -351,6 +404,13 @@ import { useNotification } from "@/composables/useNotification";
       propostaAceita.value = novaProposta;
     }
   });
+
+
+  watch(() => propostaAceita.value, async (novaProposta) => {
+    if (novaProposta && props.demanda.statusDemanda === StatusDemanda.CONCLUIDA) {
+        await verificarAvaliacao();
+    }
+});
 
   onMounted(() => {
     console.log("Demanda.vue montado");
@@ -484,6 +544,45 @@ import { useNotification } from "@/composables/useNotification";
             >
               Concluir Demanda
             </v-btn>
+
+            
+            <!-- avaliar  -->
+            <v-btn
+                v-if="podeAvaliar && !carregandoAvaliacao"
+                color="orange"
+                rounded
+                @click="abrirFormAvaliacao"
+            >
+                Avaliar Prestador
+            </v-btn>
+
+            <!-- verificação de avaliação -->
+            <v-btn
+                v-else-if="carregandoAvaliacao"
+                color="orange"
+                rounded
+                disabled
+            >
+                <v-progress-circular
+                    indeterminate
+                    size="20"
+                    width="2"
+                    class="mr-2"
+                />
+                Verificando...
+            </v-btn>
+
+            <!-- se já avaliou -->
+            <v-btn
+                v-else-if="avaliacaoExistente"
+                color="black"
+                elevation=2
+                rounded
+                disabled
+            >
+                Já Avaliado
+            </v-btn>
+
             
             <v-spacer></v-spacer>
             <v-btn
@@ -541,6 +640,17 @@ import { useNotification } from "@/composables/useNotification";
           @criar-proposta="propostaCriada"
         />
       </v-dialog>
+
+   <v-dialog v-model="formAvaliacao" max-width="500" persistent>
+        <GerarAvaliacaoForm
+            v-if="propostaAceita && props.clienteId"
+            :prestador-id="propostaAceita.prestadorId!"
+            :cliente-id="props.clienteId"
+            :demanda-id="props.demanda.id"
+            @cancelar="fecharFormAvaliacao"
+            @avaliacao-criada="avaliacaoCriada"
+        />
+    </v-dialog>
     </v-window>
     </v-card>
   </template>

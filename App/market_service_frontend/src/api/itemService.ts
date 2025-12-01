@@ -19,29 +19,22 @@ export function itemListaRegistro(){
     ]
 }
 
-export function itemListaDashboard(){
-    return [
-        {title:'Tela Inicial', disabled: true, href: '/dashboard'}
-    ]
-}
-
 export function itemListaDashboardDemandas() {
   return [
-    { title: 'Tela Inicial', disabled: true, href: '/' },
-    { title: 'Demandas', disabled: true, href: '/dashboard/demandas' }
+    { title: 'Demandas', disabled: false, href: '/dashboard' }
   ];
 }
 
 export function itemListaDashboardPrestadores() {
   return [
-    { title: 'Tela Inicial', disabled: true, href: '/dashboard' },
+    { title: 'Demandas', disabled: false, href: '/dashboard' },
     { title: 'Prestadores', disabled: true, href: '/dashboard/prestadores' }
   ];
 }
 
 export function itemListaDashboardPropostasDosPrestadores() {
   return [
-    { title: 'Tela Inicial', disabled: true, href: '/dashboard' },
+    { title: 'Demandas', disabled: false, href: '/dashboard' },
     { title: 'Propostas', disabled: true, href: '/dashboard/propostas' }
   ];
 }

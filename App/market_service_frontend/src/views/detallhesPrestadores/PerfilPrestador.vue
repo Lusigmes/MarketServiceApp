@@ -9,6 +9,7 @@ interface Props {
 
 const props = defineProps<Props>();
 const abaAtiva = ref('detalhes');
+
 </script>
 <template>
     <v-card>
@@ -19,7 +20,6 @@ const abaAtiva = ref('detalhes');
             </v-btn>
         </v-card-title>
 
-        <!-- Abas -->
         <v-tabs v-model="abaAtiva" background-color="transparent" class="px-4">
             <v-tab value="detalhes">Detalhes</v-tab>
             <v-tab value="avaliacoes">Avaliações</v-tab>
@@ -27,9 +27,7 @@ const abaAtiva = ref('detalhes');
 
         <v-divider />
 
-        <!-- Conteúdo das abas -->
         <v-window v-model="abaAtiva">
-            <!-- Aba Detalhes -->
             <v-window-item value="detalhes">
                 <v-card-text class="pa-4">
                     <v-row align="center" class="mb-4">
@@ -42,7 +40,7 @@ const abaAtiva = ref('detalhes');
                         </v-col>
                         <v-col>
                             <h3 class="text-h6 font-weight-bold">{{ props.prestador.usuario.nome }}</h3>
-                            <p class="text-body-2 text-medium-emphasis">{{ props.prestador.usuario.email }}</p>
+                            <h2 class="text-body-2 text-medium-emphasis font-weight-bold">{{ props.prestador.usuario.especializacao }}</h2>
                         </v-col>
                     </v-row>
 
@@ -101,7 +99,6 @@ const abaAtiva = ref('detalhes');
                 </v-card-actions>
             </v-window-item>
 
-            <!-- Aba Avaliações -->
             <v-window-item value="avaliacoes">
                 <v-card-text class="pa-4">
                     <AbaAvaliacoesPrestador :prestador-id="props.prestador.id" />

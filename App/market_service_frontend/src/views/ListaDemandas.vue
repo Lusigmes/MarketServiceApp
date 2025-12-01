@@ -68,12 +68,12 @@ import { useDemandaPagination } from '@/composables/usePagination';
 
 </script>
 
+
 <template>
   <v-container>
     <v-row justify="end" class="mb-4 mr-1">
       <v-btn
         color="primary"
-        prepend-icon="mdi-plus"
         class="px-4"
         @click="dialogCriacao = true"
         v-if="props.tipoUsuario === 'CLIENTE'"
@@ -93,31 +93,73 @@ import { useDemandaPagination } from '@/composables/usePagination';
         cols="12" sm="6" md="4"
       >
         <v-card
-          class="pa-3"
+          class="pa-3 demanda-card"
           rounded="lg"
           elevation="4"
           :color="corStatus(demanda.statusDemanda)"
           @click="abrirModalDetalhe(demanda)"
-          style="cursor: pointer;"
+          style="cursor: pointer; min-height: 160px;"
         >
-          <div class="d-flex justify-space-between align-center mb-2">
-            <h3 class="text-h6 text-truncate">{{ demanda.titulo }}</h3>
-            <v-icon :color="corPrioridade(demanda.prioridade)" size="20">
-              mdi-alert
-            </v-icon>
+          <div class="dark-overlay"></div>
+          
+          <div class="d-flex justify-space-between align-start mb-2">
+            <div class="flex-grow-1 mr-2">
+              <h3 class="text-h6 font-weight-bold text-white text-truncate" style="line-height: 1.3;">
+                {{ demanda.titulo }}
+              </h3>
+            </div>
+            
+            <div class="priority-badge">
+              <v-icon :color="corPrioridade(demanda.prioridade)" size="18">
+                mdi-flag
+              </v-icon>
+            </div>
           </div>
 
-          <p class="text-body-2 text-blue-darken-4 mb-2 text-truncate">
-            {{ demanda.localizacao }}
-          </p>
+          <div class="d-flex align-center mb-3">
+            <v-icon color="white" size="16" class="mr-1" style="opacity: 0.9;">
+              mdi-map-marker
+            </v-icon>
+            <p class="text-body-2 text-white mb-0 text-truncate" style="opacity: 0.9; font-weight: 400;">
+              {{ demanda.localizacao }}
+            </p>
+          </div>
 
-          <div class="d-flex flex-wrap gap-2">
-            <v-chip size="small" variant="outlined" color="indigo-darken-4">
-              {{ demanda.categoria }}
-            </v-chip>
-            <v-chip size="small" variant="outlined" color="grey-darken-4">
-              Prazo: {{ demanda.prazo }}
-            </v-chip>
+          <div class="flex-grow-1 d-flex flex-column">
+            <div class="mt-auto">
+              <div class="d-flex flex-wrap gap-1 mb-2">
+                <v-chip 
+                  size="x-small" 
+                  class="category-chip"
+                  style="background: rgba(0, 0, 0, 0.3);"
+                >
+                  <span class="text-white font-weight-medium text-caption">
+                    {{ demanda.categoria }}
+                  </span>
+                </v-chip>
+              </div>
+
+              <div class="d-flex justify-space-between align-center">
+                <div class="d-flex align-center">
+                  <v-icon size="12" color="white" class="mr-1" style="opacity: 0.8;">
+                    mdi-calendar
+                  </v-icon>
+                  <span class="text-caption text-white font-weight-medium">
+                    {{ demanda.prazo }}
+                  </span>
+                </div>
+                
+                <v-chip 
+                  size="x-small" 
+                  class="status-chip"
+                  style="background: rgba(0, 0, 0, 0.4);"
+                >
+                  <span class="text-caption text-white font-weight-bold" style="font-size: 0.7rem; letter-spacing: 0.3px;">
+                    {{ demanda.statusDemanda }}
+                  </span>
+                </v-chip>
+              </div>
+            </div>
           </div>
         </v-card>
       </v-col>
@@ -151,7 +193,84 @@ import { useDemandaPagination } from '@/composables/usePagination';
         :cliente-id="clienteId"
         @cancelar="dialogCriacao = false"
         @salvar="salvarDemanda"
-        />
+      />
     </v-dialog>
   </v-container>
 </template>
+
+<style scoped>
+.demanda-card {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+}
+
+.demanda-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2) !important;
+  z-index: 5;
+}
+
+.dark-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.25));
+  pointer-events: none;
+  z-index: 1;
+}
+
+.demanda-card > *:not(.dark-overlay) {
+  position: relative;
+  z-index: 2;
+}
+
+.priority-badge {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+}
+
+.chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.category-chip, .date-chip, .status-chip {
+  transition: all 0.2s ease;
+  border: none;
+  backdrop-filter: blur(4px);
+}
+
+.category-chip:hover, .date-chip:hover {
+  background: rgba(0, 0, 0, 0.4) !important;
+}
+
+.text-white {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.demanda-card .v-card__text {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+</style>
+

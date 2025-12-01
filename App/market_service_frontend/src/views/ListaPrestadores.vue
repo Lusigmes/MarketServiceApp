@@ -1,6 +1,5 @@
 <template>
   <v-container>
-    <!-- Loading -->
     <v-row justify="center" v-if="loading">
       <v-col cols="12" class="text-center">
         <v-progress-circular indeterminate color="primary" size="32" />
@@ -51,7 +50,6 @@
       </v-list>
     </v-card>
 
-    <!--  quando não há prestadores -->
     <v-card v-else variant="outlined" class="text-center py-8">
       <v-icon size="64" color="grey-lighten-1" class="mb-4">mdi-account-group</v-icon>
       <h3 class="text-h6 text-medium-emphasis mb-2">Nenhum prestador encontrado</h3>
@@ -125,7 +123,6 @@ const mudarPagina = async (novaPagina: number) => {
 };
 
 const abrirChat = (prestador: PrestadorResponseInterface) => {
-  // TODO: Implementar lógica para abrir chat
   console.log('Abrir chat com prestador:', prestador);
   // router.push(`/chat/${prestador.id}`);
 };

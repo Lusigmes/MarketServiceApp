@@ -1,20 +1,16 @@
 <script setup lang="ts">
 import { useAuth } from '@/composables/useAuth';
 import { useRouter } from 'vue-router';
-import { computed, ref, onMounted, onUnmounted } from 'vue';
-import { useNotificacaoStore } from '@/store/notificacaoStore';
+import { computed, ref } from 'vue';
 import type { UsuarioResponseInterface } from '@/types';
 import EditarUsuarioForm from '@/components/EditarUsuarioForm.vue';
 import MinhasAvaliacoesModal from '@/views/detalhesAvaliacoes/MinhasAvaliacoesModal.vue';
+import Notificacao from './Notificacao.vue';
 
 const { usuario, logout } = useAuth();
 const router = useRouter();
 const menu = ref(false);
-const menuNotificacoes = ref(false);
-const dialogNotificacao = ref(false);
-const notificacaoStore = useNotificacaoStore();
-const notificacaoSelecionada = ref<any>(null);
-
+const dialogEditarUsuario = ref(false);
 const minhasAvaliacoesModal = ref();
 
 const tabs = computed(() => {
@@ -23,16 +19,10 @@ const tabs = computed(() => {
   if (usuario.value?.tipoUsuario === "CLIENTE"){
     return [
       {
-        id: "telaInicial",
-        title: "Dashboard",
-        icon: 'mdi-view-dashboard',
-        route: '/dashboard'
-      },
-      {
         id: "demandas", 
         title: "Demandas",
         icon: 'mdi-clipboard-list',
-        route: '/dashboard/demandas'
+        route: '/dashboard'
       },
       {
         id: "prestadores",
@@ -46,21 +36,16 @@ const tabs = computed(() => {
   if (usuario.value?.tipoUsuario === "PRESTADOR"){
     return [
       {
-        id: "telaInicial",
-        title: "Dashboard",
-        icon: 'mdi-view-dashboard',
+        id: "demandas", 
+ 
+        title: "Demandas",
+        icon: 'mdi-clipboard-list',
         route: '/dashboard'
       },
       {
-        id: "demandas", 
-        title: "Demandas",
-        icon: 'mdi-clipboard-list',
-        route: '/dashboard/demandas'
-      },
-      {
-        id: "Propostas",
+        id: "propostas",
         title: "Propostas", 
-        icon: 'mdi-account-group',
+        icon: 'mdi-clipboard-list',
         route: '/dashboard/propostas'
       }
     ]
@@ -69,8 +54,8 @@ const tabs = computed(() => {
 
 const tabAtual = computed(() => {
   const currentRoute = router.currentRoute.value.path;
-  if (currentRoute === '/dashboard') return 'telaInicial';
-  if (currentRoute === '/dashboard/demandas') return 'demandas';
+  if (currentRoute === '/dashboard' || 
+    currentRoute.startsWith('/dashboard/demandas')) return 'demandas';
   if (currentRoute === '/dashboard/prestadores') return 'prestadores';
   if (currentRoute === '/dashboard/propostas') return 'propostas';
 });
@@ -82,13 +67,6 @@ function abrirMinhasAvaliacoes(){
   minhasAvaliacoesModal.value?.abrir();
   menu.value = false;
 }
-const notificacoesNaoLidas = computed(() => {
-  return notificacaoStore.notificacoes.filter(n => !n.lida);
-});
-
-const quantidadeNotificacoes = computed(() => {
-  return notificacoesNaoLidas.value.length;
-});
 
 function sair() {
   logout();
@@ -102,8 +80,6 @@ function irLogin() {
 function navegarPara(route: string) {
   router.push(route);
 }
-
-const dialogEditarUsuario = ref(false);
 
 function abrirFormEdicaoUsuario(){
   dialogEditarUsuario.value = true;
@@ -120,68 +96,23 @@ async function handleUsuarioEditado(usuarioAtt: Partial<UsuarioResponseInterface
 function fecharFormEdicaoUsuario(){
   dialogEditarUsuario.value = false;
 }
-
-// SEPARAR RESPONSABILDADES DE NOTIFICACÇÕES EM UM COMPONENTE PROPORIO
-
-async function marcarComoLida(id: number) {
-  await notificacaoStore.marcarComoLida(id);
-}
-
-async function marcarTodasComoLidas() {
-  const promises = notificacoesNaoLidas.value.map(notificacao => 
-    notificacaoStore.marcarComoLida(notificacao.id)
-  );
-  await Promise.all(promises);
-}
-
-function abrirDetalheNotificacao(notificacao: any) {
-  notificacaoSelecionada.value = notificacao;
-  dialogNotificacao.value = true;
-  
-  if (!notificacao.lida) {
-    marcarComoLida(notificacao.id);
-  }
-}
-
-function fecharDetalheNotificacao() {
-  dialogNotificacao.value = false;
-  notificacaoSelecionada.value = null;
-}
-
-async function carregarNotificacoes() {
-  if (usuario.value?.id) {
-    try {
-      await notificacaoStore.carregar(usuario.value.id);
-    } catch (err) {
-      console.error("Erro ao carregar notificações:", err);
-    }
-  }
-}
-
-let intervalo: number | null = null;
-
-onMounted(() => {
-  carregarNotificacoes();
-  
-  intervalo = window.setInterval(() => {
-    carregarNotificacoes();
-  }, 30000);
-});
-
-onUnmounted(() => {
-  if (intervalo) {
-    clearInterval(intervalo);
-  }
-});
 </script>
 
 <template>
-  <v-sheet elevation="4" rounded="lg" class="pa-4 mb-4" color="grey lighten-4">
+  <v-sheet 
+    elevation="4" 
+    rounded="lg" 
+    class="pa-4 mb-4 toolbar-container" 
+    color="blue-darken-3"
+  >
     <v-row class="align-center justify-space-between">
       <v-col>
-        <h2 class="text-h5 mb-0">
+        <h2 class="text-h5 mb-0 text-white font-weight-bold">
           Bem-vindo<span v-if="usuario">, {{ usuario?.nome }}</span>
         </h2>
+        <p class="text-caption text-blue-lighten-4 mt-1 mb-0">
+          Sistema de Gestão de Serviços
+        </p>
       </v-col>
 
       <v-col cols="auto" class="d-flex align-center gap-2">
@@ -189,8 +120,8 @@ onUnmounted(() => {
           v-if="estaLogado"
           v-model="tabAtual"
           mandatory
-          color="primary"
-          class="mr-4"
+          color="white"
+          class="mr-4 tab-navigation"
         >
           <v-btn
             v-for="tab in tabs"
@@ -198,144 +129,105 @@ onUnmounted(() => {
             :value="tab.id"
             @click="navegarPara(tab.route)"
             variant="text"
-            class="mx-3"
+            class="mx-2 text-white"
+            :class="{ 'tab-active': tabAtual === tab.id }"
           >
+            <v-icon :icon="tab.icon" class="mr-2" />
             {{ tab.title }}
           </v-btn>
         </v-btn-toggle>
 
         <!-- agrupar notificações e perfil -->
         <div class="d-flex align-center gap-2">
+          <Notificacao v-if="estaLogado" />
+
           <v-menu 
-            v-if="estaLogado"
-            v-model="menuNotificacoes" 
+            v-model="menu" 
             location="bottom end" 
-            :close-on-content-click="false"
-            content-class="notificacoes-menu"
+            content-class="user-menu"
+            :close-on-content-click="true"
           >
-            <template #activator="{ props }">
-              <v-badge
-                :content="quantidadeNotificacoes"
-                :model-value="quantidadeNotificacoes > 0"
-                color="error"
-                class="mr-2"
-              >
-                <v-btn
-                  v-bind="props"
-                  icon="mdi-bell"
-                  color="primary"
-                  variant="text"
-                  size="large"
-                />
-              </v-badge>
-            </template>
-
-            <v-card min-width="400" max-width="400" max-height="400" class="overflow-hidden">
-              <v-toolbar color="primary" density="compact">
-                <v-toolbar-title class="text-white">
-                  Notificações
-                  <span v-if="quantidadeNotificacoes > 0" class="text-caption">
-                    ({{ quantidadeNotificacoes }} não lida{{ quantidadeNotificacoes !== 1 ? 's' : '' }})
-                  </span>
-                </v-toolbar-title>
-                
-                <v-spacer></v-spacer>
-                
-                <v-btn
-                  v-if="quantidadeNotificacoes > 0"
-                  icon="mdi-check-all"
-                  variant="text"
-                  color="white"
-                  size="small"
-                  @click="marcarTodasComoLidas"
-                  title="Marcar todas como lidas"
-                />
-              </v-toolbar>
-
-              <v-divider></v-divider>
-
-              <v-list class="pa-0" v-if="notificacaoStore.notificacoes.length > 0">
-                <v-list-item
-                  v-for="notificacao in notificacaoStore.notificacoes"
-                  :key="notificacao.id"
-                  :class="{ 'bg-grey-lighten-4': !notificacao.lida, 'cursor-pointer': true }"
-                  class="border-b"
-                  @click="abrirDetalheNotificacao(notificacao)"
-                >
-                  <v-list-item-title class="text-body-2">
-                    {{ notificacao.mensagem }}
-                  </v-list-item-title>
-                  
-                  <v-list-item-subtitle class="text-caption text-medium-emphasis mt-1">
-                    {{ notificacao.dataCriacaoNotificacao }}
-                  </v-list-item-subtitle>
-
-                  <template #append>
-                    <v-btn
-                      v-if="!notificacao.lida"
-                      icon="mdi-check"
-                      size="x-small"
-                      variant="text"
-                      color="success"
-                      @click.stop="marcarComoLida(notificacao.id)"
-                      title="Marcar como lida"
-                    />
-                  </template>
-                </v-list-item>
-              </v-list>
-
-              <v-card-text v-else class="text-center text-medium-emphasis py-8">
-                <v-icon size="48" color="grey-lighten-1" class="mb-2">mdi-bell-off</v-icon>
-                <div>Nenhuma notificação</div>
-              </v-card-text>
-            </v-card>
-          </v-menu>
-
-          <v-menu v-model="menu" location="bottom end" content-class="menu-custom">
             <template #activator="{ props }">
               <v-btn
                 v-bind="props"
                 icon="mdi-account-circle"
-                color="primary"
+                color="white"
                 variant="text"
                 size="large"
+                class="user-avatar-btn"
               />
             </template>
 
-            <v-list>
-              <template v-if="usuario">
-                <v-list-item>
-                  <v-list-item-title>{{ usuario?.nome }}</v-list-item-title>
-                  <v-list-item-subtitle>{{ usuario?.email }}</v-list-item-subtitle>
-                </v-list-item>
+            <v-card width="300" class="user-menu-card">
+              <v-card-text class="pa-4 user-info">
+                <div class="d-flex align-center mb-3">
+                  <v-avatar color="blue-darken-3" size="56" class="mr-3">
+                    <span class="text-white text-h6">
+                      {{ usuario?.nome?.charAt(0).toUpperCase() }}
+                    </span>
+                  </v-avatar>
+                  <div>
+                    <h3 class="text-h6 font-weight-bold text-blue-darken-4 mb-1">
+                      {{ usuario?.nome }}
+                    </h3>
+                    <p class="text-body-2 text-medium-emphasis mb-0">
+                      {{ usuario?.email }}
+                    </p>
+                    <v-chip 
+                      size="small" 
+                      :color="usuario?.tipoUsuario === 'PRESTADOR' ? 'green' : 'blue'" 
+                      text-color="white"
+                      class="mt-1"
+                    >
+                      {{ usuario?.tipoUsuario }}
+                    </v-chip>
+                  </div>
+                </div>
+              </v-card-text>
 
-                <v-divider></v-divider>
+              <v-divider class="mx-4"></v-divider>
 
-                <!--  para PRESTADOR -->
+              <v-list density="comfortable" class="py-2">
                 <v-list-item 
                   v-if="ehPrestador" 
                   @click="abrirMinhasAvaliacoes"
+                  class="menu-item"
                 >
-                  <v-list-item-title>Minhas Avaliações</v-list-item-title>
+                  <template #prepend>
+                    <v-icon color="blue-darken-3">mdi-star</v-icon>
+                  </template>
+                  <v-list-item-title class="text-body-1 font-weight-medium">
+                    Minhas Avaliações
+                  </v-list-item-title>
                 </v-list-item>
 
-                <v-list-item @click="abrirFormEdicaoUsuario">
-                  <v-list-item-title>Editar Perfil</v-list-item-title>
+                <v-list-item 
+                  @click="abrirFormEdicaoUsuario"
+                  class="menu-item"
+                >
+                  <template #prepend>
+                    <v-icon color="blue-darken-3">mdi-account-edit</v-icon>
+                  </template>
+                  <v-list-item-title class="text-body-1 font-weight-medium">
+                    Editar Perfil
+                  </v-list-item-title>
                 </v-list-item>
 
-                <v-list-item @click="sair">
-                  <v-list-item-title class="text-error">Logout</v-list-item-title>
-                </v-list-item>
-              </template>
+                <v-divider class="my-2 mx-4"></v-divider>
 
-              <template v-else>
-                <v-list-item @click="irLogin">
-                  <v-btn block color="primary" variant="elevated" class="rounded-lg text-white">
-                    Entrar
-                  </v-btn>
+                <v-list-item 
+                  @click="sair"
+                  class="menu-item logout-item"
+                >
+                  <template #prepend>
+                    <v-icon color="red">mdi-logout</v-icon>
+                  </template>
+                  <v-list-item-title class="text-body-1 font-weight-medium text-red">
+                    Sair
+                  </v-list-item-title>
                 </v-list-item>
-              </template>
-            </v-list>
+              </v-list>
+            </v-card>
           </v-menu>
         </div>
       </v-col>
@@ -359,117 +251,95 @@ onUnmounted(() => {
   </v-dialog>
 
   <MinhasAvaliacoesModal ref="minhasAvaliacoesModal" />
-
-  <v-dialog 
-    v-model="dialogNotificacao" 
-    max-width="500px"
-    persistent
-  >
-    <v-card v-if="notificacaoSelecionada">
-      <v-toolbar color="primary" density="compact">
-        <v-toolbar-title class="text-white">
-          <v-icon class="mr-2">mdi-bell</v-icon>
-          Notificação
-        </v-toolbar-title>
-        <v-spacer></v-spacer>
-        <v-btn
-          icon
-          color="white"
-          @click="fecharDetalheNotificacao"
-        >
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
-      </v-toolbar>
-
-      <v-card-text class="pa-4">
-        <div class="mb-4">
-          <v-chip
-            v-if="!notificacaoSelecionada.lida"
-            color="orange"
-            text-color="white"
-            small
-            class="mb-2"
-          >
-            Nova
-          </v-chip>
-          <v-chip
-            v-else
-            color="green"
-            text-color="white"
-            small
-            class="mb-2"
-          >
-            Lida
-          </v-chip>
-        </div>
-
-        <div class="text-body-1 mb-3">
-          {{ notificacaoSelecionada.mensagem }}
-        </div>
-
-        <v-divider class="my-3"></v-divider>
-
-        <div class="text-caption text-medium-emphasis">
-          <v-icon small class="mr-1">mdi-clock</v-icon>
-          Recebida em: {{ notificacaoSelecionada.dataCriacaoNotificacao }}
-        </div>
-      </v-card-text>
-
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn
-          color="primary"
-          variant="text"
-          @click="fecharDetalheNotificacao"
-        >
-          Fechar
-        </v-btn>
-        <v-btn
-          v-if="!notificacaoSelecionada.lida"
-          color="success"
-          variant="flat"
-          @click="marcarComoLida(notificacaoSelecionada.id); fecharDetalheNotificacao()"
-        >
-          Marcar como Lida
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
 </template>
 
-<style lang="css" scoped>
-.menu-custom {
-  min-width: 250px; 
-  padding: 12px; 
+<style scoped>
+.toolbar-container {
+  background: linear-gradient(135deg, #1976d2 0%, #0d47a1 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(13, 71, 161, 0.3);
 }
 
-.notificacoes-menu {
-  max-width: 400px;
+.tab-navigation {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 4px;
 }
 
-.v-btn--active {
-  color: var(--v-theme-primary) !important;
-  background-color: transparent !important; 
+.tab-navigation .v-btn {
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  opacity: 0.8;
 }
 
-.gap-2 {
-  gap: 8px;
+.tab-navigation .v-btn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  opacity: 1;
+  transform: translateY(-1px);
 }
 
-.border-b {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+.tab-active {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  opacity: 1 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-.cursor-pointer {
-  cursor: pointer;
-  transition: background-color 0.2s;
+.user-avatar-btn {
+  transition: transform 0.3s ease;
 }
 
-.cursor-pointer:hover {
-  background-color: rgba(0, 0, 0, 0.04);
+.user-avatar-btn:hover {
+  transform: scale(1.1);
 }
 
 .d-flex.align-center.gap-2 {
-  gap: 8px;
+  gap: 12px;
+}
+</style>
+
+<style>
+.user-menu {
+  border-radius: 12px !important;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+}
+
+.user-menu-card {
+  border-radius: 12px !important;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+}
+
+.user-info {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+}
+
+.menu-item {
+  border-radius: 8px;
+  margin: 4px 12px;
+  transition: all 0.2s ease;
+}
+
+.menu-item:hover {
+  background-color: #e3f2fd !important;
+  transform: translateX(4px);
+}
+
+.logout-item:hover {
+  background-color: #ffebee !important;
+}
+
+.v-list-item--density-comfortable:not(.v-list-item--nav).v-list-item--one-line {
+  min-height: 48px;
+  padding: 8px 12px;
+}
+
+.v-list-item__prepend {
+  margin-right: 12px;
+}
+
+.v-btn--active {
+  color: white !important;
+  font-weight: 600 !important;
 }
 </style>

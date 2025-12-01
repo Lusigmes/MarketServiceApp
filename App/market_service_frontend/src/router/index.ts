@@ -13,7 +13,7 @@ const routes = [
         {
           path: '',
           name: 'TelaInicial',
-          component: () => import('@/views/TelaInicial.vue')
+          component: () => import('@/views/ListaDemandas.vue')
         },
         {
           path: 'demandas',
@@ -30,24 +30,36 @@ const routes = [
           name: 'TodasPropostasDoPrestador',
           component: () => import('@/views/ListaPropostas.vue')
         },
+        {
+          path: 'perfil-prestador',
+          name: 'PerfilPrestador',
+          component: () => import('@/views/detallhesPrestadores/PerfilPrestador.vue')
+        },
+        {
+          path: 'aba-avaliacoes-prestador',
+          name: 'AbaAvaliacoesPrestador',
+          component: () => import('@/views/detalhesAvaliacoes/AbaAvaliacoesPrestador.vue')
+        },
+        {
+          path: 'minhas-avaliacoes-modal',
+          name: 'MinhasAvaliacoesModal',
+          component: () => import('@/views/detalhesAvaliacoes/MinhasAvaliacoesModal.vue')
+        },
+        {
+          path: 'demanda',
+          name: 'Demanda',
+          component: () => import('@/views/detalhesDemanda/Demanda.vue')
+        },
+        {
+          path: 'proposta',
+          name: 'Proposta',
+          component: () => import('@/views/detalhesProposta/Proposta.vue')
+        },
+
       ]
     }
 ]
-/*
-// No router/index.ts
-{
-  path: '/demanda/:id',
-  name: 'DemandaDetalhe',
-  component: () => import('@/components/DemandaDetalhe.vue'),
-  meta: { requiresAuth: true }
-},
-{
-  path: '/prestador/:id', 
-  name: 'PrestadorDetalhe',
-  component: () => import('@/components/PrestadorDetalhe.vue'),
-  meta: { requiresAuth: true }
-}
-*/
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,

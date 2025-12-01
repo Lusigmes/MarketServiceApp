@@ -82,13 +82,11 @@ onMounted(async () =>{
             </div>
         </div>
 
-        <!-- Loading -->
         <div v-if="loading" class="text-center py-4">
             <v-progress-circular indeterminate color="primary" size="24" />
             <p class="text-caption text-medium-emphasis mt-2">Carregando...</p>
         </div>
 
-        <!-- Lista -->
         <div v-else-if="avaliacoes.length > 0">
             <v-card variant="outlined" class="mb-3">
                 <v-list density="compact" class="py-0">
@@ -158,7 +156,6 @@ onMounted(async () =>{
             </div>
         </div>
 
-        <!-- Sem avaliações -->
         <div v-else class="text-center py-6">
             <v-icon size="40" color="grey-lighten-2" class="mb-2">mdi-comment-outline</v-icon>
             <p class="text-caption text-medium-emphasis">Nenhuma avaliação</p>
@@ -219,7 +216,7 @@ onMounted(async () =>{
     background: #d0d0d0;
 }
 
-.text-caption {
+.avaliacao-item .text-caption {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

@@ -82,24 +82,72 @@ onMounted(async () => {
         :key="proposta.id"
         cols="12" sm="6" md="4"
       >
-        <v-card 
-          class="pa-3"
-          :class="corStatusProposta(proposta.statusProposta)"
+        <v-card
+          class="pa-3 proposta-card"
           rounded="lg"
           elevation="4"
+          :class="corStatusProposta(proposta.statusProposta)"
           @click="abrirModalDetalhe(proposta)"
-          style="cursor: pointer;"
+          style="cursor: pointer; min-height: 160px;"
         >
-          <div class="d-flex justify-space-between align-center mb-2">
-            <h3 class="text-h6 text-truncate">{{ proposta.titulo }}</h3>
-            <v-chip size="small" color="indigo" text-color="white">
-              R$ {{ proposta.preco.toFixed(2) }}
-            </v-chip>
+          <div class="dark-overlay"></div>
+          
+          <div class="d-flex justify-space-between align-start mb-2">
+            <div class="flex-grow-1 mr-2">
+              <h3 class="text-h6 font-weight-bold text-white text-truncate" style="line-height: 1.3;">
+                {{ proposta.titulo }}
+              </h3>
+            </div>
+            
+            <div class="preco-badge">
+              <span class="text-white font-weight-bold text-caption">
+                R$ {{ proposta.preco.toFixed(2) }}
+              </span>
+            </div>
           </div>
-          <!-- <p class="text-body-2 text-blue-darken-4 mb-2 text-truncate">         </p> -->
-          <div class="d-flex justify-space-between text-caption text-grey-darken-1">
-            <span>Status: {{ proposta.statusProposta }}</span>
-            <span>{{ new Date(proposta.dataCriacao).toLocaleDateString() }}</span>
+
+          <div class="d-flex align-center mb-3">
+            <v-icon color="white" size="16" class="mr-1" style="opacity: 0.9;">
+              mdi-comment-text
+            </v-icon>
+            <p class="text-body-2 text-white mb-0 text-truncate" style="opacity: 0.9; font-weight: 400;">
+              {{ proposta.comentario?.substring(0, 50) }}{{ proposta.comentario?.length > 50 ? '...' : '' }}
+            </p>
+          </div>
+
+          <div class="flex-grow-1 d-flex flex-column">
+            <div class="mt-auto">
+              <div class="d-flex flex-wrap gap-1 mb-2">
+                <v-chip 
+                  size="x-small" 
+                  class="date-chip"
+                  style="background: rgba(0, 0, 0, 0.3);"
+                >
+                  <v-icon size="10" color="white" class="mr-1">
+                    mdi-calendar
+                  </v-icon>
+                  <span class="text-white font-weight-medium text-caption">
+                    {{ new Date(proposta.dataCriacao).toLocaleDateString() }}
+                  </span>
+                </v-chip>
+              </div>
+
+              <div class="d-flex justify-space-between align-center">
+                <div class="d-flex align-center">
+                 
+                </div>
+                
+                <v-chip 
+                  size="x-small" 
+                  class="status-chip"
+                  style="background: rgba(0, 0, 0, 0.4);"
+                >
+                  <span class="text-caption text-white font-weight-bold" style="font-size: 0.7rem; letter-spacing: 0.3px;">
+                    {{ proposta.statusProposta }}
+                  </span>
+                </v-chip>
+              </div>
+            </div>
           </div>
         </v-card>
       </v-col>
@@ -116,7 +164,7 @@ onMounted(async () => {
       />
     </v-row>
 
-    <v-dialog v-model="dialogDetalhe" max-width="600">
+    <v-dialog v-model="dialogDetalhe" persistent max-width="600">
       <Proposta
         v-if="propostaAtual"
         :prestador-id="prestadorId"
@@ -128,3 +176,74 @@ onMounted(async () => {
     </v-dialog>
   </v-container>
 </template>
+
+
+<style scoped>
+.proposta-card {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+}
+
+.proposta-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2) !important;
+  z-index: 5;
+}
+
+.dark-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.25));
+  pointer-events: none;
+  z-index: 1;
+}
+
+.proposta-card > *:not(.dark-overlay) {
+  position: relative;
+  z-index: 2;
+}
+
+.preco-badge {
+  position: relative;
+  min-width: 60px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+  padding: 0 8px;
+}
+
+.preco-badge span {
+  color: #1a237e;
+  font-size: 0.75rem;
+}
+
+.date-chip, .status-chip {
+  transition: all 0.2s ease;
+  border: none;
+  backdrop-filter: blur(4px);
+}
+
+.date-chip:hover {
+  background: rgba(0, 0, 0, 0.4) !important;
+}
+
+.text-white {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+</style>

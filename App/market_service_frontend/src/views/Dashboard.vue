@@ -1,23 +1,31 @@
 <script setup lang="ts">
-  import { computed } from 'vue';
-  import { itemListaDashboard, itemListaDashboardDemandas, itemListaDashboardPrestadores, itemListaDashboardPropostasDosPrestadores } from '@/api/itemService';
-  import { useRoute } from 'vue-router';
-  import { useAuth } from '@/composables/useAuth';
+import { computed, watch } from 'vue';
+import { itemListaDashboardDemandas, itemListaDashboardPrestadores, itemListaDashboardPropostasDosPrestadores } from '@/api/itemService';
+import { useRoute } from 'vue-router';
+import { useAuth } from '@/composables/useAuth';
+import router from '@/router';
 
-  const { usuario } = useAuth();
-  const route = useRoute();
+const { usuario } = useAuth();
+const route = useRoute();
 
-  const breadcrumbMap: Record<string, () => any[]> = {
-    '/dashboard': itemListaDashboard,
-    '/dashboard/demandas': itemListaDashboardDemandas,
-    '/dashboard/prestadores': itemListaDashboardPrestadores,
-    '/dashboard/propostas': itemListaDashboardPropostasDosPrestadores
-  };
+const breadcrumbMap: Record<string, () => any[]> = {
+  '/dashboard': itemListaDashboardDemandas,
+  '/dashboard/demandas': itemListaDashboardDemandas,
+  '/dashboard/prestadores': itemListaDashboardPrestadores,
+  '/dashboard/propostas': itemListaDashboardPropostasDosPrestadores
+};
 
-  const breadcrumbItems = computed(() =>
-    breadcrumbMap[route.path] ? breadcrumbMap[route.path]() : []
-  );
-
+const breadcrumbItems = computed(() =>
+  breadcrumbMap[route.path] ? breadcrumbMap[route.path]() : 
+  itemListaDashboardDemandas()
+);
+watch(() => route.path,(pathNovo) => {
+  if( pathNovo === '/dashboard/telainicial' || 
+      pathNovo ==='/dashboard/tela-inicial' || 
+      pathNovo ==='/dashboard/telaInicial'){
+    router.replace('/dashboard');
+  }
+});
 </script>
 
 <template>

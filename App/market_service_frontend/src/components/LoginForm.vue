@@ -35,7 +35,6 @@ function irRegistro(){
 <template>
   <v-app>
     <v-main>
-      <!-- Breadcrumb -->
       <v-card elevation="0">
         <v-breadcrumbs class="ml-4 mt-0" :items="itemBreadCrumb">
           <template v-slot:prepend>

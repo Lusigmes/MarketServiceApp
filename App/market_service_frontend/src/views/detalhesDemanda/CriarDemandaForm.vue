@@ -93,20 +93,163 @@ import  {formatarDataParaISO} from "@/utils/dateUtils";
 </script>
 
 <template>
-  <v-card>
-    <v-card-title>Criar Demanda</v-card-title>
-    <v-card-text style="max-height: 400px; overflow-y:auto;">
-      <v-text-field v-model="form.titulo" label="Título" :error-messages="errors.titulo" />
-      <v-textarea v-model="form.descricao" label="Descrição" :error-messages="errors.descricao" />
-      <v-text-field v-model="form.categoria" label="Categoria" :error-messages="errors.categoria" />
-      <v-text-field v-model="form.localizacao" label="Localização" :error-messages="errors.localizacao" />
-      <DataInput v-model="form.prazo" label="Prazo" :error-msg="errors.prazo" />
-      <v-select v-model="form.prioridade" :items="Object.values(PrioridadeDemanda).map(p => ({ text: labelPrioridade(p), value: p }))" item-title="text" item-value="value" label="Urgência" :error-messages="errors.prioridade" />
-      <v-text-field v-model="form.orcamentoEstimado" label="Orçamento Estimado" type="number" :error-messages="errors.orcamentoEstimado" />
-    </v-card-text>
-    <v-card-actions class="d-flex justify-end">
-      <v-btn color="primary" @click="salvar">Salvar</v-btn>
-      <v-btn text color="red" @click="$emit('cancelar')">Cancelar</v-btn>
-    </v-card-actions>
-  </v-card>
+    <v-card class="criar-demand-card">
+        <v-toolbar color="white" density="compact">
+            <v-toolbar-title class="text-black">
+                Criar Demanda
+            </v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-btn icon @click="$emit('cancelar')" color="black" size="small">
+                <v-icon>mdi-close</v-icon>
+            </v-btn>
+        </v-toolbar>
+
+        <v-card-text class="pa-4 demand-form-content" style="max-height: 450px; overflow-y: auto;">
+            <v-form @submit.prevent="salvar">
+                <v-text-field
+                    v-model="form.titulo"
+                    label="Título da Demanda"
+                    :error-messages="errors.titulo"
+                    variant="outlined"
+                    density="comfortable"
+                    class="mb-3"
+                    required
+                />
+
+                <v-textarea
+                    v-model="form.descricao"
+                    label="Descrição Detalhada"
+                    :error-messages="errors.descricao"
+                    variant="outlined"
+                    density="comfortable"
+                    class="mb-3"
+                    rows="3"
+                    auto-grow
+                    required
+                />
+
+                <v-text-field
+                    v-model="form.categoria"
+                    label="Categoria do Serviço"
+                    :error-messages="errors.categoria"
+                    variant="outlined"
+                    density="comfortable"
+                    class="mb-3"
+                    required
+                />
+
+                <v-text-field
+                    v-model="form.localizacao"
+                    label="Localização"
+                    :error-messages="errors.localizacao"
+                    variant="outlined"
+                    density="comfortable"
+                    class="mb-3"
+                    required
+                />
+
+                <DataInput
+                    v-model="form.prazo"
+                    label="Prazo de Conclusão"
+                    :error-msg="errors.prazo"
+                    class="mb-3"
+                />
+
+                <v-select
+                    v-model="form.prioridade"
+                    :items="Object.values(PrioridadeDemanda).map(p => ({ 
+                        title: labelPrioridade(p), 
+                        value: p 
+                    }))"
+                    item-title="title"
+                    item-value="value"
+                    label="Nível de Urgência"
+                    :error-messages="errors.prioridade"
+                    variant="outlined"
+                    density="comfortable"
+                    class="mb-3"
+                    required
+                />
+
+                <v-text-field
+                    v-model="form.orcamentoEstimado"
+                    label="Orçamento Estimado (R$)"
+                    :error-messages="errors.orcamentoEstimado"
+                    variant="outlined"
+                    density="comfortable"
+                    class="mb-3"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    required
+                >
+                    <template #append>
+                        <span class="text-caption text-medium-emphasis">R$</span>
+                    </template>
+                </v-text-field>
+            </v-form>
+        </v-card-text>
+
+        <v-card-actions class="pa-4 border-top">
+            <v-spacer></v-spacer>
+            <v-btn
+                color="secondary"
+                variant="text"
+                @click="$emit('cancelar')"
+                class="mr-2"
+            >
+                Cancelar
+            </v-btn>
+            <v-btn
+                color="primary"
+                variant="flat"
+                @click="salvar"
+            >
+                Criar Demanda
+            </v-btn>
+        </v-card-actions>
+    </v-card>
 </template>
+<style scoped>
+.criar-demand-card {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    max-height: 80vh; 
+    display: flex;
+    flex-direction: column;
+}
+
+.demand-form-content {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 200px; 
+}
+
+.border-top {
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+    flex-shrink: 0; 
+}
+
+.demand-form-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.demand-form-content::-webkit-scrollbar-track {
+    background: #f5f5f5;
+    border-radius: 4px;
+}
+
+.demand-form-content::-webkit-scrollbar-thumb {
+    background: #bdbdbd;
+    border-radius: 4px;
+}
+
+.demand-form-content::-webkit-scrollbar-thumb:hover {
+    background: #9e9e9e;
+}
+
+:deep(.v-toolbar__content) {
+    padding-right: 8px !important;
+}
+</style>

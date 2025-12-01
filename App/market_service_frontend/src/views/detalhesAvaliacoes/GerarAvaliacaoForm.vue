@@ -149,7 +149,6 @@ onMounted( async () => {
         </v-card-title>
 
         <v-card-text class="pa-4">
-            <!-- Informações -->
             <div v-if="carregandoPrestador" class="text-center mb-4">
                 <v-progress-circular indeterminate color="primary" size="24" />
                 <p class="text-caption text-medium-emphasis mt-2">Carregando informações...</p>
@@ -175,7 +174,6 @@ onMounted( async () => {
                 </v-alert>
             </div>
 
-            <!-- Formulário de avaliação -->
             <div class="mb-4">
                 <p class="text-body-1 font-weight-medium mb-3">Como foi o serviço prestado?</p>
                 
@@ -209,7 +207,6 @@ onMounted( async () => {
                     </div>
                 </div>
 
-                <!-- Comentário -->
                 <v-textarea
                     v-model="form.comentario"
                     label="Comentário (obrigatório)"

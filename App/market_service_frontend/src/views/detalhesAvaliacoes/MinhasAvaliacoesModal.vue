@@ -69,12 +69,10 @@ defineExpose({
           <p class="text-body-1 mt-2">loading suas avaliações...</p>
         </div>
 
-        <!-- Conteúdo -->
         <div v-else-if="prestadorId">
           <AbaAvaliacoesPrestador :prestador-id="prestadorId" />
         </div>
 
-        <!-- Erro -->
         <div v-else class="text-center py-8">
           <v-icon size="48" color="grey-lighten-2" class="mb-2">mdi-alert-circle</v-icon>
           <p class="text-body-1">Não foi possível carregar suas avaliações.</p>

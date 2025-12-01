@@ -4,81 +4,110 @@ import { useNotification } from '@/composables/useNotification';
 import type { UsuarioResponseInterface } from '@/types';
 import { reactive } from 'vue';
 import * as yup from 'yup';
-    const { showNotification } = useNotification();
 
-    interface Props{
-        usuario: UsuarioResponseInterface;
-    }
+const { showNotification } = useNotification();
 
-    const props = defineProps<Props>();
-    const emit = defineEmits<{
-        (e: 'salvar', payload: Partial<UsuarioResponseInterface>): void;
-        (e: 'cancelar'): void;
-    }>();
+interface Props{
+    usuario: UsuarioResponseInterface;
+}
 
-    const form = reactive({
-        nome: props.usuario.nome || '',
-        email: props.usuario.email || '',
-        cep: props.usuario.cep || '',
-    });
-    const errors = reactive({
-        nome: '',
-        email: '',
-        cep: '',
-    });
+const props = defineProps<Props>();
+const emit = defineEmits<{
+    (e: 'salvar', payload: Partial<UsuarioResponseInterface>): void;
+    (e: 'cancelar'): void;
+}>();
 
-    const schema = yup.object({
-        nome: yup.string().required("Nome obrigatório").min(2, "O nome deve conter ao menos 2 caracteres"),
-        email: yup.string().email("E-mail inválido").required("E-mail obrigatório"),
-        cep: yup.string()
+const form = reactive({
+    nome: props.usuario.nome || '',
+    email: props.usuario.email || '',
+    cep: props.usuario.cep || '',
+    telefone: props.usuario.telefone || '',
+    especializacao: props.usuario.especializacao || '',
+});
+
+const errors = reactive({
+    nome: '',
+    email: '',
+    cep: '',
+    telefone: '',
+    especializacao: '',
+});
+
+const schema = yup.object({
+    nome: yup.string().required("Nome obrigatório").min(2, "O nome deve conter ao menos 2 caracteres"),
+    email: yup.string().email("E-mail inválido").required("E-mail obrigatório"),
+    cep: yup.string()
+        .transform(value => value.replace(/\D/g, ''))
+        .required('CEP é obrigatório')
+        .length(8, 'CEP deve conter exatamente 8 números'),
+    telefone: yup.string().when('$isPrestador', {
+        is: true,
+        then: (schema) => schema
+            .required('Telefone é obrigatório para prestadores')
             .transform(value => value.replace(/\D/g, ''))
-            .required('CEP é obrigatório')
-            .length(8, 'CEP deve conter exatamente 8 números'),
-    });
+            .min(10, 'Telefone deve ter pelo menos 10 dígitos'),
+        otherwise: (schema) => schema.notRequired()
+    }),
+    especializacao: yup.string().when('$isPrestador', {
+        is: true,
+        then: (schema) => schema
+            .required('Especialização é obrigatória para prestadores')
+            .min(3, 'Especialização deve ter pelo menos 3 caracteres'),
+        otherwise: (schema) => schema.notRequired()
+    })
+});
 
-    const validarForm = async () => {
-        try{
-            await schema.validate(form, {abortEarly:false});
-            Object.keys(errors).forEach(key => errors[key as keyof typeof errors] = '');
-            return true;
-        }catch(erro: any){
-            Object.keys(errors).forEach(key => errors[key as keyof typeof errors] = '');
-            if(erro.inner){
-                erro.inner.forEach((e: any) => {
-                    errors[e.path as keyof typeof errors] = e.message;
-                });
-            }
-            return false;
+const isPrestador = props.usuario.tipoUsuario === 'PRESTADOR';
+
+const validarForm = async (): Promise<boolean> => {
+    try{
+        await schema.validate(form, { 
+            abortEarly: false,
+            context: { isPrestador }
+        });
+        Object.keys(errors).forEach(key => errors[key as keyof typeof errors] = '');
+        return true;
+    }catch(erro: any){
+        Object.keys(errors).forEach(key => errors[key as keyof typeof errors] = '');
+        if(erro.inner){
+            erro.inner.forEach((e: any) => {
+                errors[e.path as keyof typeof errors] = e.message;
+            });
         }
+        return false;
+    }
+};
+
+const salvar = async () => {
+    const valido = await validarForm();
+    if(!valido) return;
+
+    const novosDados = {
+        ...form,
+        ...(isPrestador && {
+            telefone: form.telefone ? form.telefone.replace(/\D/g, '') : undefined,
+            especializacao: form.especializacao
+        })   
     };
 
-    const salvar = async () => {
-        const valido = await validarForm();
-        if(!valido) return;
-
-        const novosDados = {
-            ...form,
-        };
-
-        try{
-            const usuarioAtualizado = await atualizarUsuario(props.usuario.id, novosDados);
-            emit('salvar',{...usuarioAtualizado});
-            showNotification("Perfil atualizado com sucesso!", "success");
-            
-        }catch (error) {
-            showNotification("Não foi possível atualizar o perfil.", "error");
-        }
+    try{
+        const usuarioAtualizado = await atualizarUsuario(props.usuario.id, novosDados);
+        emit('salvar',{...usuarioAtualizado});
+        showNotification("Perfil atualizado com sucesso!", "success");
+        
+    }catch (error) {
+        showNotification("Não foi possível atualizar o perfil.", "error");
     }
-    
-    const cancelar = () => {
-        form.nome = props.usuario.nome;
-        // form.email = props.usuario.email;
-        form.cep = props.usuario.cep;
-        emit('cancelar');
-    }
+}
 
+const cancelar = () => {
+    form.nome = props.usuario.nome;
+    form.cep = props.usuario.cep;
+    form.telefone = props.usuario.telefone || '';
+    form.especializacao = props.usuario.especializacao || '';
+    emit('cancelar');
+}
 </script>
-
 
 <template>
   <v-card >
@@ -94,7 +123,7 @@ import * as yup from 'yup';
         class="mb-3 mt-8"
       />
       
-    <v-text-field 
+      <v-text-field 
         :model-value="props.usuario.email"
         label="E-mail"
         variant="outlined"
@@ -115,8 +144,31 @@ import * as yup from 'yup';
         outlined 
         dense 
         v-mask="'#####-###'"
-       
       />
+
+      <template v-if="usuario.tipoUsuario === 'PRESTADOR'">
+        <v-text-field 
+            v-model="form.telefone" 
+            label="Telefone" 
+            :error-messages="errors.telefone"
+            variant="outlined"
+            class="mb-3"
+            outlined 
+            dense 
+            v-mask="'(##) #####-####'"
+        />  
+        
+        <v-text-field 
+            v-model="form.especializacao" 
+            label="Especialização" 
+            :error-messages="errors.especializacao"
+            variant="outlined"
+            class="mb-3"
+            outlined 
+            dense
+            placeholder="Ex: Encanador, Eletricista, Pintor"
+        />
+      </template>
     </v-card-text>
     <v-card-actions class="d-flex justify-end">
       <v-btn color="primary" @click="salvar">Salvar</v-btn>
@@ -124,9 +176,3 @@ import * as yup from 'yup';
     </v-card-actions>
   </v-card>
 </template>
-
-<style scoped>
-.gap-2 {
-  gap: 8px;
-}
-</style>

@@ -5,6 +5,7 @@ import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useNotificacaoStore } from '@/store/notificacaoStore';
 import type { UsuarioResponseInterface } from '@/types';
 import EditarUsuarioForm from '@/components/EditarUsuarioForm.vue';
+import MinhasAvaliacoesModal from '@/views/detalhesAvaliacoes/MinhasAvaliacoesModal.vue';
 
 const { usuario, logout } = useAuth();
 const router = useRouter();
@@ -13,6 +14,8 @@ const menuNotificacoes = ref(false);
 const dialogNotificacao = ref(false);
 const notificacaoStore = useNotificacaoStore();
 const notificacaoSelecionada = ref<any>(null);
+
+const minhasAvaliacoesModal = ref();
 
 const tabs = computed(() => {
   if (!usuario.value) return;
@@ -73,7 +76,12 @@ const tabAtual = computed(() => {
 });
 
 const estaLogado = computed(() => usuario.value);
+const ehPrestador = computed(() => usuario.value?.tipoUsuario === 'PRESTADOR');
 
+function abrirMinhasAvaliacoes(){
+  minhasAvaliacoesModal.value?.abrir();
+  menu.value = false;
+}
 const notificacoesNaoLidas = computed(() => {
   return notificacaoStore.notificacoes.filter(n => !n.lida);
 });
@@ -303,6 +311,14 @@ onUnmounted(() => {
 
                 <v-divider></v-divider>
 
+                <!--  para PRESTADOR -->
+                <v-list-item 
+                  v-if="ehPrestador" 
+                  @click="abrirMinhasAvaliacoes"
+                >
+                  <v-list-item-title>Minhas Avaliações</v-list-item-title>
+                </v-list-item>
+
                 <v-list-item @click="abrirFormEdicaoUsuario">
                   <v-list-item-title>Editar Perfil</v-list-item-title>
                 </v-list-item>
@@ -341,6 +357,8 @@ onUnmounted(() => {
       />
     </v-card>
   </v-dialog>
+
+  <MinhasAvaliacoesModal ref="minhasAvaliacoesModal" />
 
   <v-dialog 
     v-model="dialogNotificacao" 

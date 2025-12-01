@@ -50,6 +50,8 @@ public class UsuarioService {
         } else {
             Prestador usuarioPrestador = new Prestador();
             usuarioPrestador.setUsuario(usuario);
+            usuarioPrestador.setTelefone(dto.telefone());
+            usuarioPrestador.setEspecializacao(dto.especializacao());
             prestadorRepository.save(usuarioPrestador);
             // usuario.setPrestador(usuarioPrestador); // Opcional
         }
@@ -59,13 +61,22 @@ public class UsuarioService {
 
     // para cadastro
     public UsuarioResponseDTO toDTO(Usuario usuario){
+        String telefone = null;
+        String especializacao = null;
+
+        if(usuario.getPrestador() != null){
+            telefone = usuario.getPrestador().getTelefone();
+            especializacao = usuario.getPrestador().getEspecializacao();
+        }
+   
         return new UsuarioResponseDTO(
             usuario.getId(),
             usuario.getNome(),
             usuario.getEmail(),
             usuario.getCEP(),
             usuario.getTipoUsuario().name(),
-            usuario.getRoleUsuario().name()
+            usuario.getRoleUsuario().name(),
+            telefone, especializacao
         );
     }
     @Transactional
@@ -76,6 +87,13 @@ public class UsuarioService {
         usuario.setNome(dto.nome());
         usuario.setEmail(dto.email());
         usuario.setCEP(dto.cep());
+
+        if(usuario.getPrestador() != null){
+            Prestador usuarioPrestador = usuario.getPrestador();
+            usuarioPrestador.setTelefone(dto.telefone());
+            usuarioPrestador.setEspecializacao(dto.especializacao());
+            prestadorRepository.save(usuarioPrestador);
+        }
    
         return usuarioRepository.save(usuario);
     }

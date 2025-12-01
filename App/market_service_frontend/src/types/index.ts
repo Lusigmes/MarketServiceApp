@@ -8,6 +8,8 @@ export interface RegistroUsuarioInterface{
     senha: string;
     cep: string;
     tipoUsuario: "CLIENTE" | "PRESTADOR";
+    telefone?:string;
+    especializacao?:string;
 
 }
 
@@ -22,8 +24,8 @@ export interface ClienteResponseInterface{
 export interface PrestadorResponseInterface{
     id:number;
     usuario: UsuarioResponseInterface;
-    telefone: string;
-    especializacao:string;
+    telefone?: string;
+    especializacao?:string;
 }
 
 export interface UsuarioResponseInterface{
@@ -33,6 +35,9 @@ export interface UsuarioResponseInterface{
     cep: string;
     tipoUsuario:string;
     roleUsuario:string;
+    telefone?:string;
+    especializacao?:string;
+
 }
 
 export interface LoginTokenResponseInterface{

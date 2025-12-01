@@ -25,6 +25,9 @@ public record RegistroUsuarioDTO(
     String cep,
 
     @NotBlank(message = "O tipo de usuário é obrigatório")
-    String tipoUsuario
+    String tipoUsuario,
+
+    String telefone,
+    String especializacao
 
     ) {}

@@ -1,3 +1,139 @@
+<script setup lang="ts">
+import { reactive, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuth } from '@/composables/useAuth';
+import type { RegistroUsuarioInterface } from '@/types';
+import { itemListaRegistro } from '@/api/itemService';
+import * as yup from 'yup'
+import { validarCPF } from '@/utils/validarCPF';
+import { useNotification } from "@/composables/useNotification";
+
+const { showNotification } = useNotification();
+const itemBreadCrumb = reactive(itemListaRegistro());
+const { registro, error, loading } = useAuth();
+const router = useRouter();
+
+const usuario = reactive<RegistroUsuarioInterface>({
+  nome: "",
+  cpf: "",
+  email: "",
+  senha: "",
+  cep: "",
+  tipoUsuario: "CLIENTE",
+  telefone:"",
+  especializacao:"",
+});
+
+const errors = reactive({
+  nome: "",
+  cpf: "",
+  email: "",
+  senha: "",
+  cep: "",
+  tipoUsuario: "",
+  telefone:"",
+  especializacao:"",
+});
+
+const schema = yup.object({
+  nome: yup.string()
+    .required('Nome é obrigatório')
+    .min(2, 'Nome deve ter pelo menos 2 caracteres')
+    .max(100, 'Nome deve ter no máximo 100 caracteres'),
+  cpf: yup.string()
+    .required('CPF é obrigatório')
+    .transform(value => value ? value.replace(/\D/g, '') : '') 
+    .length(11, 'CPF deve conter exatamente 11 números')
+    .test('cpf-valido', 'CPF inválido', (value) => {
+      const resultado = validarCPF(value);
+      return resultado;
+    }),
+  email: yup.string()
+    .required('E-mail é obrigatório')
+    .email('E-mail deve ser válido'),
+  senha: yup.string()
+    .required('Senha é obrigatória')
+    .min(6, 'Senha deve ter pelo menos 6 caracteres'),
+  cep: yup.string()
+    .transform(value => value.replace(/\D/g, ''))
+    .required('CEP é obrigatório')
+    .length(8, 'CEP deve conter exatamente 8 números'),
+  tipoUsuario: yup.string()
+    .required('Tipo de usuário é obrigatório')
+    .oneOf(['CLIENTE', 'PRESTADOR'], 'Tipo de usuário deve ser CLIENTE ou PRESTADOR'),
+  telefone: yup.string().when('tipoUsuario', {
+    is: 'PRESTADOR',
+    then: (schema) => schema
+      .required('Telefone é obrigatório para prestadores')
+      .transform(value => value ? value.replace(/\D/g, '') : '')
+      .min(10, 'Telefone deve ter pelo menos 10 dígitos'),
+    otherwise: (schema) => schema.notRequired()
+  }),
+  especializacao: yup.string().when('tipoUsuario', {
+    is: 'PRESTADOR',
+    then: (schema) => schema
+      .required('Especialização é obrigatória para prestadores')
+      .min(3, 'Especialização deve ter pelo menos 3 caracteres'),
+    otherwise: (schema) => schema.notRequired()
+  })
+});
+
+const onTipoUsuarioChange = (novoValor: string) => {
+  if(novoValor ==='CLIENTE'){
+    usuario.telefone = '';
+    usuario.especializacao = '';
+  }
+};
+
+async function registrarUsuario() {
+  try {
+    const usuarioParaEnviar = {
+      ...usuario,
+      cpf: usuario.cpf.replace(/\D/g, ''),
+      cep: usuario.cep.replace(/\D/g, ''),
+    };
+
+    if (usuario.tipoUsuario === 'PRESTADOR') {
+      usuarioParaEnviar.telefone = usuario.telefone?.replace(/\D/g, '');
+      usuarioParaEnviar.especializacao = usuario.especializacao;
+    }
+
+    const valido = await validarForm();
+    if (!valido) return;
+
+    await registro(usuarioParaEnviar);
+    showNotification("Usuário cadastrado com sucesso!", "success");
+    router.push("/dashboard")
+  } catch (error) {
+    showNotification("Erro ao cadastrar usuário!", "error");
+  }
+};
+
+const validarForm = async (): Promise<boolean> => {
+  try {
+    await schema.validate(usuario, { abortEarly: false });
+  
+    Object.keys(errors).forEach(key => { errors[key as keyof typeof errors] = ''; });
+    return true;
+  } catch (erro: any) {
+    Object.keys(errors).forEach(key => { errors[key as keyof typeof errors] = ''; });
+    
+    if (erro.inner) {
+      erro.inner.forEach((e: yup.ValidationError) => {
+        const field = e.path as keyof typeof errors;
+        if (field in errors) {
+          errors[field] = e.message;
+        }
+      });
+    }
+    
+    return false;
+  }
+};
+
+</script>
+
+
 <template>
   <v-app>
     <v-main>
@@ -38,6 +174,7 @@
                   dense
                   :error-messages="errors.tipoUsuario"
                   prepend-inner-icon="mdi-account-switch"
+                  @update:model-value="onTipoUsuarioChange"
                 />
               </v-col>
             </v-row>
@@ -80,11 +217,35 @@
               label="CEP" 
               outlined 
               dense 
-              class="mb-4" 
+              class="mb-3" 
               v-mask="'#####-###'"
               :error-messages="errors.cep"
               prepend-inner-icon="mdi-map-marker"
             />
+
+            <template v-if="usuario.tipoUsuario === 'PRESTADOR'">
+              <v-text-field 
+                v-model="usuario.telefone" 
+                label="Telefone" 
+                outlined 
+                dense 
+                class="mb-3" 
+                v-mask="'(##) #####-####'"
+                :error-messages="errors.telefone"
+                prepend-inner-icon="mdi-phone"
+              />
+              
+              <v-text-field 
+                v-model="usuario.especializacao" 
+                label="Especialização" 
+                outlined 
+                dense 
+                class="mb-4" 
+                placeholder="Ex: Encanador, Eletricista, Pintor"
+                :error-messages="errors.especializacao"
+                prepend-inner-icon="mdi-briefcase"
+              />
+            </template>
 
             <v-btn 
               type="submit" 
@@ -141,111 +302,3 @@
     </v-main>
   </v-app>
 </template>
-
-<style scoped>
-.v-card {
-  border-radius: 12px;
-}
-</style>
-<script setup lang="ts">
-import { reactive, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { useAuth } from '@/composables/useAuth';
-import type { RegistroUsuarioInterface } from '@/types';
-import { itemListaRegistro } from '@/api/itemService';
-import * as yup from 'yup'
-import { validarCPF } from '@/utils/validarCPF';
-import { useNotification } from "@/composables/useNotification";
-
-const { showNotification } = useNotification();
-const itemBreadCrumb = reactive(itemListaRegistro());
-const { registro, error, loading } = useAuth();
-const router = useRouter();
-
-const usuario = reactive<RegistroUsuarioInterface>({
-    nome: "",
-    cpf: "",
-    email: "",
-    senha: "",
-    cep: "",
-    tipoUsuario: "CLIENTE"
-});
-
-const errors = reactive({
-    nome: "",
-    cpf: "",
-    email: "",
-    senha: "",
-    cep: "",
-    tipoUsuario: ""
-});
-
-const schema = yup.object({
-  nome: yup.string()
-    .required('Nome é obrigatório')
-    .min(2, 'Nome deve ter pelo menos 2 caracteres')
-    .max(100, 'Nome deve ter no máximo 100 caracteres'),
-  cpf: yup.string()
-    .required('CPF é obrigatório')
-    .transform(value => value ? value.replace(/\D/g, '') : '') 
-    .length(11, 'CPF deve conter exatamente 11 números')
-    .test('cpf-valido', 'CPF inválido', (value) => {
-      const resultado = validarCPF(value);
-      return resultado;
-    }),
-  email: yup.string()
-    .required('E-mail é obrigatório')
-    .email('E-mail deve ser válido'),
-  senha: yup.string()
-    .required('Senha é obrigatória')
-    .min(6, 'Senha deve ter pelo menos 6 caracteres'),
-  cep: yup.string()
-    .transform(value => value.replace(/\D/g, ''))
-    .required('CEP é obrigatório')
-    .length(8, 'CEP deve conter exatamente 8 números'),
-  tipoUsuario: yup.string()
-    .required('Tipo de usuário é obrigatório')
-    .oneOf(['CLIENTE', 'PRESTADOR'], 'Tipo de usuário deve ser CLIENTE ou PRESTADOR')
-});
-
-async function registrarUsuario() {
-  try {
-    const usuarioParaEnviar = {
-      ...usuario,
-      cpf: usuario.cpf.replace(/\D/g, ''),
-      cep: usuario.cep.replace(/\D/g, ''),
-    };
-    
-    const valido = await validarForm();
-    if (!valido) return;
-
-    await registro(usuarioParaEnviar);
-    showNotification("Usuário cadastrado com sucesso!", "success");
-    router.push("/dashboard")
-  } catch (error) {
-    showNotification("Erro ao cadastrar usuário!", "error");
-  }
-};
-
-const validarForm = async (): Promise<boolean> => {
-  try {
-    await schema.validate(usuario, { abortEarly: false });
-  
-    Object.keys(errors).forEach(key => { errors[key as keyof typeof errors] = ''; });
-    return true;
-  } catch (erro: any) {
-    Object.keys(errors).forEach(key => { errors[key as keyof typeof errors] = ''; });
-    
-    if (erro.inner) {
-      erro.inner.forEach((e: yup.ValidationError) => {
-        const field = e.path as keyof typeof errors;
-        if (field in errors) {
-          errors[field] = e.message;
-        }
-      });
-    }
-    
-    return false;
-  }
-}
-</script>

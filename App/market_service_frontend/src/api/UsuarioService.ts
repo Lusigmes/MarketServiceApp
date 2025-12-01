@@ -2,8 +2,8 @@ import type { UsuarioResponseInterface } from "@/types";
 import httpConnect from "./connect/connect";
 
 export const atualizarUsuario = async (id: number, dados:Partial<UsuarioResponseInterface>): Promise<UsuarioResponseInterface> =>{
-    const response = await httpConnect.put(`/usuarios/${id}`, dados);
-    return response.data;
+    const {data} = await httpConnect.put(`/usuarios/${id}`, dados);
+    return data;
 };
 
 

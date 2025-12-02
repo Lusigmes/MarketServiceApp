@@ -6,6 +6,7 @@ import type { UsuarioResponseInterface } from '@/types';
 import EditarUsuarioForm from '@/components/EditarUsuarioForm.vue';
 import MinhasAvaliacoesModal from '@/views/detalhesAvaliacoes/MinhasAvaliacoesModal.vue';
 import Notificacao from './Notificacao.vue';
+import ToolbarInfo from './ToolbarInfo.vue';
 
 const { usuario, logout } = useAuth();
 const router = useRouter();
@@ -137,7 +138,10 @@ function fecharFormEdicaoUsuario(){
           </v-btn>
         </v-btn-toggle>
 
-        <!-- agrupar notificações e perfil -->
+        <ToolbarInfo 
+          v-if="estaLogado && usuario?.tipoUsuario" 
+        />
+
         <div class="d-flex align-center gap-2">
           <Notificacao v-if="estaLogado" />
 
@@ -295,50 +299,48 @@ function fecharFormEdicaoUsuario(){
 .d-flex.align-center.gap-2 {
   gap: 12px;
 }
-</style>
 
-<style>
-.user-menu {
+:deep(.user-menu) {
   border-radius: 12px !important;
   overflow: hidden;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
 }
 
-.user-menu-card {
+:deep(.user-menu-card) {
   border-radius: 12px !important;
   overflow: hidden;
   border: 1px solid #e0e0e0;
 }
 
-.user-info {
+:deep(.user-info) {
   background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
 }
 
-.menu-item {
+:deep(.menu-item) {
   border-radius: 8px;
   margin: 4px 12px;
   transition: all 0.2s ease;
 }
 
-.menu-item:hover {
+:deep(.menu-item:hover) {
   background-color: #e3f2fd !important;
   transform: translateX(4px);
 }
 
-.logout-item:hover {
+:deep(.logout-item:hover) {
   background-color: #ffebee !important;
 }
 
-.v-list-item--density-comfortable:not(.v-list-item--nav).v-list-item--one-line {
+:deep(.v-list-item--density-comfortable:not(.v-list-item--nav).v-list-item--one-line) {
   min-height: 48px;
   padding: 8px 12px;
 }
 
-.v-list-item__prepend {
+:deep(.v-list-item__prepend) {
   margin-right: 12px;
 }
 
-.v-btn--active {
+:global(.v-btn--active) {
   color: white !important;
   font-weight: 600 !important;
 }

@@ -4,6 +4,7 @@ import { useAuth } from '@/composables/useAuth'
 const routes = [
   { path: "/", name: "Login", component: () => import('@/components/LoginForm.vue') },
   { path: "/registro", name: "Registro", component: () => import('@/components/RegistroForm.vue') },
+  {  path: '/tela-principal',  redirect: '/dashboard'},
   { 
       path: "/dashboard", 
       name: "Dashboard", 
@@ -55,6 +56,11 @@ const routes = [
           name: 'Proposta',
           component: () => import('@/views/detalhesProposta/Proposta.vue')
         },
+        // {
+        //   path: 'chat',
+        //   name: 'Chat',
+        //   component: () => import('@/components/chat/ChatPrincipal.vue')
+        // }
 
       ]
     }

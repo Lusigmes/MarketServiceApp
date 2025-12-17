@@ -36,14 +36,12 @@ export const validarDataBr = (dataBr: string): boolean => {
     if (dia > (isBissexto ? 29 : 28)) return false;
   }
   
-  // Verificação final
   const data = new Date(ano, mes - 1, dia);
   return data.getDate() === dia && 
          data.getMonth() === mes - 1 && 
          data.getFullYear() === ano;
 };
 
-// Valida se a data é futura (opcional)
 export const validarDataFutura = (dataBr: string): boolean => {
   if (!validarDataBr(dataBr)) return false;
   
@@ -69,7 +67,7 @@ export const extrairPartesDataBr = (dataBr: string): { dia: string, mes: string,
   };
 };
 
-// Valida se uma string está no formato ISO (yyyy-MM-dd)
+// string no formato ISO (yyyy-MM-dd)
 export const isValidISOFormat = (data: string): boolean => {
   return /^\d{4}-\d{2}-\d{2}$/.test(data);
 };
@@ -77,7 +75,6 @@ export const isValidISOFormat = (data: string): boolean => {
 export function formatarDataParaISO(data: string): string {
   if (!data) return '';
   
-  // Se já estiver no formato ISO, retorna como está
   if (isValidISOFormat(data)) {
     return data;
   }
@@ -89,3 +86,50 @@ export function formatarDataParaISO(data: string): string {
   }
   return '';
 }
+
+
+export const parsearData = (data: any): Date => {
+  if (!data) return new Date();
+  
+  // Se já for um objeto Date
+  if (data instanceof Date) return data;
+  
+  // Se for string em formato ISO (yyyy-MM-dd)
+  if (typeof data === 'string' && isValidISOFormat(data)) {
+    return new Date(data);
+  }
+  
+  // Se for string com timestamp
+  if (typeof data === 'string' && !isNaN(Date.parse(data))) {
+    return new Date(data);
+  }
+  
+  // Se for número (timestamp)
+  if (typeof data === 'number') {
+    return new Date(data);
+  }
+  
+  // Tenta converter de string BR (dd/MM/yyyy)
+  if (typeof data === 'string' && data.includes('/')) {
+    const [dia, mes, ano] = data.split('/');
+    return new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
+  }
+  
+  console.warn('Formato de data não reconhecido:', data);
+  return new Date();
+};
+
+export const formatarDataParaExibicao = (data: any): string => {
+  try {
+    const dataObj = parsearData(data);
+    return dataObj.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  } catch (error) {
+    console.error('Erro ao formatar data:', data, error);
+    return 'Data inválida';
+  }
+};
+

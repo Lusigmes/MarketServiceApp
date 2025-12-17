@@ -43,6 +43,7 @@ public class SecurityConfiguration {
             .requestMatchers("/prestadores/**").hasAnyRole("USER", "ADMIN")
             .requestMatchers("/avaliacoes/**").hasAnyRole("USER", "ADMIN")
             .requestMatchers("/demandas/**").hasAnyRole("USER", "ADMIN")
+            .requestMatchers("/ws/**").hasAnyRole("USER", "ADMIN")
             // escolha de roles que podem trabalhar em detemrinados metodos
             
             .anyRequest().authenticated()
@@ -68,6 +69,7 @@ public class SecurityConfiguration {
     // configuration.setAllowCredentials(true); // se quiser cookies no futuro
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**",configuration);
+        source.registerCorsConfiguration("/ws/**", configuration);
         return source;
     }
 

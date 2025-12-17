@@ -5,53 +5,62 @@ import { findPrestadorIdByUsuarioId } from "@/api/PrestadorService";
 import type { PropostaResponseInterface } from "@/types";
 import Proposta from "./detalhesProposta/Proposta.vue";
 import { corStatusProposta } from "@/utils/labelsUtils";
+import { formatarDataParaExibicao } from "@/utils/dateUtils"; // Importe a função
 
-  interface Props {
-    usuario: any;
-    usuarioId: number;
-    tipoUsuario: 'CLIENTE' | 'PRESTADOR';
-  }
+interface Props {
+  usuario: any;
+  usuarioId: number;
+  tipoUsuario: 'CLIENTE' | 'PRESTADOR';
+}
 
-  const props = defineProps<Props>();
+const props = defineProps<Props>();
 
-  const prestadorId = ref<number | null>(null);
+const prestadorId = ref<number | null>(null);
 
-  const propostas = ref<PropostaResponseInterface[]>([]);
-  const page = ref(0);
-  const totalPages = ref(0);
-  const loading = ref(false);
+const propostas = ref<PropostaResponseInterface[]>([]);
+const page = ref(0);
+const totalPages = ref(0);
+const loading = ref(false);
 
-  const dialogDetalhe = ref(false);
-  const propostaSelecionada = ref<PropostaResponseInterface | null>(null);
-  
-  const propostaAtual = computed(() => propostaSelecionada.value);
+const dialogDetalhe = ref(false);
+const propostaSelecionada = ref<PropostaResponseInterface | null>(null);
 
-  const abrirModalDetalhe = (proposta: PropostaResponseInterface) => {
-    propostaSelecionada.value = proposta;
-    dialogDetalhe.value = true;
-  };
-  const fecharModalDetalhe = () => {
-    dialogDetalhe.value = false;
-    propostaSelecionada.value = null;
-  };
+const propostaAtual = computed(() => propostaSelecionada.value);
 
-  const atualizarProposta = (p: Partial<PropostaResponseInterface>) => {
-    if (!p.id) return;
-    const index = propostas.value.findIndex(item => item.id === p.id);
-    if (index !== -1) propostas.value[index] = { ...propostas.value[index], ...p };
-    if (propostaSelecionada.value?.id === p.id)
-      propostaSelecionada.value = { ...propostas.value[index] };
-  };
+const abrirModalDetalhe = (proposta: PropostaResponseInterface) => {
+  propostaSelecionada.value = proposta;
+  dialogDetalhe.value = true;
+};
+
+const fecharModalDetalhe = () => {
+  dialogDetalhe.value = false;
+  propostaSelecionada.value = null;
+};
+
+const atualizarProposta = (p: Partial<PropostaResponseInterface>) => {
+  if (!p.id) return;
+  const index = propostas.value.findIndex(item => item.id === p.id);
+  if (index !== -1) propostas.value[index] = { ...propostas.value[index], ...p };
+  if (propostaSelecionada.value?.id === p.id)
+    propostaSelecionada.value = { ...propostas.value[index] };
+};
 
 async function atualizarPagina(p: number = 0) {
   if (!prestadorId.value) return;
   loading.value = true;
   try {
     const data = await carregarPropostasDoPrestador(prestadorId.value, p, 9, "dataCriacaoProposta,DESC");
+    
+    data.content = data.content.map((proposta: any) => ({
+      ...proposta,
+      dataCriacao: formatarDataParaExibicao(proposta.dataCriacao)
+    }));
+    
     propostas.value = data.content;
     totalPages.value = data.totalPages;
     page.value = p;
   } catch (err) {
+    console.error("Erro ao carregar propostas:", err);
     throw err;
   } finally {
     loading.value = false;
@@ -65,7 +74,8 @@ onMounted(async () => {
       await atualizarPagina();
     }
   } catch (err) {
-      throw err;    
+    console.error("Erro ao inicializar:", err);
+    throw err;
   }
 });
 </script>
@@ -100,8 +110,8 @@ onMounted(async () => {
             </div>
             
             <div class="preco-badge">
-              <span class="text-white font-weight-bold text-caption">
-                R$ {{ proposta.preco.toFixed(2) }}
+              <span class="text-black font-weight-bold text-caption">
+                R$ {{ proposta.preco?.toFixed(2) || '0.00' }}
               </span>
             </div>
           </div>
@@ -127,14 +137,15 @@ onMounted(async () => {
                     mdi-calendar
                   </v-icon>
                   <span class="text-white font-weight-medium text-caption">
-                    {{ new Date(proposta.dataCriacao).toLocaleDateString() }}
+                    <!-- Use a função de formatação aqui -->
+                    {{ formatarDataParaExibicao(proposta.dataCriacao) }}
                   </span>
                 </v-chip>
               </div>
 
               <div class="d-flex justify-space-between align-center">
                 <div class="d-flex align-center">
-                 
+                  <!-- Outras informações -->
                 </div>
                 
                 <v-chip 
@@ -143,7 +154,7 @@ onMounted(async () => {
                   style="background: rgba(0, 0, 0, 0.4);"
                 >
                   <span class="text-caption text-white font-weight-bold" style="font-size: 0.7rem; letter-spacing: 0.3px;">
-                    {{ proposta.statusProposta }}
+                    {{ proposta.statusProposta || 'PENDENTE' }}
                   </span>
                 </v-chip>
               </div>
@@ -176,7 +187,6 @@ onMounted(async () => {
     </v-dialog>
   </v-container>
 </template>
-
 
 <style scoped>
 .proposta-card {
@@ -245,5 +255,9 @@ onMounted(async () => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.proposta-card .flex-grow-1 {
+  min-width: 0;
 }
 </style>

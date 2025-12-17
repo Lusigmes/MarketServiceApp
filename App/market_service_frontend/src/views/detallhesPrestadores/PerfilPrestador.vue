@@ -9,6 +9,15 @@ interface Props {
 
 const props = defineProps<Props>();
 const abaAtiva = ref('detalhes');
+
+const emit = defineEmits<{
+  (e: 'fechar'): void;
+  (e: 'abrirChat', prestador: PrestadorResponseInterface): void;
+}>();
+
+const abrirChat = () => {
+  emit('abrirChat', props.prestador);
+};
 </script>
 
 <template>
@@ -90,7 +99,7 @@ const abaAtiva = ref('detalhes');
                     <v-btn
                         color="secondary"
                         variant="flat"
-                        @click="$emit('abrirChat', props.prestador)"
+                        @click="abrirChat"
                         block
                         rounded="lg"
                     >

@@ -7,6 +7,7 @@ import { atualizarProposta } from '@/api/PropostaService';
 import { StatusDemanda, StatusProposta } from '@/types/enums';
 import { getDemandaById } from '@/api/DemandaService';
 import { useNotification } from '@/composables/useNotification';
+import { formatarDataParaExibicao } from '@/utils/dateUtils';
 
     const{showNotification} = useNotification();
 
@@ -15,7 +16,6 @@ import { useNotification } from '@/composables/useNotification';
         prestadorId?: number | null;
         tipoUsuario?: 'CLIENTE' | 'PRESTADOR';
         statusDemanda?: StatusDemanda;
-
     };
 
     const emit = defineEmits<{
@@ -121,6 +121,11 @@ import { useNotification } from '@/composables/useNotification';
         fecharFormEdicao();
     };
 
+    const dataFormatada = computed(() => {
+        return formatarDataParaExibicao(props.proposta?.dataCriacao);
+    })
+
+
 </script>
 
 <template>
@@ -133,7 +138,7 @@ import { useNotification } from '@/composables/useNotification';
         <template v-if="!editando">
             <div class="d-flex justify-space-between align-start mb-4">
                 <div class="flex-grow-1 mr-3">
-                    <h3 class="text-h5 font-weight-bold text-white mb-1" style="text-shadow: 0 1px 2px rgba(0,0,0,0.3);">
+                    <h3 class="text-h5 font-weight-bold text-white mb-1 text-truncate" style="text-shadow: 0 1px 2px rgba(0,0,0,0.3);">
                         {{ props.proposta?.titulo }}
                     </h3>
                 </div>
@@ -181,10 +186,9 @@ import { useNotification } from '@/composables/useNotification';
                 >
                     <v-icon size="14" color="white" class="mr-1">mdi-calendar</v-icon>
                     <span class="text-white font-weight-medium">
-                        {{ new Date(props.proposta?.dataCriacao ?? "").toLocaleDateString() }}
+                    {{ dataFormatada }}
                     </span>
                 </v-chip>
-                
                
             </div>
 
@@ -355,5 +359,16 @@ import { useNotification } from '@/composables/useNotification';
         min-width: 80px;
         padding: 6px 8px;
     }
+}
+
+/* Allow flex children to shrink so text-overflow: ellipsis works inside flex containers */
+.proposta-card .flex-grow-1 {
+    min-width: 0;
+}
+
+.text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 </style>

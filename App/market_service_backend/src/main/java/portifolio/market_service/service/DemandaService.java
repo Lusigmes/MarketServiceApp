@@ -21,8 +21,8 @@ import portifolio.market_service.model.enums.StatusDemanda;
 import portifolio.market_service.model.enums.StatusProposta;
 import portifolio.market_service.repository.ClienteRepository;
 import portifolio.market_service.repository.DemandaRepository;
-import portifolio.market_service.repository.PropostaRepository;
 import portifolio.market_service.repository.PrestadorRepository;
+import portifolio.market_service.repository.PropostaRepository;
 
 @Service
 public class DemandaService {
@@ -82,6 +82,12 @@ public class DemandaService {
         return demandaRepository.findAll(pageable)
                 .map(this::responseToDTO);
     }
+    
+    public Page<DemandaResponseDTO> listarDemandaByUsuario(Usuario usuario, Pageable pageable) {
+        Page<Demanda> demandasPage = demandaRepository.findDemandaByUsuario(usuario, pageable);
+        return demandasPage.map(this::responseToDTO);
+    }
+
     public Demanda buscarDemandaPorId(Long id) {
         Demanda demanda = demandaRepository.findDemandaById(id);
 

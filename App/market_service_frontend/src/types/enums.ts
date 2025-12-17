@@ -18,3 +18,11 @@ export enum StatusProposta {
     RECUSADA = 'RECUSADA',        // RECUSADA PELO CLIENTE
     CANCELADA = 'CANCELADA'      //CANCELADA PELO PRESTADOR
 }
+
+export enum TipoChat {
+    CHAT = 'CHAT', 
+    SYSTEM = 'SYSTEM',      
+    JOIN = 'JOIN',
+    READ = 'READ',      
+    ERROR = 'ERROR'  
+}

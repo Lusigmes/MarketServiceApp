@@ -4,10 +4,11 @@
 
     <v-main>
       <router-view />
-      <NotificationProvider/>
     </v-main>
-
+    
     <Footer />
+
+    <NotificationProvider/>
   </v-app>
 </template>
 
@@ -15,4 +16,5 @@
 import Footer from '@/layouts/Footer.vue';
 import Toolbar from '@/layouts/Toolbar.vue';
 import NotificationProvider from './components/NotificationProvider.vue';
+
 </script>

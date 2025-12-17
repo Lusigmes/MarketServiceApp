@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +22,7 @@ import portifolio.market_service.dto.DemandaDTO;
 import portifolio.market_service.dto.DemandaResponseDTO;
 import portifolio.market_service.dto.DemandaUpdateDTO;
 import portifolio.market_service.model.entity.Demanda;
+import portifolio.market_service.model.entity.Usuario;
 import portifolio.market_service.repository.DemandaRepository;
 import portifolio.market_service.service.DemandaService;
 
@@ -50,6 +52,14 @@ public class DemandaController {
     public ResponseEntity<DemandaResponseDTO> getById(@PathVariable(value = "id") long id) {
         Demanda demanda = demandaService.buscarDemandaPorId(id);
         return ResponseEntity.ok(demandaService.responseToDTO(demanda));
+    }
+
+    @GetMapping("/cliente/page")
+    public ResponseEntity<Page<DemandaResponseDTO>> listarDemandasPorCliente(
+            @AuthenticationPrincipal Usuario usuario, Pageable pageable){
+        
+        Page<DemandaResponseDTO> demandas = demandaService.listarDemandaByUsuario(usuario, pageable);
+        return ResponseEntity.ok(demandas);
     }
 
     @CrossOrigin

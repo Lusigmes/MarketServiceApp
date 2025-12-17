@@ -67,9 +67,9 @@ const podeAvaliar = computed(() =>
 );
 
 
-  const editando = ref(false); 
-  const abrirFormEdicao = () => { editando.value = true; };
-  const fecharFormEdicao = () => { editando.value = false; };
+const editando = ref(false); 
+const abrirFormEdicao = () => { editando.value = true; };
+const fecharFormEdicao = () => { editando.value = false; };
 
 const salvarEdicao = (demandaAtualizada: Partial<DemandaResponseInterface>) => {
   emit('atualizar-demanda', demandaAtualizada);
@@ -483,7 +483,7 @@ onMounted(() => {
         <template v-if="!editando">
           <div class="d-flex justify-space-between align-start mb-4">
             <div class="flex-grow-1 mr-3">
-              <h3 class="text-h5 font-weight-bold text-white mb-1" style="text-shadow: 0 1px 2px rgba(0,0,0,0.3);">
+              <h3 class="text-h5 font-weight-bold text-white mb-1 text-truncate" style="text-shadow: 0 1px 2px rgba(0,0,0,0.3);">
                 {{ props.demanda.titulo }}
               </h3>
             </div>
@@ -958,5 +958,15 @@ transition: opacity 0.2s;
 
 .priority-badge-large:hover .info-icon {
 opacity: 1;
+}
+
+.demanda-card .flex-grow-1 {
+  min-width: 0;
+}
+
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

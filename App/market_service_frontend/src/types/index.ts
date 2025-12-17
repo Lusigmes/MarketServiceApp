@@ -102,3 +102,46 @@ export interface AvaliacaoInterface {
     prestadorId: number;
     demandaId:number;
 }
+
+export interface ChatMessageResponseInterface{
+    id: number;
+    tipo: 'CHAT' | 'SYSTEM' | 'JOIN' | 'READ' | 'ERROR';
+    clienteId: number;
+    clienteNome: string;
+    prestadorId: number;
+    prestadorNome: string;
+    demandaId: number;
+    demandaTitulo: string;
+    conteudo: string;
+    enviadoPorCliente:boolean;
+    lida:boolean;
+    dataEnvio: string;
+}
+
+export interface ChatMessageInterface{
+    messageId?: number;
+    tipo: 'CHAT' | 'SYSTEM' | 'JOIN' | 'READ' | 'ERROR';
+    clienteId: number;
+    prestadorId: number;
+    demandaId: number;
+    conteudo: string;
+    enviadoPorCliente:boolean;
+    destinatarioSessionId?: string;
+}
+
+export interface WebSocketInterface{
+    tipo: 'CHAT' | 'SYSTEM' | 'JOIN' | 'READ' | 'ERROR';
+    data:any;
+    timestamp: string;
+}
+
+export interface ChatConversationInterface{
+    clienteId: number;
+    prestadorId: number;
+    demandaId: number;
+    demandaTitulo: string;
+    ultimaMensagem: ChatMessageResponseInterface | null;
+    mensagensNaoLidas: number;
+    interlocutorNome: string;
+    interlocutorId: number;
+}

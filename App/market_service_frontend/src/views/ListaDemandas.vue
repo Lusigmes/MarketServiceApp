@@ -1,92 +1,114 @@
 <script setup lang="ts">
-import { carregarDemandas } from '@/api/DemandaService';
+import { carregarDemandas, carregarDemandasDoCliente } from '@/api/DemandaService';
 import type { DemandaResponseInterface } from '@/types';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import Demanda from './detalhesDemanda/Demanda.vue';
 import CriarDemandaForm from './detalhesDemanda/CriarDemandaForm.vue';
 import { findClienteIdByUsuarioId } from '@/api/ClienteService';
 import { corStatus, corPrioridade } from '@/utils/labelsUtils';
 import { useDemandaPagination } from '@/composables/usePagination';
 
-  interface Props {
-    usuario: any;
-    usuarioId: number;
-    tipoUsuario: 'CLIENTE' | 'PRESTADOR';
+interface Props {
+  usuario: any;
+  usuarioId: number;
+  tipoUsuario: 'CLIENTE' | 'PRESTADOR';
+}
+
+const props = defineProps<Props>();
+
+const clienteId = ref<number | null>(null);
+
+const tipoDeCarregarDemandas = computed(() => {
+  if (props.tipoUsuario === 'CLIENTE') {
+    return carregarDemandasDoCliente;
+  } else {
+    return carregarDemandas;
   }
-  const props = defineProps<Props>();
+});
 
-  const clienteId = ref<number | null>(null);
-  
-  const {
-    items: demandas,
-    page, totalPages,
-    loading, atualizarPagina 
-  } = useDemandaPagination<DemandaResponseInterface>(carregarDemandas, 9);
+const permissaoCliente = computed(() => props.tipoUsuario === 'CLIENTE');
 
-  const dialogDetalhe = ref(false);
-  const demandaSelecionada = ref<DemandaResponseInterface | null>(null);
+const {
+  items: demandas,
+  page,
+  totalPages,
+  loading,
+  atualizarPagina
+} = useDemandaPagination<DemandaResponseInterface>(tipoDeCarregarDemandas.value, 9);
 
-  const abrirModalDetalhe = (demanda: DemandaResponseInterface) => {
-    demandaSelecionada.value = demanda;
-    dialogDetalhe.value = true;
-  };
-  const fecharModalDetalhe = () => {
-    dialogDetalhe.value = false;
-    demandaSelecionada.value = null;
-  };
+const dialogDetalhe = ref(false);
+const demandaSelecionada = ref<DemandaResponseInterface | null>(null);
 
-  const atualizarDemanda = (d: Partial<DemandaResponseInterface>) => {
-    if (!d.id) return;
-    const index = demandas.value.findIndex(item => item.id === d.id);
-    if (index !== -1) demandas.value[index] = { ...demandas.value[index], ...d };
-    if (demandaSelecionada.value?.id === d.id)
-      demandaSelecionada.value = { ...demandas.value[index] };
-  };
+const abrirModalDetalhe = (demanda: DemandaResponseInterface) => {
+  demandaSelecionada.value = demanda;
+  dialogDetalhe.value = true;
+};
 
-  const dialogCriacao = ref(false);
+const fecharModalDetalhe = () => {
+  dialogDetalhe.value = false;
+  demandaSelecionada.value = null;
+};
 
-  const mudarPagina = async (novaPagina: number) => {
-    await atualizarPagina(novaPagina-1);
-  };
+const atualizarDemanda = (d: Partial<DemandaResponseInterface>) => {
+  if (!d.id) return;
+  const index = demandas.value.findIndex(item => item.id === d.id);
+  if (index !== -1) demandas.value[index] = { ...demandas.value[index], ...d };
+  if (demandaSelecionada.value?.id === d.id)
+    demandaSelecionada.value = { ...demandas.value[index] };
+};
 
-  const salvarDemanda = async (d: DemandaResponseInterface) => {
+const dialogCriacao = ref(false);
+
+const mudarPagina = async (novaPagina: number) => {
+  await atualizarPagina(novaPagina - 1);
+};
+
+const salvarDemanda = async (d: DemandaResponseInterface) => {
+  if (props.tipoUsuario === 'CLIENTE') {
+    demandas.value.unshift(d);
+  } else {
     demandas.value.push(d);
-    dialogCriacao.value = false;
-    await atualizarPagina(page.value);
   }
+  dialogCriacao.value = false;
+  await atualizarPagina(page.value);
+};
 
-  onMounted(async () => {
-    try {
-      if(props.tipoUsuario === "CLIENTE"){
-        clienteId.value = await findClienteIdByUsuarioId(props.usuarioId);
-      }
-      await atualizarPagina();
-    } catch (error) {
-      throw error;    
+watch(() => props.tipoUsuario, () => {
+  atualizarPagina(0);
+});
+
+onMounted(async () => {
+  try {
+    if (props.tipoUsuario === "CLIENTE") {
+      clienteId.value = await findClienteIdByUsuarioId(props.usuarioId);
     }
-  });
-
+    await atualizarPagina();
+  } catch (error) {
+    console.error("Erro ao carregar demandas:", error);
+  }
+});
 </script>
-
 
 <template>
   <v-container>
-    <v-row justify="end" class="mb-4 mr-1">
-      <v-btn
-        color="primary"
-        class="px-4"
-        @click="dialogCriacao = true"
-        v-if="props.tipoUsuario === 'CLIENTE'"
-      >
-        Nova Demanda
-      </v-btn>
+    <v-row justify="end" align="center" class="mb-4">      
+      <v-col cols="auto">
+        <v-btn
+          color="primary"
+          class="px-4"
+          @click="dialogCriacao = true"
+          v-if="permissaoCliente"
+        >
+          Nova Demanda
+        </v-btn>
+      </v-col>
     </v-row>
 
     <v-row justify="center" v-if="loading">
-      <v-progress-circular indeterminate color="primary" />
+      <v-progress-circular indeterminate color="primary" size="64" width="4" />
     </v-row>
 
-    <v-row v-else dense>
+    <v-row v-else-if="demandas.length > 0" dense>
       <v-col
         v-for="demanda in demandas"
         :key="demanda.id"
@@ -98,8 +120,8 @@ import { useDemandaPagination } from '@/composables/usePagination';
           elevation="4"
           :color="corStatus(demanda.statusDemanda)"
           @click="abrirModalDetalhe(demanda)"
-          style="cursor: pointer; min-height: 160px;"
-        >
+          style="cursor: pointer; min-height: 160px; position: relative;"
+        >          
           <div class="dark-overlay"></div>
           
           <div class="d-flex justify-space-between align-start mb-2">
@@ -165,10 +187,32 @@ import { useDemandaPagination } from '@/composables/usePagination';
       </v-col>
     </v-row>
 
-    <v-row justify="center" class="mt-4">
+    <v-row v-else justify="center" class="mt-8">
+      <v-col cols="12" class="text-center">
+        <v-icon size="64" color="grey-lighten-2" class="mb-4">
+          mdi-clipboard-text-outline
+        </v-icon>
+        <h3 class="text-h6 text-grey-darken-1 mb-2">
+          {{
+            permissaoCliente 
+              ? "Você ainda não criou nenhuma demanda" 
+              : "Nenhuma demanda disponível no momento"
+          }}
+        </h3>
+        <p class="text-body-2 text-grey">
+          {{
+            permissaoCliente
+              ? "Clique no botão 'Nova Demanda' para criar sua primeira demanda"
+              : "Aguarde até que algum cliente crie uma nova demanda"
+          }}
+        </p>
+      </v-col>
+    </v-row>
+
+    <v-row justify="center" class="mt-4" v-if="demandas.length > 0">
       <v-pagination
         :length="totalPages"
-        :model-value="page + 1"     
+        :model-value="page + 1"
         @update:model-value="mudarPagina"
         color="primary"
         size="small"
@@ -212,6 +256,18 @@ import { useDemandaPagination } from '@/composables/usePagination';
   z-index: 5;
 }
 
+.demanda-owner-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 3;
+}
+
+.owner-chip {
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
 .dark-overlay {
   position: absolute;
   top: 0;
@@ -223,9 +279,13 @@ import { useDemandaPagination } from '@/composables/usePagination';
   z-index: 1;
 }
 
-.demanda-card > *:not(.dark-overlay) {
+.demanda-card > *:not(.dark-overlay):not(.demanda-owner-badge) {
   position: relative;
   z-index: 2;
+}
+
+.demanda-card .flex-grow-1 {
+  min-width: 0;
 }
 
 .priority-badge {
@@ -239,12 +299,6 @@ import { useDemandaPagination } from '@/composables/usePagination';
   justify-content: center;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
   flex-shrink: 0;
-}
-
-.chips-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
 }
 
 .category-chip, .date-chip, .status-chip {
@@ -261,16 +315,9 @@ import { useDemandaPagination } from '@/composables/usePagination';
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
-.demanda-card .v-card__text {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
 .text-truncate {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 </style>
-

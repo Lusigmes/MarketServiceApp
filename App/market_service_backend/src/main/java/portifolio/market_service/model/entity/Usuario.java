@@ -36,7 +36,7 @@ public class Usuario implements UserDetails{
     @Id
     @Column
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @Column(nullable = false)
     @NotNull(message = "O nome é obrigatório")

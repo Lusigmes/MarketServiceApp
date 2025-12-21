@@ -86,5 +86,13 @@ public class JwtAuthService {
         final String email = extractUsername(token);
         return (email.equals(user.getUsername())) && !isTokenExpired(token); 
     }
-
+    
+    public boolean isValidOnlyToken(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            return !isTokenExpired(token);
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }

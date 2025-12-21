@@ -5,7 +5,7 @@ import { findPrestadorIdByUsuarioId } from "@/api/PrestadorService";
 import type { PropostaResponseInterface } from "@/types";
 import Proposta from "./detalhesProposta/Proposta.vue";
 import { corStatusProposta } from "@/utils/labelsUtils";
-import { formatarDataParaExibicao } from "@/utils/dateUtils"; // Importe a função
+import { formatarDataParaExibicao } from "@/utils/dateUtils"; 
 
 interface Props {
   usuario: any;

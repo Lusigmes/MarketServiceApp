@@ -4,7 +4,8 @@ import { usePrestadorPagination } from '@/composables/usePagination';
 import type { PrestadorResponseInterface } from '@/types';
 import { computed, onMounted, ref } from 'vue';
 import PerfilPrestador from './detallhesPrestadores/PerfilPrestador.vue';
-
+import ChatModalCliente
+ from '@/components/chat/ChatModalCliente.vue';
 interface Props {
   usuario: any;
   usuarioId: number;
@@ -40,9 +41,19 @@ const mudarPagina = async (novaPagina: number) => {
   await atualizarPagina(novaPagina - 1);
 };
 
+const mostrarChatModal = ref(false);
+const prestadorSelecionadoChat = ref<PrestadorResponseInterface | null>(null);
+
 const abrirChat = (prestador: PrestadorResponseInterface) => {
+  mostrarChatModal.value = true;
+  prestadorSelecionadoChat.value = prestador;
   console.log('Abrir chat com prestador:', prestador);
   // router.push(`/chat/${prestador.id}`);
+};
+
+const fecharChat = () => {
+  mostrarChatModal.value = false;
+  prestadorSelecionadoChat.value = null;
 };
 
 onMounted(async () => {
@@ -132,6 +143,11 @@ onMounted(async () => {
         @abrirChat="abrirChat"
       />
     </v-dialog>
+    <ChatModalCliente
+    v-if="prestadorSelecionadoChat"
+    :prestador="prestadorSelecionadoChat"
+    @close="fecharChat"
+  />
   </v-container>
 </template>
 

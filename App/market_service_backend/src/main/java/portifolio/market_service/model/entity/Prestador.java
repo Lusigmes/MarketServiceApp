@@ -27,7 +27,7 @@ public class Prestador implements Serializable{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column
-    private long id;
+    private Long id;
 
     @OneToOne(cascade = CascadeType.PERSIST, fetch=FetchType.LAZY) //(fetch=FetchType.LAZY)
     @JsonManagedReference(value = "prestador-usuario")

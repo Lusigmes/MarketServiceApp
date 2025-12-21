@@ -7,7 +7,6 @@ public record ChatMessageDTO(
     TipoChat tipo,
     Long clienteId,
     Long prestadorId,
-    Long demandaId,
     String conteudo,
     boolean enviadoPorCliente,
     String destinatarioSessionId

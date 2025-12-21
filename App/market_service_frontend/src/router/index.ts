@@ -56,11 +56,16 @@ const routes = [
           name: 'Proposta',
           component: () => import('@/views/detalhesProposta/Proposta.vue')
         },
-        // {
-        //   path: 'chat',
-        //   name: 'Chat',
-        //   component: () => import('@/components/chat/ChatPrincipal.vue')
-        // }
+        {
+          path: 'chat',
+          name: 'Chat',
+          component: () => import('@/components/chat/ChatCliente.vue')
+        },
+        {
+          path: 'minhas-conversas',
+          name: 'MinhasConversas',
+          component: () => import('@/views/detalhesChat/MinhasConversasPrestador.vue')
+        },
 
       ]
     }

@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 import portifolio.market_service.model.entity.Cliente;
+import portifolio.market_service.model.entity.Usuario;
 
 @RepositoryRestResource(collectionResourceRel = "clientes", path = "clientes")
 public interface ClienteRepository extends JpaRepository<Cliente, Long>{
@@ -17,5 +18,8 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long>{
 
     // @Query("SELECT c FROM Cliente c JOIN FETCH c.usuario u WHERE u.id = :id") // id cliente + obj usuario
     @Query("SELECT c.id FROM Cliente c WHERE c.usuario.id = :id")
-    long findClienteIdByUsuarioId(@Param("id") long usuarioId);
+    Long findClienteIdByUsuarioId(@Param("id") long usuarioId);
+    
+    @Query("SELECT c FROM Cliente c WHERE c.usuario = :usuario")
+    Cliente findClienteByUsuario(@Param("usuario") Usuario usuario);
 }

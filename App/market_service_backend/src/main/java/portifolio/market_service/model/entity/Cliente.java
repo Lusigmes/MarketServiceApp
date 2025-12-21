@@ -27,7 +27,7 @@ public class Cliente implements Serializable{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column
-    private long id;
+    private Long id;
 
     @OneToOne(cascade = CascadeType.PERSIST, fetch=FetchType.LAZY)
     @JoinColumn(name="usuario_id", nullable=false, unique=true)

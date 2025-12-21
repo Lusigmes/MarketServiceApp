@@ -9,7 +9,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
+import portifolio.market_service.model.entity.Cliente;
 import portifolio.market_service.model.entity.Prestador;
+import portifolio.market_service.model.entity.Usuario;
 
 @RepositoryRestResource(collectionResourceRel = "prestadores", path = "prestadores")
 public interface PrestadorRepository extends JpaRepository<Prestador, Long>{
@@ -26,4 +28,6 @@ public interface PrestadorRepository extends JpaRepository<Prestador, Long>{
     @Query("SELECT p FROM Prestador p JOIN FETCH p.usuario WHERE p.id = :id")
     Prestador findByIdWithUsuario(@Param("id") Long id);
     
+    @Query("SELECT p FROM Prestador p WHERE p.usuario = :usuario")
+    Prestador findPrestadorByUsuario(@Param("usuario") Usuario usuario);
 }

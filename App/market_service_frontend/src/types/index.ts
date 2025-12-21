@@ -110,8 +110,6 @@ export interface ChatMessageResponseInterface{
     clienteNome: string;
     prestadorId: number;
     prestadorNome: string;
-    demandaId: number;
-    demandaTitulo: string;
     conteudo: string;
     enviadoPorCliente:boolean;
     lida:boolean;
@@ -123,25 +121,25 @@ export interface ChatMessageInterface{
     tipo: 'CHAT' | 'SYSTEM' | 'JOIN' | 'READ' | 'ERROR';
     clienteId: number;
     prestadorId: number;
-    demandaId: number;
     conteudo: string;
     enviadoPorCliente:boolean;
     destinatarioSessionId?: string;
 }
 
-export interface WebSocketInterface{
-    tipo: 'CHAT' | 'SYSTEM' | 'JOIN' | 'READ' | 'ERROR';
-    data:any;
-    timestamp: string;
-}
-
 export interface ChatConversationInterface{
     clienteId: number;
+    clienteNome: string;
     prestadorId: number;
-    demandaId: number;
-    demandaTitulo: string;
-    ultimaMensagem: ChatMessageResponseInterface | null;
-    mensagensNaoLidas: number;
-    interlocutorNome: string;
-    interlocutorId: number;
+    prestadorNome: string;
+    ultimaMensagem: string;
+    enviadoPorCliente: boolean;
+    lida: boolean;
+    dataUltimaMensagem: string;
+    mensagensNaoLidas?: number;
 }
+
+export interface WebSocketInterface{
+        tipo: 'CHAT' | 'SYSTEM' | 'JOIN' | 'READ' | 'ERROR';
+        data:any;
+        timestamp: string;
+    }

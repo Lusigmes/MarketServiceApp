@@ -23,7 +23,7 @@ public class ClienteService {
         usuarioService.toDTO(cliente.getUsuario()));
     }
     
-    public long findClienteIdByUsuarioId(long usuarioId){
+    public Long findClienteIdByUsuarioId(long usuarioId){
         return clienteRepository.findClienteIdByUsuarioId(usuarioId);
 
         //id+usuario associado

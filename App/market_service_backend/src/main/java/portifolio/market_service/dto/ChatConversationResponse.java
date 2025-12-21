@@ -4,20 +4,14 @@ import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
-import portifolio.market_service.model.enums.TipoChat;
-
-public record ChatMessageResponse(
-    Long id,
-    TipoChat tipo,
+public record ChatConversationResponse(
     Long clienteId,
-    String clienteNome, 
+    String clienteNome,
     Long prestadorId,
     String prestadorNome,
-    String conteudo,
+    String ultimaMensagem,
     boolean enviadoPorCliente,
     boolean lida,
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
-    LocalDateTime dataEnvio
-) {
-    
-}
+    LocalDateTime dataUltimaMensagem
+) {}

@@ -7,12 +7,14 @@ import EditarUsuarioForm from '@/components/EditarUsuarioForm.vue';
 import MinhasAvaliacoesModal from '@/views/detalhesAvaliacoes/MinhasAvaliacoesModal.vue';
 import Notificacao from './Notificacao.vue';
 import ToolbarInfo from './ToolbarInfo.vue';
+import MinhasConversasModal from '@/views/detalhesChat/MinhasConversasModal.vue';
 
 const { usuario, logout } = useAuth();
 const router = useRouter();
 const menu = ref(false);
 const dialogEditarUsuario = ref(false);
 const minhasAvaliacoesModal = ref();
+const minhasConversasModal = ref();
 
 const tabs = computed(() => {
   if (!usuario.value) return;
@@ -68,6 +70,10 @@ function abrirMinhasAvaliacoes(){
   minhasAvaliacoesModal.value?.abrir();
   menu.value = false;
 }
+function abrirMinhasConversas(){
+  minhasConversasModal.value?.abrir();
+  menu.value = false;
+}
 
 function sair() {
   logout();
@@ -97,6 +103,9 @@ async function handleUsuarioEditado(usuarioAtt: Partial<UsuarioResponseInterface
 function fecharFormEdicaoUsuario(){
   dialogEditarUsuario.value = false;
 }
+
+
+
 </script>
 
 <template>
@@ -205,6 +214,19 @@ function fecharFormEdicaoUsuario(){
                   </v-list-item-title>
                 </v-list-item>
 
+              <v-list-item 
+                  v-if="ehPrestador" 
+                  @click="abrirMinhasConversas"
+                  class="menu-item"
+                >
+                  <template #prepend>
+                    <v-icon color="blue-darken-3">mdi-chat</v-icon>
+                  </template>
+                  <v-list-item-title class="text-body-1 font-weight-medium">
+                    Minhas Conversas
+                  </v-list-item-title>
+                </v-list-item>
+
                 <v-list-item 
                   @click="abrirFormEdicaoUsuario"
                   class="menu-item"
@@ -255,6 +277,7 @@ function fecharFormEdicaoUsuario(){
   </v-dialog>
 
   <MinhasAvaliacoesModal ref="minhasAvaliacoesModal" />
+  <MinhasConversasModal ref="minhasConversasModal" />
 </template>
 
 <style scoped>

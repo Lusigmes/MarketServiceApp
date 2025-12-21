@@ -35,10 +35,6 @@ public class ChatMessage {
     @JoinColumn(name = "prestador_id", nullable = false)
     private Prestador prestador;
     
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "demanda_id", nullable = false)
-    private Demanda demanda;
-    
     @Column(columnDefinition = "TEXT", nullable = false)
     private String conteudo;
     
@@ -66,8 +62,4 @@ public class ChatMessage {
         return this.getPrestador().getNomeUsuarioPrestador();
     }
     
-    public String getNomeDemanda(){
-        return this.getDemanda().getTitulo();
-    }
-
 }

@@ -1,11 +1,21 @@
 import { StatusDemanda, PrioridadeDemanda, StatusProposta } from "@/types/enums";
 
-export const labelStatus = (status: StatusDemanda) => {
+export const labelStatusDemanda = (status: StatusDemanda) => {
     switch(status){
         case StatusDemanda.ABERTA: return 'Aberta';
         case StatusDemanda.EM_ANDAMENTO: return 'Em Andamento';
         case StatusDemanda.CONCLUIDA: return 'Concluída';
         case StatusDemanda.CANCELADA: return 'Cancelada';
+        default: return status;
+    }
+};
+export const labelStatusProposta = (status: StatusProposta) => {
+    switch(status){
+        case StatusProposta.PENDENTE: return 'Pendente';
+        case StatusProposta.ACEITA: return 'Aceita';
+        case StatusProposta.CONCLUIDA: return 'Concluída';
+        case StatusProposta.RECUSADA: return 'Recusada';
+        case StatusProposta.CANCELADA: return 'Cancelada';
         default: return status;
     }
 };

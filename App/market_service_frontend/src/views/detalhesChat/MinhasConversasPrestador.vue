@@ -6,6 +6,7 @@ import type { ChatConversationInterface } from '@/types';
 import { formatarDataParaExibicao } from '@/utils/dateUtils';
 import { onMounted, ref } from 'vue';
 import ChatPrestador from './ChatPrestador.vue';
+import ChatModalPrestador from './ChatModalPrestador.vue';
 
 
 const { usuario } = useAuth();
@@ -162,26 +163,12 @@ onMounted(async () => {
         </v-list>
       </div>
     </div>
-
-    <v-dialog v-model="dialogChat" max-width="500" persistent>
-      <v-card rounded="lg">
-        <v-card-title class="d-flex justify-space-between align-center bg-primary text-white py-3">
-          <div class="d-flex align-center gap-2">
-            <span>Conversa direta com {{ clienteNomeSelecionado }}</span>
-          </div>
-          <v-btn icon @click="fecharChat" variant="text" color="white" size="small">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </v-card-title>
-        <v-card-text class="pa-0">
-          <ChatPrestador 
-            v-if="clienteIdSelecionado" 
-            :cliente-id="clienteIdSelecionado" 
-            @close="fecharChat" 
-          />
-        </v-card-text>
-      </v-card>
-    </v-dialog>
+  <ChatModalPrestador
+      v-if="dialogChat && clienteIdSelecionado"
+      :cliente-id="clienteIdSelecionado"
+      :cliente-nome="clienteNomeSelecionado"
+      @close="fecharChat"
+    />
   </div>
 </template>
 

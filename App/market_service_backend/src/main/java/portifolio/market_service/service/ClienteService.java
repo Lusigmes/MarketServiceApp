@@ -35,7 +35,10 @@ public class ClienteService {
         // );
     }
 
-
+    public String findNomeCliente(Long clienteId){
+        return clienteRepository.findNomeClienteByClienteId(clienteId);
+    }
+    
     public List<ClienteResponseDTO> findAllClientes(){
         return clienteRepository.findAllWithUsuarioAndRelationsClientes()
             .stream().map(this::toDTO).toList();

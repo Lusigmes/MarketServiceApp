@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { DemandaResponseInterface, PropostaResponseInterface } from '@/types';
+import type { ClienteResponseInterface, DemandaResponseInterface, PrestadorResponseInterface, PropostaResponseInterface } from '@/types';
 import { computed, ref, watch , onMounted} from 'vue';
 import EditarDemandaForm from './EditarDemandaForm.vue';
-import { corPrioridade, corStatus, labelPrioridade, labelStatus } from '@/utils/labelsUtils';
+import { corPrioridade, corStatus, labelPrioridade } from '@/utils/labelsUtils';
 import PropostasRecebidas from './PropostasRecebidas.vue';
 import { PrioridadeDemanda, StatusDemanda, StatusProposta } from '@/types/enums';
 import { atualizarDemanda } from '@/api/DemandaService';
@@ -11,6 +11,11 @@ import { atualizarProposta, carregarTodasPropostasDaDemanda, getPropostaById } f
 import { useNotification } from "@/composables/useNotification";
 import GerarAvaliacaoForm from '../detalhesAvaliacoes/GerarAvaliacaoForm.vue';
 import { verificarAvaliacaoExistente } from '@/api/AvaliacaoService';
+import { useAuth } from '@/composables/useAuth';
+import { carregarPrestadorPorId, findPrestadorIdByUsuarioId } from '@/api/PrestadorService';
+import ChatModalCliente from '@/components/chat/ChatModalCliente.vue';
+import ChatModalPrestador from '../detalhesChat/ChatModalPrestador.vue';
+import { findNomeClienteByClienteId } from '@/api/ClienteService';
 
 const { showNotification } = useNotification();
 
@@ -27,6 +32,74 @@ const emit = defineEmits<{
   (e: 'atualizar-demanda', payload: Partial<DemandaResponseInterface>): void;
   (e: 'fechar'): void;
 }>();
+
+const modalChat = ref(false);
+const prestadorIdParaChat = ref<number | null>(null);
+const clienteIdParaChat = ref<number | null>(null);
+const prestadorIdLogado = ref<number | null>(null);
+const prestadorParaChat = ref<PrestadorResponseInterface | null>(null);
+const carregandoPrestador = ref(false);
+
+const podeMostrarChat = computed(() => {
+  console.log('Verificando se pode mostrar chat...');
+  console.log('Status demanda:', props.demanda.statusDemanda);
+  console.log('Tipo usuário:', props.tipoUsuario);
+  console.log('Proposta aceita:', propostaAceita.value);
+  console.log('Prestador logado ID:', prestadorIdLogado.value);
+  
+  if (props.demanda.statusDemanda !== StatusDemanda.EM_ANDAMENTO) {
+    return false;
+  }
+  
+  if (!propostaAceita.value) {
+    return false;
+  }
+  
+  if (propostaAceita.value.statusProposta === StatusProposta.CANCELADA) {
+    return false;
+  }
+  
+  if (props.tipoUsuario === 'CLIENTE') {
+    return props.clienteId === props.demanda.clienteId;
+  }
+  
+  if (props.tipoUsuario === 'PRESTADOR') {
+    return propostaAceita.value.prestadorId === prestadorIdLogado.value;
+    
+  }
+  
+  return false;
+});
+
+const abrirChat = async () => {
+  if (!podeMostrarChat.value || !propostaAceita.value) return;
+  
+  if (props.tipoUsuario === 'CLIENTE') {
+    if (propostaAceita.value.prestadorId) {
+      carregandoPrestador.value = true;
+      try {
+        prestadorParaChat.value = await carregarPrestadorPorId(propostaAceita.value.prestadorId);
+        modalChat.value = true;
+      } catch (error) {
+        showNotification('Erro ao carregar informações do prestador', 'error');
+      } finally {
+        carregandoPrestador.value = false;
+      }
+    }
+  } else if (props.tipoUsuario === 'PRESTADOR') {
+    if (props.demanda.clienteId) {
+      clienteIdParaChat.value = props.demanda.clienteId;
+      modalChat.value = true;
+    }
+  }
+};
+
+const fecharChat = () => {
+  modalChat.value = false;
+  prestadorParaChat.value = null;
+  prestadorIdParaChat.value = null;
+  clienteIdParaChat.value = null;
+};
 
 const abaSelecionada = ref("detalhes"); 
 
@@ -65,7 +138,6 @@ const podeAvaliar = computed(() =>
   propostaAceita.value &&
   !avaliacaoExistente.value
 );
-
 
 const editando = ref(false); 
 const abrirFormEdicao = () => { editando.value = true; };
@@ -434,10 +506,29 @@ const getDescricaoPrioridade = (prioridade: PrioridadeDemanda): string => {
   }
 };
 
-onMounted(() => {
-  console.log("Demanda.vue montado");
-  console.log("Demanda ID:", props.demanda.id);
-  console.log("Status demanda:", props.demanda.statusDemanda);
+const carregarPrestadorId = async () => {
+  if (props.tipoUsuario !== 'PRESTADOR') return;
+
+  const {usuario} = useAuth();
+  if(usuario === null) return;
+
+  try {
+    prestadorIdLogado.value = await findPrestadorIdByUsuarioId(usuario.value?.id!);
+    showNotification("Carregando conversa...","success");
+  } catch (error) {
+    showNotification("Erro ao carregar prestador por id","error");
+    console.error('Erro ao carregar ID do prestador:', error);
+  }
+};
+
+let clienteNome = ref<string | null>(null);
+
+onMounted(async () => {
+  await carregarPrestadorId();
+  clienteNome.value = await findNomeClienteByClienteId(props.demanda.clienteId!);
+  if (props.demanda.propostaAceitaId) {
+    await carregarPropostaAceita();
+  }
 });
 </script>
 
@@ -630,6 +721,45 @@ onMounted(() => {
 
           <div class="actions-container">
             <div class="left-actions">
+                  <!-- botao cliente -->
+                  <v-btn
+                  v-if="podeMostrarChat && tipoUsuario === 'CLIENTE'"
+                  color="teal"
+                  rounded="lg"
+                @click="abrirChat"
+                class="mr-2"
+                size="small"
+                :loading="carregandoPrestador"
+                :disabled="carregandoPrestador"
+              >
+                <template v-if="!carregandoPrestador">
+                  <v-icon left size="16">mdi-chat</v-icon>
+                  Chat
+                </template>
+                <template v-else>
+                  <v-progress-circular
+                    indeterminate
+                    size="16"
+                    width="2"
+                    color="white"
+                    class="mr-1"
+                  />
+                  Carregando...
+                </template>
+              </v-btn>
+              <!-- botao prestador -->
+          <v-btn
+                v-if="podeMostrarChat && tipoUsuario === 'PRESTADOR'"
+                color="teal"
+                rounded="lg"
+                @click="abrirChat"
+                class="mr-2"
+                size="small"
+              >
+                <v-icon left size="16">mdi-chat</v-icon>
+                Chat
+            </v-btn>
+
               <v-btn
                 v-if="podeDesfazerDemanda"
                 color="warning"
@@ -781,6 +911,40 @@ onMounted(() => {
         @avaliacao-criada="avaliacaoCriada"
       />
     </v-dialog>
+    
+    <ChatModalCliente
+      v-if="modalChat && tipoUsuario === 'CLIENTE' && prestadorParaChat"
+      :prestador="prestadorParaChat"
+      @close="fecharChat"
+    />
+    
+    <ChatModalPrestador
+      v-if="modalChat && tipoUsuario === 'PRESTADOR' && clienteIdParaChat"
+      :cliente-id="clienteIdParaChat"
+      :cliente-nome="clienteNome"
+      @close="fecharChat"
+    />
+
+    <v-dialog 
+      v-if="modalChat && tipoUsuario === 'CLIENTE' && carregandoPrestador" 
+      v-model="modalChat" 
+      max-width="400" 
+      persistent
+    >
+      <v-card class="text-center pa-6">
+        <v-progress-circular
+          indeterminate
+          color="primary"
+          size="48"
+          class="mb-4"
+        />
+        <h3 class="text-h6 mb-2">Carregando chat...</h3>
+        <p class="text-body-2 text-medium-emphasis">
+          Buscando informações do prestador.
+        </p>
+      </v-card>
+    </v-dialog>
+
   </v-card>
 </template>
 

@@ -30,7 +30,6 @@ const clienteNome = ref('Cliente');
 
 onMounted(async () => {
   if (!usuario.value) return;
-  //carrega oa id do prestador, inicializa o WS, e carrega a conversa
   try {
     prestadorId.value = await findPrestadorIdByUsuarioId(usuario.value.id);
     

@@ -5,7 +5,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import Demanda from './detalhesDemanda/Demanda.vue';
 import CriarDemandaForm from './detalhesDemanda/CriarDemandaForm.vue';
 import { findClienteIdByUsuarioId } from '@/api/ClienteService';
-import { corStatus, corPrioridade } from '@/utils/labelsUtils';
+import { corStatus, corPrioridade, labelStatusDemanda } from '@/utils/labelsUtils';
 import { useDemandaPagination } from '@/composables/usePagination';
 
 interface Props {
@@ -177,7 +177,7 @@ onMounted(async () => {
                   style="background: rgba(0, 0, 0, 0.4);"
                 >
                   <span class="text-caption text-white font-weight-bold" style="font-size: 0.7rem; letter-spacing: 0.3px;">
-                    {{ demanda.statusDemanda }}
+                    {{ labelStatusDemanda(demanda.statusDemanda)}}
                   </span>
                 </v-chip>
               </div>

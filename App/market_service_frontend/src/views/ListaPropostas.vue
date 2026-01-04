@@ -4,7 +4,7 @@ import { carregarPropostasDoPrestador } from "@/api/PropostaService";
 import { findPrestadorIdByUsuarioId } from "@/api/PrestadorService";
 import type { PropostaResponseInterface } from "@/types";
 import Proposta from "./detalhesProposta/Proposta.vue";
-import { corStatusProposta } from "@/utils/labelsUtils";
+import { corStatusProposta, labelStatusProposta } from "@/utils/labelsUtils";
 import { formatarDataParaExibicao } from "@/utils/dateUtils"; 
 
 interface Props {
@@ -154,7 +154,7 @@ onMounted(async () => {
                   style="background: rgba(0, 0, 0, 0.4);"
                 >
                   <span class="text-caption text-white font-weight-bold" style="font-size: 0.7rem; letter-spacing: 0.3px;">
-                    {{ proposta.statusProposta || 'PENDENTE' }}
+                    {{ labelStatusProposta(proposta.statusProposta) }}
                   </span>
                 </v-chip>
               </div>

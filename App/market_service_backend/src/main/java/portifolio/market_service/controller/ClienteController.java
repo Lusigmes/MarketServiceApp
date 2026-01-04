@@ -41,6 +41,13 @@ public class ClienteController {
     }
     
     @CrossOrigin
+    @GetMapping("/nomeCliente/{clienteId}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<String> findNomeCliente(@PathVariable("clienteId") Long clienteId) {
+        return ResponseEntity.ok(clienteService.findNomeCliente(clienteId));
+    }
+    
+    @CrossOrigin
     @GetMapping("/usuario/{usuarioId}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Long> findClienteIdByUsuarioId(@PathVariable("usuarioId") long usuarioId){

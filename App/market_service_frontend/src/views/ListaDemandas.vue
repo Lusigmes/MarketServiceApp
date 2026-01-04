@@ -217,6 +217,8 @@ onMounted(async () => {
         color="primary"
         size="small"
         rounded
+        :show-first-last-page="true"
+        :total-visible="0"
       />
     </v-row>
 

@@ -17,7 +17,7 @@ export function useChat() {
 
     const initializeWebSocket = async () => {
         if (!usuario.value) {
-            console.error('❌ Usuário não autenticado');
+            console.error('Usuário não autenticado');
             error.value = 'Usuário não autenticado';
             return;
         }
@@ -30,13 +30,11 @@ export function useChat() {
                     idParaConectar = await findClienteIdByUsuarioId(usuario.value.id);
                 } catch (err) {
                     console.error('Erro ao obter clienteId:', err);
-                    // Continua com usuarioId
                 }
             }
             
             await webSocketService.connect(idParaConectar);
             
-            // Configurar handlers
             webSocketService.onMessage(handleIncomingMessage);
             webSocketService.onError(handleWebSocketError);
             
@@ -80,11 +78,8 @@ export function useChat() {
             
             const status = webSocketService.getConnectionStatus();
             if (status.isConnected) {
-                console.log('Enviando JOIN via WebSocket');
                 webSocketService.sendJoinMessage(clienteId, prestadorId);
             } else {
-                console.log('WebSocket não conectado, não enviando JOIN');
-                // Não é um erro, o chat funciona mesmo sem WebSocket
             }
             
         } catch (err: any) {
@@ -115,13 +110,10 @@ export function useChat() {
             };
 
 
-            // SEMPRE usar API REST para enviar (é mais confiável)
             const savedMessage = await enviarMensagemAPI(message);
             
-            // Adicionar à lista local
             messages.value.push(savedMessage);
             
-            // Ordenar
             messages.value.sort((a, b) => 
                 new Date(a.dataEnvio).getTime() - new Date(b.dataEnvio).getTime()
             );
@@ -131,7 +123,7 @@ export function useChat() {
             if (status.isConnected) {
                 webSocketService.send(message);
             } else {
-                console.log('⚠️ WebSocket não conectado, apenas API REST usada');
+                console.log('WebSocket não conectado, apenas API REST usada');
             }
             
             return savedMessage;
@@ -153,7 +145,6 @@ export function useChat() {
         return webSocketService.getConnectionStatus();
     };
 
-    // Limpeza
     onUnmounted(() => {
         webSocketService.removeMessageHandler(handleIncomingMessage);
         clearChat();

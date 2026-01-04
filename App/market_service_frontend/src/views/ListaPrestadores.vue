@@ -47,8 +47,6 @@ const prestadorSelecionadoChat = ref<PrestadorResponseInterface | null>(null);
 const abrirChat = (prestador: PrestadorResponseInterface) => {
   mostrarChatModal.value = true;
   prestadorSelecionadoChat.value = prestador;
-  console.log('Abrir chat com prestador:', prestador);
-  // router.push(`/chat/${prestador.id}`);
 };
 
 const fecharChat = () => {
@@ -131,6 +129,9 @@ onMounted(async () => {
           color="primary"
           size="small"
           rounded
+          :show-first-last-page="true"
+          :total-visible="0"
+
         />
       </v-col>
     </v-row>

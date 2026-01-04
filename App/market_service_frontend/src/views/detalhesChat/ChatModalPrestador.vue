@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import ChatPrestador from './ChatPrestador.vue';
+import { onMounted } from 'vue';
 
 interface Props {
   clienteId?: number;
   clienteNome?: string | null;
   cliente?: any;
+  propostaAceita?: boolean;
 }
 
 const props = defineProps<Props>();
@@ -14,18 +16,35 @@ const emit = defineEmits<{
 }>();
 
 const dialog = ref(true);
+const podeIniciar = ref(false);
+
+const verificarPermissaoParaIniciar = () => {
+  if (props.propostaAceita === true) {
+    podeIniciar.value = true;
+  } else {
+    podeIniciar.value = false;
+  }
+};
 
 const close = () => {
   dialog.value = false;
   setTimeout(() => emit('close'), 300);
 };
+
+onMounted(() => {
+  verificarPermissaoParaIniciar();
+});
+
+watch(() => props.propostaAceita, () => {
+  verificarPermissaoParaIniciar();
+});
 </script>
 
 <template>
   <v-dialog v-model="dialog" max-width="500" persistent>
     <v-card rounded="lg">
       <v-card-title class="d-flex justify-space-between align-center bg-primary text-white">
-        <span>Conversa direta com {{ clienteNome || 'Cliente' }}</span>
+        <span>Conversa direta com {{ props.clienteNome || 'Cliente' }}</span>
         <v-btn icon @click="close" variant="text" color="white">
           <v-icon>mdi-close</v-icon>
         </v-btn>
@@ -33,8 +52,10 @@ const close = () => {
       
       <v-card-text class="pa-0">
         <ChatPrestador 
-          v-if="clienteId"
-          :cliente-id="clienteId" 
+          v-if="props.clienteId"
+          :cliente-id="props.clienteId" 
+          :pode-iniciar="podeIniciar"
+          :cliente-nome="props.clienteNome"
           @close="close" 
         />
       </v-card-text>

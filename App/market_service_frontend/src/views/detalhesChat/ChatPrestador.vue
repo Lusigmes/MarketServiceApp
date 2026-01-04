@@ -2,12 +2,15 @@
 import { findPrestadorIdByUsuarioId } from '@/api/PrestadorService';
 import { useAuth } from '@/composables/useAuth';
 import { useChat } from '@/composables/useChat';
+import { useNotification } from '@/composables/useNotification';
 import { formatarDataParaExibicao } from '@/utils/dateUtils';
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 
-
 interface Props {
   clienteId: number;
+  podeIniciar?: boolean; 
+  clienteNome?: string | null;
+
 }
 
 interface Emits {
@@ -26,7 +29,12 @@ const novaMensagem = ref('');
 const enviando = ref(false);
 const containerMensagens = ref<HTMLElement | null>(null);
 const prestadorId = ref<number|null>(null);
-const clienteNome = ref('Cliente');
+const {showNotification} = useNotification();
+const clienteNome = ref<string>(props.clienteNome ?? 'Cliente');
+
+watch(() => props.clienteNome, (val) => {
+  clienteNome.value = val ?? 'Cliente';
+});
 
 onMounted(async () => {
   if (!usuario.value) return;
@@ -40,7 +48,7 @@ onMounted(async () => {
       
       if (messages.value.length > 0) {
         const primeiraMsg = messages.value[0];
-        if (primeiraMsg.enviadoPorCliente) {
+        if (primeiraMsg.enviadoPorCliente && primeiraMsg.clienteNome) {
           clienteNome.value = primeiraMsg.clienteNome;
         }
       }
@@ -68,37 +76,66 @@ onUnmounted(() => {
   clearChat();
 });
 
-const podeResponder = computed(() => {
-  return messages.value.some(msg => msg.enviadoPorCliente);
-});
-
 const quebrarTexto = (texto: string, limite = 100) => {
   if (!texto) return '';
   if (texto.length <= limite) return texto;
   return texto.match(new RegExp(`.{1,${limite}}`, 'g'))?.join('\n') || texto;
 };
 
+const podeEnviarPrimeiraMensagem = computed(() => {
+  return props.podeIniciar === true;
+});
+
+const podeEnviar = computed(() => {
+  return podeEnviarPrimeiraMensagem.value || messages.value.some(msg => msg.enviadoPorCliente);
+});
+
+const inputHabilitado = computed(() => {
+  return podeEnviar.value && !enviando.value && !loading.value;
+});
+
 const enviarMensagem = async () => {
   const texto = novaMensagem.value.trim();
-  if(!texto || !prestadorId.value || enviando.value) return;
+  
+  if (!texto || !prestadorId.value || enviando.value) return;
+
   enviando.value = true;
   try {
     await sendMessage(texto);
     novaMensagem.value = '';
-  }  catch (err: any) {
-    console.error('Erro ao enviar:', err);
+  } catch (err: any) {
+    console.error('Erro detalhado:', {
+      erro: err,
+      resposta: err.response?.data,
+      status: err.response?.status
+    });
     
-    if (err.response?.data?.includes('Prestadores não podem iniciar')) {
-      alert('Aguarde o cliente iniciar a conversa antes de responder.');
-    } else {
-      alert('Erro ao enviar mensagem. Tente novamente.');
+    const errorData = err.response?.data;
+    
+    if (errorData && typeof errorData === 'string' && errorData.includes('Prestadores não podem iniciar')) {
+      showNotification("Aguarde o cliente iniciar a conversa antes de responder.", "warning");
+    } 
+    else if (err.response?.status === 500) {
+      const errorMessage = errorData?.message || errorData?.error || 'Erro interno no servidor';
+      showNotification(`Erro: ${errorMessage}`, "error");
+      console.error('Erro 500 detalhado:', errorData);
+    }
+    else {
+      showNotification("Erro ao enviar mensagem. Tente novamente.", "error");
     }
   } finally {
     enviando.value = false;
   }
-}
+};
 
+const handleKeyDown = (event: KeyboardEvent) => {
+  if (event.key === 'Enter' && !event.shiftKey && inputHabilitado.value) {
+    event.preventDefault();
+    enviarMensagem();
+  }
+};
 </script>
+
 <template>
   <div class="chat-prestador">
     <div class="chat-header">
@@ -113,9 +150,11 @@ const enviarMensagem = async () => {
           <p class="text-caption text-medium-emphasis mb-0">Cliente</p>
         </div>
       </div>
+      
 
     </div>
 
+    <!-- msgs -->
     <div class="messages-container" ref="containerMensagens">
       <div v-if="loading" class="loading">
         <v-progress-circular indeterminate color="primary" />
@@ -128,11 +167,19 @@ const enviarMensagem = async () => {
         </v-alert>
       </div>
 
-      <div v-else-if="messages.length === 0" class="empty-chat">
+      <div v-else-if="messages.length === 0 && podeIniciar" class="empty-chat can-initiate">
         <v-icon size="64" color="grey">mdi-chat-outline</v-icon>
+        <p class="font-weight-medium">Você pode iniciar a conversa</p>
+        <p class="text-caption text-medium-emphasis text-center px-4">
+          Como sua proposta foi aceita, você pode começar a conversa com o cliente.
+        </p>
+      </div>
+
+      <div v-else-if="messages.length === 0" class="empty-chat">
+        <v-icon size="64" color="green">mdi-chat-outline</v-icon>
         <p>Nenhuma mensagem ainda</p>
         <p class="text-caption text-medium-emphasis">
-          O cliente ainda não iniciou esta conversa.
+          Aguarde o cliente iniciar esta conversa.
         </p>
       </div>
 
@@ -180,23 +227,22 @@ const enviarMensagem = async () => {
       </div>
     </div>
 
-    <!-- Input -->
-    <div class="input-area" :class="{ 'disabled': enviando || loading }">
+    <div class="input-area">
       <v-textarea
         v-model="novaMensagem"
-        placeholder="Digite sua resposta..."
+        :placeholder="podeEnviar ? 'Digite sua mensagem...' : 'Aguarde o cliente iniciar a conversa...'"
         variant="outlined"
         density="compact"
         rows="1"
         auto-grow
         hide-details
-        :disabled="enviando || loading"
-        @keydown.enter.prevent="enviarMensagem"
+        :disabled="!inputHabilitado"
+        @keydown="handleKeyDown"
       />
       <v-btn
         color="primary"
         :loading="enviando"
-        :disabled="!novaMensagem.trim() || enviando || loading"
+        :disabled="!novaMensagem.trim() || !inputHabilitado"
         @click="enviarMensagem"
         icon
       >
@@ -332,14 +378,12 @@ const enviarMensagem = async () => {
   border-bottom-right-radius: 6px;
 }
 
-
 .received .message-bubble {
   background: #ffffff;
   color: #333;
   border: 1px solid #e0e0e0;
   border-bottom-left-radius: 6px;
 }
-
 
 .message-bubble p {
   margin: 0 0 4px 0;
@@ -372,11 +416,6 @@ const enviarMensagem = async () => {
   border-top: 1px solid #e0e0e0;
 }
 
-.input-area.disabled {
-  opacity: 0.6;
-  pointer-events: none;
-}
-
 .input-area :deep(.v-field) {
   border-radius: 24px;
 }
@@ -392,5 +431,28 @@ const enviarMensagem = async () => {
 .messages-container::-webkit-scrollbar-thumb {
   background: #c1c1c1;
   border-radius: 3px;
+}
+
+.permissao-badge {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+.empty-chat.can-initiate {
+  border: 2px dashed rgba(76, 175, 80, 0.3);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 16px;
+  background: rgba(76, 175, 80, 0.05);
+}
+
+.empty-chat.can-initiate p:first-of-type {
+  color: #2e7d32;
+  font-weight: 600;
 }
 </style>

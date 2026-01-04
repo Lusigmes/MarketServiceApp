@@ -20,19 +20,6 @@ export function useDemandaPagination<T>(fetchFunction: (page: number, size: numb
             loading.value = false;
         }
     };
-    /*
-    //para botoes separados / s/ v-pagination
-    const proximaPagina = async () => {
-        if(page.value + 1 < totalPages.value){
-            await atualizarPagina(page.value + 1);
-        }
-    };
-    const paginaAnterior = async () => {
-        if(page.value > 0){
-            await atualizarPagina(page.value - 1);
-        }
-    };
-    */
     
     return {
         items,
@@ -42,8 +29,6 @@ export function useDemandaPagination<T>(fetchFunction: (page: number, size: numb
         totalElements,
         loading,
         atualizarPagina,
-        // proximaPagina,
-        // paginaAnterior
     };
 }
 

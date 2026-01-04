@@ -164,7 +164,7 @@ onMounted(async () => {
       </v-col>
     </v-row>
 
-    <v-row justify="center" class="mt-4">
+    <v-row justify="center" class="mt-4" v-if="propostas.length > 0">
       <v-pagination
         :length="totalPages"
         :model-value="page + 1"
@@ -172,6 +172,8 @@ onMounted(async () => {
         color="primary"
         size="small"
         rounded
+        :show-first-last-page="true"
+        :total-visible="0"
       />
     </v-row>
 

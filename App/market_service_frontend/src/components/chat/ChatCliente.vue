@@ -19,7 +19,6 @@ const {
   initializeWebSocket,
   loadConversation,
   sendMessage,
-  getConnectionStatus,
   clearChat
 } = useChat();
 
@@ -33,7 +32,7 @@ onMounted(async () => {
   //carrega oa id do cliente, inicializa o WS, e carrega a conversa
 
   if (!usuario.value) {
-    console.error("❌ Usuário não autenticado");
+    console.error("Usuário não autenticado");
     return;
   }
   
@@ -54,7 +53,7 @@ onMounted(async () => {
     scrollToBottom();
     
   } catch (err) {
-    console.error("❌ Erro ao iniciar chat:", err);
+    console.error("Erro ao iniciar chat:", err);
   }
 });
 
@@ -82,7 +81,7 @@ const sendMessageAction = async () => {
     await sendMessage(texto);
     novaMensagem.value = '';
   } catch (err: any) {
-    console.error("❌ Erro ao enviar mensagem:", err);
+    console.error("Erro ao enviar mensagem:", err);
     if (err.response?.status === 403) {
       alert("Você não tem permissão para enviar mensagens nesta conversa");
     } else {
@@ -142,8 +141,8 @@ const handleKeyDown = (event: KeyboardEvent) => {
       </div>
 
  
-      <div v-else-if="messages.length === 0" class="empty-chat">
-        <v-icon size="64" color="grey">mdi-chat-outline</v-icon>
+      <div v-else-if="messages.length === 0" class="empty-chat can-initiate">
+        <v-icon size="64" color="green">mdi-chat-outline</v-icon>
         <p>Nenhuma mensagem ainda. Inicie a conversa!</p>
       </div>
 
@@ -273,6 +272,18 @@ const handleKeyDown = (event: KeyboardEvent) => {
   height: 100%;
   color: #666;
   gap: 12px;
+}
+
+.empty-chat p {
+  color: #2e7d32;
+}
+
+.empty-chat.can-initiate {
+  border: 2px dashed rgba(76, 175, 80, 0.3);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 16px;
+  background: rgba(76, 175, 80, 0.05);
 }
 
 .error-message {

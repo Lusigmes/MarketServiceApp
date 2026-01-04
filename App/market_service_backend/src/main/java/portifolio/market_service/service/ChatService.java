@@ -14,11 +14,13 @@ import portifolio.market_service.dto.ChatMessageDTO;
 import portifolio.market_service.dto.ChatMessageResponse;
 import portifolio.market_service.model.entity.ChatMessage;
 import portifolio.market_service.model.entity.Cliente;
+import portifolio.market_service.model.entity.Demanda;
 import portifolio.market_service.model.entity.Prestador;
 import portifolio.market_service.model.entity.Usuario;
 import portifolio.market_service.model.enums.TipoChat;
 import portifolio.market_service.repository.ChatRepository;
 import portifolio.market_service.repository.ClienteRepository;
+import portifolio.market_service.repository.DemandaRepository;
 import portifolio.market_service.repository.PrestadorRepository;
 
 @Service
@@ -31,6 +33,8 @@ public class ChatService {
     
     @Autowired
     private PrestadorRepository prestadorRepository;
+    @Autowired
+    private DemandaRepository demandaRepository;
 
     @Transactional
     public ChatMessageResponse save(ChatMessageDTO dto, Usuario usuarioAutenticado) {
@@ -61,7 +65,12 @@ public class ChatService {
             .orElseThrow(() -> new EntityNotFoundException("Prestador não encontrado"));
 
         if (!dto.enviadoPorCliente() && !chatRepository.existsConversation(dto.clienteId(), dto.prestadorId())) {
-            throw new IllegalStateException("Prestadores não podem iniciar conversas. Aguarde o cliente iniciar.");
+            boolean temPropostaAceita = demandaRepository.existsByClienteIdAndPropostaAceitaPrestadorId(
+                dto.clienteId(), dto.prestadorId());
+            
+            if (!temPropostaAceita) {
+                throw new IllegalStateException("Prestadores não podem iniciar conversas. Aguarde o cliente iniciar.");
+            }
         }
 
         ChatMessage msg = new ChatMessage();

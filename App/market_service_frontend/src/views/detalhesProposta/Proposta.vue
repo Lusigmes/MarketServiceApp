@@ -59,7 +59,7 @@ import { formatarDataParaExibicao } from '@/utils/dateUtils';
             
             propostaAtualizadaRef.value = propostaAtt;   
             emit("atualizar-proposta",{...props.proposta, ...propostaCancelada})
-            console.log("Proposta status anterior:", props.proposta.statusProposta);
+            // console.log("Proposta status anterior:", props.proposta.statusProposta);
             showNotification("Proposta cancelada com sucesso.", "success");
         } catch (err) { showNotification("Erro ao cancelar proposta", "error"); }
     };

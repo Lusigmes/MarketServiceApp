@@ -31,6 +31,7 @@ const props = defineProps<Props>();
 const emit = defineEmits<{
   (e: 'atualizar-demanda', payload: Partial<DemandaResponseInterface>): void;
   (e: 'fechar'): void;
+  (e: 'proposta-aceita', proposta: PropostaResponseInterface): void; 
 }>();
 
 const modalChat = ref(false);
@@ -41,11 +42,6 @@ const prestadorParaChat = ref<PrestadorResponseInterface | null>(null);
 const carregandoPrestador = ref(false);
 
 const podeMostrarChat = computed(() => {
-  console.log('Verificando se pode mostrar chat...');
-  console.log('Status demanda:', props.demanda.statusDemanda);
-  console.log('Tipo usuário:', props.tipoUsuario);
-  console.log('Proposta aceita:', propostaAceita.value);
-  console.log('Prestador logado ID:', prestadorIdLogado.value);
   
   if (props.demanda.statusDemanda !== StatusDemanda.EM_ANDAMENTO) {
     return false;
@@ -138,6 +134,10 @@ const podeAvaliar = computed(() =>
   propostaAceita.value &&
   !avaliacaoExistente.value
 );
+
+const propostaAceitaPeloCliente = computed(() => {
+  return propostaAceita.value?.statusProposta === StatusProposta.ACEITA;
+});
 
 const editando = ref(false); 
 const abrirFormEdicao = () => { editando.value = true; };
@@ -232,6 +232,7 @@ const atualizarDemandaAndPropostaAceita = async (proposta: PropostaResponseInter
     propostaAtualizadaRef.value = propostaAtt;
     
     emit("atualizar-demanda", {...props.demanda, ...demandaAtualizada});
+    emit("proposta-aceita", propostaAtt); 
     showNotification("Sucesso ao aceitar proposta.", "success");
   } catch (err: any) {
     if (err.response?.data?.message?.includes("Já existe uma proposta ACEITA")) {
@@ -514,7 +515,6 @@ const carregarPrestadorId = async () => {
 
   try {
     prestadorIdLogado.value = await findPrestadorIdByUsuarioId(usuario.value?.id!);
-    showNotification("Carregando conversa...","success");
   } catch (error) {
     showNotification("Erro ao carregar prestador por id","error");
     console.error('Erro ao carregar ID do prestador:', error);
@@ -922,6 +922,7 @@ onMounted(async () => {
       v-if="modalChat && tipoUsuario === 'PRESTADOR' && clienteIdParaChat"
       :cliente-id="clienteIdParaChat"
       :cliente-nome="clienteNome"
+      :proposta-aceita="propostaAceitaPeloCliente"
       @close="fecharChat"
     />
 

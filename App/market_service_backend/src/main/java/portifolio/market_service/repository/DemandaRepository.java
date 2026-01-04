@@ -27,5 +27,14 @@ public interface DemandaRepository extends JpaRepository<Demanda,Long> {
 
      @Query("SELECT d FROM Demanda d WHERE d.cliente.usuario = :usuario ORDER BY d.dataCriacaoDemanda DESC")
     Page<Demanda> findDemandaByUsuario(@Param("usuario") Usuario usuario, Pageable pageable);
+
+    @Query("SELECT COUNT(d) > 0 FROM Demanda d " +
+       "WHERE d.cliente.id = :clienteId " +
+       "AND d.propostaAceita IS NOT NULL " +
+       "AND d.propostaAceita.prestador.id = :prestadorId " +
+       "AND d.propostaAceita.statusProposta = 'ACEITA'")
+    boolean existsByClienteIdAndPropostaAceitaPrestadorId(
+        @Param("clienteId") Long clienteId, 
+        @Param("prestadorId") Long prestadorId);
 }
     

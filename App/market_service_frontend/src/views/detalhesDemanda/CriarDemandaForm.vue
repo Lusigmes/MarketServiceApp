@@ -193,7 +193,7 @@ import  {formatarDataParaISO} from "@/utils/dateUtils";
         <v-card-actions class="pa-4 border-top">
             <v-spacer></v-spacer>
             <v-btn
-                color="secondary"
+                color="error"
                 variant="text"
                 @click="$emit('cancelar')"
                 class="mr-2"

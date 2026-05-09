@@ -19,6 +19,7 @@
     "@mdi/font": "^7.4.47",
     "@stomp/stompjs": "^7.2.1",
     "axios": "^1.11.0",
+    "nginx": "^1.1.0",
     "pinia": "^3.0.4",
     "sockjs-client": "^1.6.1",
     "vee-validate": "^4.15.1",

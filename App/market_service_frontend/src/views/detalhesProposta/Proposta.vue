@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { PropostaResponseInterface } from '@/types';
-import { corStatusProposta } from '@/utils/labelsUtils';
-import { ref, computed } from 'vue';
+import type { DemandaResponseInterface, PropostaResponseInterface } from '@/types';
+import { corPrioridade, corStatusProposta, labelPrioridade } from '@/utils/labelsUtils';
+import { ref, computed, onMounted, watch } from 'vue';
 import EditarPropostaForm from './EditarPropostaForm.vue';
 import { atualizarProposta } from '@/api/PropostaService';
-import { StatusDemanda, StatusProposta } from '@/types/enums';
+import { PrioridadeDemanda, StatusDemanda, StatusProposta } from '@/types/enums';
 import { getDemandaById } from '@/api/DemandaService';
 import { useNotification } from '@/composables/useNotification';
 import { formatarDataParaExibicao } from '@/utils/dateUtils';
@@ -32,6 +32,54 @@ import { formatarDataParaExibicao } from '@/utils/dateUtils';
     
     const propostaAtualizadaRef = ref<PropostaResponseInterface | null>(null);
 
+    const demandaVinculada = ref<DemandaResponseInterface | null>(null);
+    const carregandoDemanda = ref(false);
+    
+    const carregarDemandaVinculada = async () => {
+        if(!props.proposta?.demandaId) return;
+        carregandoDemanda.value = true;
+        try {
+            const demanda = await getDemandaById(props.proposta.demandaId);
+            demandaVinculada.value = demanda.data;
+            console.log(demanda.data);
+        } catch (error) {
+            console.error('Erro ao carregar demanda vinculada:', error);
+            showNotification('Erro ao carregar dados da demanda', 'error');
+        }finally{
+            carregandoDemanda.value = false;
+        }
+    };
+
+    const mostrarDetalhesDemanda = computed(()=> {
+        return props.tipoUsuario === 'PRESTADOR' && demandaVinculada.value;
+    });
+
+    const getCorTooltipPrioridade = (prioridade: PrioridadeDemanda): string => {
+        switch(prioridade){
+            case PrioridadeDemanda.ALTA: return 'red-darken-3';
+            case PrioridadeDemanda.MEDIA: return 'orange-darken-3';
+            case PrioridadeDemanda.BAIXA: return 'green-darken-3';
+            default: return 'grey-darken-2';
+        }
+    };
+    const getDescricaoPrioridade = (prioridade: PrioridadeDemanda): string => {
+        switch(prioridade){
+            case PrioridadeDemanda.ALTA: 
+                return 'Demanda de ALTA prioridade - Requer atenção imediata';
+            case PrioridadeDemanda.MEDIA: 
+                return 'Demanda de MÉDIA prioridade - Pode ser agendada';
+            case PrioridadeDemanda.BAIXA: 
+                return 'Demanda de BAIXA prioridade - Sem urgência';
+            default: 
+                return `Prioridade ${labelPrioridade(prioridade)}`;
+        }
+    };
+    const prazoFormatado = computed(() =>{
+        if(!demandaVinculada.value?.prazo) return '';
+        return formatarDataParaExibicao(demandaVinculada.value.prazo);
+    });
+
+    
     const concluirProposta = async () => {
         if (props.proposta.statusProposta !== StatusProposta.ACEITA) return;       
         try {
@@ -123,9 +171,14 @@ import { formatarDataParaExibicao } from '@/utils/dateUtils';
 
     const dataFormatada = computed(() => {
         return formatarDataParaExibicao(props.proposta?.dataCriacao);
-    })
+    });
 
-
+    onMounted(async () => {
+        await carregarDemandaVinculada();
+    });
+    watch(() => props.proposta, async () => {
+        await carregarDemandaVinculada();
+    }, {deep:true});
 </script>
 
 <template>
@@ -162,7 +215,7 @@ import { formatarDataParaExibicao } from '@/utils/dateUtils';
             <div class="descricao-container mb-4">
                 <div class="descricao-label d-flex align-center mb-1">
                     <v-icon color="white" size="16" class="mr-1">mdi-text</v-icon>
-                    <span class="text-body-2 text-white font-weight-medium">Descrição</span>
+                    <span class="text-body-2 text-white font-weight-medium">Descrição da Proposta</span>
                 </div>
                 <p class="descricao-text text-white mb-0">
                     {{ props.proposta?.comentario }}
@@ -186,10 +239,95 @@ import { formatarDataParaExibicao } from '@/utils/dateUtils';
                 >
                     <v-icon size="14" color="white" class="mr-1">mdi-calendar</v-icon>
                     <span class="text-white font-weight-medium">
-                    {{ dataFormatada }}
+                        {{ dataFormatada }}
                     </span>
                 </v-chip>
-               
+            </div>
+
+            <div 
+                v-if="mostrarDetalhesDemanda && demandaVinculada"
+                class="demanda-alert mb-4"
+                :style="{
+                    background: demandaVinculada.statusDemanda === 'CONCLUIDA' ? 'gray' : 'gray',
+                    borderLeft: demandaVinculada.statusDemanda === 'CONCLUIDA' ? '4px solid #4CAF50' : '4px solid #2196F3'
+                }"
+            >
+                <div class="d-flex align-center mb-2">
+                    <v-icon 
+                        :color="demandaVinculada.statusDemanda === 'CONCLUIDA' ? 'green' : 'blue'"
+                        class="mr-2"
+                    >
+                        {{ demandaVinculada.statusDemanda === 'CONCLUIDA' ? 'mdi-check-circle' : 'mdi-file-document-outline' }}
+                    </v-icon>
+                    <span class="text-body-1 font-weight-bold text-white">
+                        Demanda Vinculada
+                    </span>
+                </div>
+                
+                <div class="demanda-details" v-if="!carregandoDemanda">
+                    <div class="d-flex justify-space-between mb-1">
+                        <span class="text-caption text-white" style="opacity: 0.9;">Título da Demanda:</span>
+                        <span class="text-caption text-white font-weight-medium">{{ demandaVinculada.titulo }}</span>
+                    </div>
+                    
+                    <div class="d-flex justify-space-between mb-1">
+                        <span class="text-caption text-white" style="opacity: 0.9;">Prioridade:</span>
+                        <v-tooltip
+                            location="top"
+                            :text="getDescricaoPrioridade(demandaVinculada.prioridade)"
+                            :color="getCorTooltipPrioridade(demandaVinculada.prioridade)"
+                        >
+                            <template v-slot:activator="{ props: tooltipProps }">
+                                <span 
+                                    v-bind="tooltipProps"
+                                    class="text-caption text-white font-weight-medium"
+                                    style="cursor: help;"
+                                >
+                                    <v-icon 
+                                        :color="corPrioridade(demandaVinculada.prioridade)" 
+                                        size="14" 
+                                        class="mr-1"
+                                    >
+                                        mdi-flag
+                                    </v-icon>
+                                    {{ labelPrioridade(demandaVinculada.prioridade) }}
+                                </span>
+                            </template>
+                        </v-tooltip>
+                    </div>
+                    
+                    <div class="d-flex justify-space-between mb-1">
+                        <span class="text-caption text-white" style="opacity: 0.9;">Prazo:</span>
+                        <span class="text-caption text-white font-weight-medium">
+                            {{ prazoFormatado }}
+                        </span>
+                    </div>
+                    
+                    <div class="d-flex justify-space-between mb-1">
+                        <span class="text-caption text-white" style="opacity: 0.9;">Orçamento Estimado:</span>
+                        <span class="text-caption text-white font-weight-medium">
+                           R$ {{ demandaVinculada.orcamentoEstimado }}
+                        </span>
+                    </div>
+                    
+                    <div class="d-flex justify-space-between">
+                        <span class="text-caption text-white" style="opacity: 0.9;">Localização:</span>
+                        <span class="text-caption text-white font-weight-medium">
+                            <v-icon size="12" color="white" class="mr-1">mdi-map-marker</v-icon>
+                            {{ demandaVinculada.localizacao }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div v-else class="text-center py-2">
+                    <v-progress-circular
+                        indeterminate
+                        size="24"
+                        width="2"
+                        color="white"
+                    />
+                    <span class="text-caption text-white ml-2">Carregando demanda...</span>
+                </div>
             </div>
 
             <div v-if="mostrarBotoesPrestador" class="actions-container">
@@ -324,6 +462,18 @@ import { formatarDataParaExibicao } from '@/utils/dateUtils';
     opacity: 0.95;
 }
 
+.demanda-alert {
+    border-radius: 8px;
+    padding: 12px;
+    backdrop-filter: blur(4px);
+}
+
+.demanda-details {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    padding: 10px;
+}
+
 .actions-container {
     display: flex;
     justify-content: space-between;
@@ -344,6 +494,10 @@ import { formatarDataParaExibicao } from '@/utils/dateUtils';
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
+.gap-2 {
+    gap: 8px;
+}
+
 @media (max-width: 768px) {
     .actions-container {
         flex-direction: column;
@@ -361,7 +515,6 @@ import { formatarDataParaExibicao } from '@/utils/dateUtils';
     }
 }
 
-/* Allow flex children to shrink so text-overflow: ellipsis works inside flex containers */
 .proposta-card .flex-grow-1 {
     min-width: 0;
 }

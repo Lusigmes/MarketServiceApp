@@ -34,9 +34,9 @@ public record DemandaDTO(
     PrioridadeDemanda prioridade,
     
     @NotNull(message="ID do cliente obrigatório")
-    long clienteId,
+    Long clienteId,
 
-    long propostaAceitaId
+    Long propostaAceitaId
     // List<Proposta> propostas
 
 

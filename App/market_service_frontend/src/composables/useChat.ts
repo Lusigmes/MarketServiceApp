@@ -46,18 +46,25 @@ export function useChat() {
     };
 
     const handleIncomingMessage = (message: ChatMessageResponseInterface) => {      
-        const exists = messages.value.some(m => 
-            m.id === message.id || 
-            (m.conteudo === message.conteudo && m.dataEnvio === message.dataEnvio)
-        );
-        
-        if (!exists) {
-            messages.value.push(message);
-            
-            messages.value.sort((a, b) => 
-                new Date(a.dataEnvio).getTime() - new Date(b.dataEnvio).getTime()
-            );
+        if(currentConversation.value &&
+            message.clienteId === currentConversation.value.clienteId &&
+            message.prestadorId === currentConversation.value.prestadorId
+        ){
+
+            const exists = messages.value.some(m => 
+                    m.id === message.id || 
+                    (m.conteudo === message.conteudo && m.dataEnvio === message.dataEnvio)
+                );
+                
+                if (!exists) {
+                    messages.value.push(message);
+                    
+                    messages.value.sort((a, b) => 
+                        new Date(a.dataEnvio).getTime() - new Date(b.dataEnvio).getTime()
+                    );
+                }
         }
+        
     };
 
     const handleWebSocketError = (errorMsg: string) => {
@@ -79,7 +86,6 @@ export function useChat() {
             const status = webSocketService.getConnectionStatus();
             if (status.isConnected) {
                 webSocketService.sendJoinMessage(clienteId, prestadorId);
-            } else {
             }
             
         } catch (err: any) {
@@ -91,7 +97,6 @@ export function useChat() {
             loading.value = false;
         }
     };
-
     const sendMessage = async (conteudo: string) => {
         if (!currentConversation.value || !conteudo.trim() || !usuario.value) {
             console.error('Não pode enviar - dados inválidos');
@@ -109,7 +114,7 @@ export function useChat() {
                 enviadoPorCliente: isClient
             };
 
-
+            
             const savedMessage = await enviarMensagemAPI(message);
             
             messages.value.push(savedMessage);
@@ -118,10 +123,10 @@ export function useChat() {
                 new Date(a.dataEnvio).getTime() - new Date(b.dataEnvio).getTime()
             );
             
-            // Tentar enviar via WebSocket também (para notificação em tempo real)
             const status = webSocketService.getConnectionStatus();
             if (status.isConnected) {
-                webSocketService.send(message);
+                console.log('WebSocket conectado + API');
+                // webSocketService.send(message);
             } else {
                 console.log('WebSocket não conectado, apenas API REST usada');
             }
@@ -133,8 +138,60 @@ export function useChat() {
             error.value = 'Erro ao enviar mensagem: ' + (err.message || '');
             throw err;
         }
-    };
+    }; 
+   
+/* versão de envio wwebsocket(bug)
+ const sendMessage = async (conteudo: string) => {
+        if (!currentConversation.value || !conteudo.trim() || !usuario.value) {
+            console.error('Não pode enviar - dados inválidos');
+            throw new Error('Dados inválidos para enviar mensagem');
+        }
 
+        try {
+            const isClient = usuario.value.tipoUsuario === 'CLIENTE';
+            const message: ChatMessageInterface = {
+                tipo: 'CHAT',
+                clienteId: currentConversation.value.clienteId,
+                prestadorId: currentConversation.value.prestadorId,
+                conteudo: conteudo.trim(),
+                enviadoPorCliente: isClient
+            };
+
+            const status = webSocketService.getConnectionStatus();
+            if (!status.isConnected) {
+                console.error('WebSocket não conectado. Não é possível enviar a mensagem.');
+                throw new Error('WebSocket não conectado');
+            }
+
+            // Envia via WebSocket (servidor deve persistir e retransmitir para o outro usuário)
+            webSocketService.send(message);
+
+            // Exibe imediatamente a mensagem localmente (a mensagem definitiva deve vir via WebSocket do servidor)
+            messages.value.push({
+                id: Date.now(),
+                tipo: 'CHAT',
+                clienteId: message.clienteId,
+                clienteNome: '',
+                prestadorId: message.prestadorId,
+                prestadorNome: '',
+                conteudo: message.conteudo,
+                enviadoPorCliente: message.enviadoPorCliente,
+                lida: false,
+                dataEnvio: new Date().toISOString()
+            });
+
+            messages.value.sort((a, b) =>
+                new Date(a.dataEnvio).getTime() - new Date(b.dataEnvio).getTime()
+            );
+
+            return message;
+        } catch (err: any) {
+            console.error('Erro ao enviar mensagem:', err);
+            error.value = 'Erro ao enviar mensagem: ' + (err.message || '');
+            throw err;
+        }
+    };
+*/
     const clearChat = () => {
         messages.value = [];
         currentConversation.value = null;

@@ -142,7 +142,7 @@ import { useNotification } from '@/composables/useNotification';
         <v-card-actions class="pa-4 pt-0">
             <v-spacer></v-spacer>
             <v-btn
-                color="secondary"
+                color="red"
                 variant="text"
                 @click="$emit('cancelar')"
                 class="mr-2"

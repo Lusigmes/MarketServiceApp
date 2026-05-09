@@ -134,7 +134,7 @@ const salvar = async () => {
         <v-card-actions class="pa-4 pt-0">
             <v-spacer></v-spacer>
             <v-btn
-                color="secondary"
+                color="error"
                 variant="text"
                 @click="$emit('cancelar')"
                 class="mr-2"

@@ -425,7 +425,6 @@ const reabrirDemandaAposCancelamento = async () => {
   }
 };
 
-
 const propostaAceitaCancelada = ref(false);
 const alertaPropostaCancelada = ref(false);
 
@@ -708,7 +707,7 @@ onMounted(async () => {
                 
                 <v-alert
                   v-if="alertaPropostaCancelada"
-                  color="orange"
+                  color="error"
                   density="compact"
                   variant="tonal"
                   class="mt-2"
